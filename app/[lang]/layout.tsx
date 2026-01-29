@@ -3,7 +3,6 @@ import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, getTranslations } from 'next-intl/server';
 import { i18n, type Locale } from "@/i18n-config";
 import LayoutWrapper from "@/components/layout/LayoutWrapper";
-import PushNotificationPrompt from "@/components/notifications/PushNotificationPrompt";
 import type { Metadata } from "next";
 
 interface LangLayoutProps {
@@ -40,7 +39,6 @@ export default async function LangLayout({
       <LayoutWrapper>
         {children}
       </LayoutWrapper>
-      <PushNotificationPrompt />
     </NextIntlClientProvider>
   );
 }
