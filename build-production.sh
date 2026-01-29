@@ -51,8 +51,8 @@ if pm2 list | grep -q "next.satis.az"; then
     echo "Restarting existing PM2 process..."
     pm2 restart next.satis.az
 else
-    echo "Starting new PM2 process on port 3033..."
-    pm2 start npm --name next.satis.az -- start -- -p 3033
+    echo "Starting new PM2 process on port 3034..."
+    pm2 start npm --name next.satis.az -- start -- -p 3034
 fi
 
 # Save PM2 configuration
