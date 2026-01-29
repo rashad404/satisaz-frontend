@@ -1,0 +1,297 @@
+import { apiClient } from './client';
+import type {
+  Tenant,
+  Conversation,
+  ChatMessage,
+  Agent,
+  AiConfiguration,
+  KnowledgeBaseItem,
+  ConversationFilters,
+  SendMessageData,
+  CreateTenantData,
+  UpdateTenantData,
+  InviteAgentData,
+  UpdateAiConfigData,
+  CreateKnowledgeBaseItemData,
+  AgentStatusType,
+} from '../types/chat';
+
+// Tenant/Workspace APIs
+export const tenantsApi = {
+  list: async () => {
+    const response = await apiClient.get<{ status: string; data: Tenant[] }>('/tenants');
+    return response.data;
+  },
+
+  get: async (tenantId: number) => {
+    const response = await apiClient.get<{ status: string; data: Tenant }>(`/tenants/${tenantId}`);
+    return response.data;
+  },
+
+  create: async (data: CreateTenantData) => {
+    const response = await apiClient.post<{ status: string; data: Tenant }>('/tenants', data);
+    return response.data;
+  },
+
+  update: async (tenantId: number, data: UpdateTenantData) => {
+    const response = await apiClient.put<{ status: string; data: Tenant }>(`/tenants/${tenantId}`, data);
+    return response.data;
+  },
+
+  delete: async (tenantId: number) => {
+    const response = await apiClient.delete<{ status: string }>(`/tenants/${tenantId}`);
+    return response.data;
+  },
+
+  getWidgetCode: async (tenantId: number) => {
+    const response = await apiClient.get<{ status: string; data: { embed_code: string; tenant: Tenant } }>(
+      `/tenants/${tenantId}/widget-code`
+    );
+    return response.data;
+  },
+};
+
+// Agent APIs
+export const agentsApi = {
+  list: async (tenantId: number) => {
+    const response = await apiClient.get<{ status: string; data: Agent[] }>(`/tenants/${tenantId}/agents`);
+    return response.data;
+  },
+
+  invite: async (tenantId: number, data: InviteAgentData) => {
+    const response = await apiClient.post<{ status: string; data: Agent }>(
+      `/tenants/${tenantId}/agents/invite`,
+      data
+    );
+    return response.data;
+  },
+
+  update: async (tenantId: number, agentId: number, data: { role?: string; is_active?: boolean }) => {
+    const response = await apiClient.put<{ status: string }>(
+      `/tenants/${tenantId}/agents/${agentId}`,
+      data
+    );
+    return response.data;
+  },
+
+  remove: async (tenantId: number, agentId: number) => {
+    const response = await apiClient.delete<{ status: string }>(
+      `/tenants/${tenantId}/agents/${agentId}`
+    );
+    return response.data;
+  },
+
+  updateStatus: async (tenantId: number, status: AgentStatusType) => {
+    const response = await apiClient.post<{ status: string; data: { status: AgentStatusType; last_activity_at: string } }>(
+      `/tenants/${tenantId}/agents/status`,
+      { status }
+    );
+    return response.data;
+  },
+
+  heartbeat: async (tenantId: number) => {
+    const response = await apiClient.post<{ status: string; data: { status: AgentStatusType; last_activity_at: string } }>(
+      `/tenants/${tenantId}/agents/heartbeat`
+    );
+    return response.data;
+  },
+};
+
+// Conversation APIs
+export const conversationsApi = {
+  list: async (tenantId: number, filters?: ConversationFilters) => {
+    const response = await apiClient.get<{
+      status: string;
+      data: {
+        data: Conversation[];
+        current_page: number;
+        last_page: number;
+        per_page: number;
+        total: number;
+      };
+    }>(`/tenants/${tenantId}/conversations`, { params: filters });
+    return response.data;
+  },
+
+  getQueue: async (tenantId: number) => {
+    const response = await apiClient.get<{ status: string; data: Conversation[] }>(
+      `/tenants/${tenantId}/conversations/queue`
+    );
+    return response.data;
+  },
+
+  get: async (tenantId: number, conversationId: number) => {
+    const response = await apiClient.get<{ status: string; data: Conversation }>(
+      `/tenants/${tenantId}/conversations/${conversationId}`
+    );
+    return response.data;
+  },
+
+  accept: async (tenantId: number, conversationId: number) => {
+    const response = await apiClient.post<{ status: string; data: Conversation }>(
+      `/tenants/${tenantId}/conversations/${conversationId}/accept`
+    );
+    return response.data;
+  },
+
+  takeover: async (tenantId: number, conversationId: number) => {
+    const response = await apiClient.post<{ status: string; data: Conversation }>(
+      `/tenants/${tenantId}/conversations/${conversationId}/takeover`
+    );
+    return response.data;
+  },
+
+  transfer: async (tenantId: number, conversationId: number, agentId: number, reason?: string) => {
+    const response = await apiClient.post<{ status: string }>(
+      `/tenants/${tenantId}/conversations/${conversationId}/transfer`,
+      { agent_id: agentId, reason }
+    );
+    return response.data;
+  },
+
+  close: async (tenantId: number, conversationId: number) => {
+    const response = await apiClient.post<{ status: string }>(
+      `/tenants/${tenantId}/conversations/${conversationId}/close`
+    );
+    return response.data;
+  },
+};
+
+// Message APIs
+export const messagesApi = {
+  list: async (tenantId: number, conversationId: number, params?: { before_id?: number; after_id?: number; limit?: number }) => {
+    const response = await apiClient.get<{ status: string; data: ChatMessage[] }>(
+      `/tenants/${tenantId}/conversations/${conversationId}/messages`,
+      { params }
+    );
+    return response.data;
+  },
+
+  send: async (tenantId: number, conversationId: number, data: SendMessageData) => {
+    const formData = new FormData();
+
+    if (data.content) {
+      formData.append('content', data.content);
+    }
+
+    if (data.files) {
+      data.files.forEach((file) => {
+        formData.append('files[]', file);
+      });
+    }
+
+    const response = await apiClient.post<{ status: string; data: ChatMessage }>(
+      `/tenants/${tenantId}/conversations/${conversationId}/messages`,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    );
+    return response.data;
+  },
+
+  markRead: async (tenantId: number, conversationId: number, messageIds?: number[]) => {
+    const response = await apiClient.post<{ status: string }>(
+      `/tenants/${tenantId}/conversations/${conversationId}/messages/read`,
+      messageIds ? { message_ids: messageIds } : {}
+    );
+    return response.data;
+  },
+
+  sendTyping: async (tenantId: number, conversationId: number, typing: boolean) => {
+    const response = await apiClient.post<{ status: string }>(
+      `/tenants/${tenantId}/conversations/${conversationId}/typing`,
+      { typing }
+    );
+    return response.data;
+  },
+};
+
+// AI Configuration APIs
+export const aiConfigApi = {
+  get: async (tenantId: number) => {
+    const response = await apiClient.get<{ status: string; data: AiConfiguration | null }>(
+      `/tenants/${tenantId}/ai`
+    );
+    return response.data;
+  },
+
+  update: async (tenantId: number, data: UpdateAiConfigData) => {
+    const response = await apiClient.put<{ status: string; data: AiConfiguration }>(
+      `/tenants/${tenantId}/ai`,
+      data
+    );
+    return response.data;
+  },
+
+  test: async (tenantId: number, message: string) => {
+    const response = await apiClient.post<{ status: string; data: { response: string; model: string; tokens_used: number } }>(
+      `/tenants/${tenantId}/ai/test`,
+      { message }
+    );
+    return response.data;
+  },
+};
+
+// Knowledge Base APIs
+export const knowledgeBaseApi = {
+  list: async (tenantId: number, params?: { search?: string; type?: string; is_active?: boolean }) => {
+    const response = await apiClient.get<{ status: string; data: KnowledgeBaseItem[] }>(
+      `/tenants/${tenantId}/knowledge-base`,
+      { params }
+    );
+    return response.data;
+  },
+
+  get: async (tenantId: number, itemId: number) => {
+    const response = await apiClient.get<{ status: string; data: KnowledgeBaseItem }>(
+      `/tenants/${tenantId}/knowledge-base/${itemId}`
+    );
+    return response.data;
+  },
+
+  create: async (tenantId: number, data: CreateKnowledgeBaseItemData) => {
+    const response = await apiClient.post<{ status: string; data: KnowledgeBaseItem }>(
+      `/tenants/${tenantId}/knowledge-base`,
+      data
+    );
+    return response.data;
+  },
+
+  update: async (tenantId: number, itemId: number, data: Partial<CreateKnowledgeBaseItemData>) => {
+    const response = await apiClient.put<{ status: string; data: KnowledgeBaseItem }>(
+      `/tenants/${tenantId}/knowledge-base/${itemId}`,
+      data
+    );
+    return response.data;
+  },
+
+  delete: async (tenantId: number, itemId: number) => {
+    const response = await apiClient.delete<{ status: string }>(
+      `/tenants/${tenantId}/knowledge-base/${itemId}`
+    );
+    return response.data;
+  },
+
+  bulkImport: async (tenantId: number, items: CreateKnowledgeBaseItemData[]) => {
+    const response = await apiClient.post<{ status: string; data: { imported: number; failed: number } }>(
+      `/tenants/${tenantId}/knowledge-base/import`,
+      { items }
+    );
+    return response.data;
+  },
+};
+
+// Export all APIs
+export const chatApi = {
+  tenants: tenantsApi,
+  agents: agentsApi,
+  conversations: conversationsApi,
+  messages: messagesApi,
+  aiConfig: aiConfigApi,
+  knowledgeBase: knowledgeBaseApi,
+};
+
+export default chatApi;

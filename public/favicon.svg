@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" fill="none">
+  <defs>
+    <linearGradient id="chatGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#9333EA;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#7C3AED;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#6366F1;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background Circle -->
+  <circle cx="512" cy="512" r="512" fill="url(#chatGradient)"/>
+
+  <!-- Message Bubble -->
+  <path d="M256 288 C256 252.8 284.8 224 320 224 L704 224 C739.2 224 768 252.8 768 288 L768 544 C768 579.2 739.2 608 704 608 L448 608 L320 736 L320 608 C284.8 608 256 579.2 256 544 L256 288 Z"
+        fill="white"
+        stroke="white"
+        stroke-width="16"
+        stroke-linecap="round"
+        stroke-linejoin="round"/>
+
+  <!-- Chat dots -->
+  <circle cx="400" cy="416" r="40" fill="url(#chatGradient)"/>
+  <circle cx="512" cy="416" r="40" fill="url(#chatGradient)"/>
+  <circle cx="624" cy="416" r="40" fill="url(#chatGradient)"/>
+</svg>

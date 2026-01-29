@@ -1,0 +1,50 @@
+import { notFound } from "next/navigation";
+import { NextIntlClientProvider } from 'next-intl';
+import { getMessages, getTranslations } from 'next-intl/server';
+import { i18n, type Locale } from "@/i18n-config";
+import LayoutWrapper from "@/components/layout/LayoutWrapper";
+import PushNotificationPrompt from "@/components/notifications/PushNotificationPrompt";
+import type { Metadata } from "next";
+
+interface LangLayoutProps {
+  children: React.ReactNode;
+  params: Promise<{ lang: string }>;
+}
+
+export async function generateMetadata({ params }: LangLayoutProps): Promise<Metadata> {
+  const { lang } = await params;
+  const t = await getTranslations({ locale: lang });
+
+  return {
+    title: t('metadata.title'),
+    description: t('metadata.description'),
+  };
+}
+
+export default async function LangLayout({
+  children,
+  params
+}: LangLayoutProps) {
+  const { lang } = await params;
+
+  // Validate that the incoming `lang` parameter is valid
+  if (!i18n.locales.includes(lang as Locale)) {
+    notFound();
+  }
+
+  // Load messages for the current locale
+  const messages = await getMessages({ locale: lang });
+
+  return (
+    <NextIntlClientProvider locale={lang} messages={messages}>
+      <LayoutWrapper>
+        {children}
+      </LayoutWrapper>
+      <PushNotificationPrompt />
+    </NextIntlClientProvider>
+  );
+}
+
+export async function generateStaticParams() {
+  return i18n.locales.map((lang) => ({ lang }));
+}
