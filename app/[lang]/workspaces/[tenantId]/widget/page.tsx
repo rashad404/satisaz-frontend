@@ -21,8 +21,8 @@ import {
 import type { WidgetSettings } from '@/lib/types/chat';
 
 const POSITION_OPTIONS = [
-  { value: 'bottom-right', label: 'Bottom Right' },
   { value: 'bottom-left', label: 'Bottom Left' },
+  { value: 'bottom-right', label: 'Bottom Right' },
 ];
 
 const LANGUAGE_OPTIONS = [
