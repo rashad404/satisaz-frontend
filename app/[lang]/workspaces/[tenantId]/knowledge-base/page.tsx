@@ -60,7 +60,9 @@ export default function KnowledgeBasePage() {
       if (typeFilter !== 'all') params.type = typeFilter;
 
       const response = await knowledgeBaseApi.list(tenantId, params as { search?: string; type?: string });
-      setItems(response.data);
+      // Handle both array and paginated response
+      const itemsData = Array.isArray(response.data) ? response.data : (response.data?.data || []);
+      setItems(itemsData);
     } catch (err) {
       console.error('Failed to load knowledge base:', err);
     } finally {
@@ -163,27 +165,23 @@ export default function KnowledgeBasePage() {
 
   return (
     <div className="h-full overflow-y-auto">
-      <div className="max-w-5xl mx-auto p-6 space-y-6">
+      <div className="max-w-4xl mx-auto p-4 space-y-4">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-purple-100 dark:bg-purple-900/50 rounded-lg">
-              <BookOpen className="h-6 w-6 text-purple-600 dark:text-purple-400" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Knowledge Base</h1>
-              <p className="text-gray-500 dark:text-gray-400">
-                {items.length} item{items.length !== 1 ? 's' : ''}
-              </p>
-            </div>
+          <div className="flex items-center gap-2">
+            <BookOpen className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+            <h1 className="text-base font-medium text-gray-900 dark:text-white">Knowledge Base</h1>
+            <span className="text-sm text-gray-500 dark:text-gray-400">
+              ({items.length})
+            </span>
           </div>
 
           <button
             onClick={openCreateModal}
-            className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-sm rounded-md transition-colors"
           >
-            <Plus className="h-5 w-5" />
-            Add Item
+            <Plus className="h-4 w-4" />
+            Add
           </button>
         </div>
 
@@ -212,23 +210,23 @@ export default function KnowledgeBasePage() {
         )}
 
         {/* Filters */}
-        <div className="flex flex-col sm:flex-row gap-4">
+        <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search knowledge base..."
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              placeholder="Search..."
+              className="w-full pl-8 pr-3 py-1.5 text-sm border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-purple-500 focus:border-transparent"
             />
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex gap-1">
             <button
               onClick={() => setTypeFilter('all')}
               className={cn(
-                'px-4 py-2 rounded-lg font-medium transition-colors',
+                'px-2.5 py-1.5 text-xs rounded-md transition-colors',
                 typeFilter === 'all'
                   ? 'bg-purple-600 text-white'
                   : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
@@ -243,13 +241,13 @@ export default function KnowledgeBasePage() {
                   key={type.value}
                   onClick={() => setTypeFilter(type.value)}
                   className={cn(
-                    'flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors',
+                    'flex items-center gap-1 px-2.5 py-1.5 text-xs rounded-md transition-colors',
                     typeFilter === type.value
                       ? 'bg-purple-600 text-white'
                       : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
                   )}
                 >
-                  <Icon className="h-4 w-4" />
+                  <Icon className="h-3 w-3" />
                   {type.label}
                 </button>
               );
@@ -263,9 +261,9 @@ export default function KnowledgeBasePage() {
             <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
           </div>
         ) : filteredItems.length === 0 ? (
-          <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-12 text-center">
-            <BookOpen className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No items found</h3>
+          <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-8 text-center">
+            <BookOpen className="h-8 w-8 text-gray-400 mx-auto mb-3" />
+            <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-1">No items found</h3>
             <p className="text-gray-500 dark:text-gray-400 mb-4">
               {searchQuery || typeFilter !== 'all'
                 ? 'Try adjusting your filters'
@@ -282,22 +280,22 @@ export default function KnowledgeBasePage() {
             )}
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-2">
             {filteredItems.map((item) => {
               const TypeIcon = getTypeIcon(item.content_type);
               return (
                 <div
                   key={item.id}
                   className={cn(
-                    'bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-4',
+                    'bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-3',
                     !item.is_active && 'opacity-60'
                   )}
                 >
                   <div className="flex items-start justify-between gap-4">
-                    <div className="flex items-start gap-3 flex-1 min-w-0">
+                    <div className="flex items-start gap-2 flex-1 min-w-0">
                       <div
                         className={cn(
-                          'p-2 rounded-lg flex-shrink-0',
+                          'p-1.5 rounded flex-shrink-0',
                           item.content_type === 'faq'
                             ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400'
                             : item.content_type === 'document'
@@ -305,13 +303,13 @@ export default function KnowledgeBasePage() {
                             : 'bg-orange-100 dark:bg-orange-900/50 text-orange-600 dark:text-orange-400'
                         )}
                       >
-                        <TypeIcon className="h-5 w-5" />
+                        <TypeIcon className="h-4 w-4" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-medium text-gray-900 dark:text-white truncate">
+                        <h3 className="text-sm font-medium text-gray-900 dark:text-white truncate">
                           {item.title}
                         </h3>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 mt-1">
+                        <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 mt-0.5">
                           {item.content}
                         </p>
                         {item.source_url && (
@@ -327,11 +325,11 @@ export default function KnowledgeBasePage() {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 flex-shrink-0">
+                    <div className="flex items-center gap-1 flex-shrink-0">
                       <button
                         onClick={() => handleToggleActive(item)}
                         className={cn(
-                          'p-1.5 rounded-lg transition-colors',
+                          'p-1 rounded transition-colors',
                           item.is_active
                             ? 'text-green-600 hover:bg-green-100 dark:hover:bg-green-900/50'
                             : 'text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
@@ -339,24 +337,24 @@ export default function KnowledgeBasePage() {
                         title={item.is_active ? 'Deactivate' : 'Activate'}
                       >
                         {item.is_active ? (
-                          <ToggleRight className="h-6 w-6" />
+                          <ToggleRight className="h-5 w-5" />
                         ) : (
-                          <ToggleLeft className="h-6 w-6" />
+                          <ToggleLeft className="h-5 w-5" />
                         )}
                       </button>
                       <button
                         onClick={() => openEditModal(item)}
-                        className="p-1.5 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                        className="p-1 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded transition-colors"
                         title="Edit"
                       >
-                        <Edit2 className="h-5 w-5" />
+                        <Edit2 className="h-4 w-4" />
                       </button>
                       <button
                         onClick={() => handleDelete(item)}
-                        className="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-100 dark:hover:bg-red-900/50 rounded-lg transition-colors"
+                        className="p-1 text-red-500 hover:text-red-700 hover:bg-red-100 dark:hover:bg-red-900/50 rounded transition-colors"
                         title="Delete"
                       >
-                        <Trash2 className="h-5 w-5" />
+                        <Trash2 className="h-4 w-4" />
                       </button>
                     </div>
                   </div>
@@ -372,9 +370,9 @@ export default function KnowledgeBasePage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/50" onClick={() => setShowModal(false)} />
           <div className="relative bg-white dark:bg-gray-900 rounded-xl shadow-xl w-full max-w-2xl p-6 m-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                {editingItem ? 'Edit Item' : 'Add Knowledge Base Item'}
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-base font-medium text-gray-900 dark:text-white">
+                {editingItem ? 'Edit Item' : 'Add Item'}
               </h2>
               <button
                 onClick={() => setShowModal(false)}
