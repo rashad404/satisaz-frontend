@@ -16,12 +16,19 @@ import {
   Eye,
   Monitor,
   Smartphone,
+  Globe,
 } from 'lucide-react';
 import type { WidgetSettings } from '@/lib/types/chat';
 
 const POSITION_OPTIONS = [
   { value: 'bottom-right', label: 'Bottom Right' },
   { value: 'bottom-left', label: 'Bottom Left' },
+];
+
+const LANGUAGE_OPTIONS = [
+  { value: 'az', label: 'Azərbaycan dili' },
+  { value: 'en', label: 'English' },
+  { value: 'ru', label: 'Русский' },
 ];
 
 const COLOR_PRESETS = [
@@ -53,6 +60,7 @@ export default function WidgetCodePage() {
     offline_message: 'We are currently offline. Leave a message!',
     show_agent_avatar: true,
     show_agent_name: true,
+    language: 'az',
   });
 
   const [error, setError] = useState<string | null>(null);
@@ -244,6 +252,39 @@ export default function WidgetCodePage() {
                     ))}
                   </div>
                 </div>
+              </div>
+            </div>
+
+            {/* Language */}
+            <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Globe className="h-5 w-5 text-purple-600" />
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Language</h2>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Widget Language
+                </label>
+                <div className="flex gap-2">
+                  {LANGUAGE_OPTIONS.map((option) => (
+                    <button
+                      key={option.value}
+                      onClick={() => setWidgetSettings({ ...widgetSettings, language: option.value as 'az' | 'en' | 'ru' })}
+                      className={cn(
+                        'flex-1 px-4 py-2 rounded-lg border-2 font-medium transition-colors',
+                        widgetSettings.language === option.value
+                          ? 'border-purple-600 bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300'
+                          : 'border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
+                      )}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+                <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                  This sets the language for UI text in the widget (buttons, placeholders, etc.)
+                </p>
               </div>
             </div>
 

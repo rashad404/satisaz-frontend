@@ -32,6 +32,7 @@ export interface WidgetSettings {
   offline_message?: string;
   show_agent_avatar?: boolean;
   show_agent_name?: boolean;
+  language?: 'az' | 'en' | 'ru';
 }
 
 export interface Visitor {
