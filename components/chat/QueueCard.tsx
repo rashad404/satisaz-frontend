@@ -147,7 +147,14 @@ export function QueueCard({ conversation }: QueueCardProps) {
       {/* Metadata - hidden on mobile for cleaner UI */}
       {metadata?.page_url && (
         <p className="hidden sm:block text-xs text-gray-400 mb-3 truncate">
-          Page: {new URL(metadata.page_url as string).pathname}
+          Page: {(() => {
+            try {
+              const url = new URL(metadata.page_url as string);
+              return url.host + url.pathname;
+            } catch {
+              return metadata.page_url as string;
+            }
+          })()}
         </p>
       )}
 

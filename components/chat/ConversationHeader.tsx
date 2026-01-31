@@ -146,29 +146,40 @@ export function ConversationHeader({ onBack }: ConversationHeaderProps) {
             </div>
           </div>
           {/* Desktop: show details */}
-          <div className="hidden sm:flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-            {visitor?.email && (
+          <div className="hidden sm:block text-xs text-gray-500 dark:text-gray-400 mt-0.5 space-y-0.5">
+            <div className="flex items-center gap-3">
+              {visitor?.email && (
+                <span className="flex items-center gap-1">
+                  <Mail className="h-3 w-3 flex-shrink-0" />
+                  <span className="truncate">{visitor.email}</span>
+                </span>
+              )}
+              {visitor?.phone && (
+                <span className="flex items-center gap-1">
+                  <Phone className="h-3 w-3 flex-shrink-0" />
+                  {visitor.phone}
+                </span>
+              )}
               <span className="flex items-center gap-1">
-                <Mail className="h-3 w-3" />
-                {visitor.email}
+                <Clock className="h-3 w-3 flex-shrink-0" />
+                {new Date(activeConversation.created_at).toLocaleTimeString()}
               </span>
-            )}
-            {visitor?.phone && (
-              <span className="flex items-center gap-1">
-                <Phone className="h-3 w-3" />
-                {visitor.phone}
-              </span>
-            )}
+            </div>
             {activeConversation.metadata?.page_url && (
-              <span className="flex items-center gap-1">
-                <Globe className="h-3 w-3" />
-                {new URL(activeConversation.metadata.page_url as string).pathname}
-              </span>
+              <div className="flex items-center gap-1">
+                <Globe className="h-3 w-3 flex-shrink-0" />
+                <span className="truncate">
+                  {(() => {
+                    try {
+                      const url = new URL(activeConversation.metadata.page_url as string);
+                      return url.host + url.pathname;
+                    } catch {
+                      return activeConversation.metadata.page_url as string;
+                    }
+                  })()}
+                </span>
+              </div>
             )}
-            <span className="flex items-center gap-1">
-              <Clock className="h-3 w-3" />
-              {new Date(activeConversation.created_at).toLocaleTimeString()}
-            </span>
           </div>
         </div>
       </div>
