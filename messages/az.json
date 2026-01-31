@@ -654,6 +654,7 @@
     "pricing": {
       "label": "Qiymətləndirmə",
       "title": "Sadə, Şəffaf Qiymət",
+      "badge": "Pulsuz",
       "planTitle": "Hamı üçün Pulsuz",
       "price": "Pulsuz",
       "feature1": "Bütün xüsusiyyətlər daxildir",
@@ -690,7 +691,15 @@
       "msg4": "Şifrənizi təhlükəsiz sıfırlamaq üçün sizi agentə qoşacağam.",
       "msg5": "Salam! Mən Səbinəyəm, dəstək xidmətindən. Şifrənizi sıfırlamağa kömək edəcəyəm."
     },
-    "widgetHeader": "Bizimlə söhbət edin"
+    "widgetHeader": "Bizimlə söhbət edin",
+    "aiSpotlight": {
+      "badge": "AI Köməkçi",
+      "title": "Məşğul Olanda AI Kömək Edir",
+      "description": "Komandanız söhbətləri ilk olaraq idarə edir. Agentlər əlçatan olmayanda AI söhbəti davam etdirir.",
+      "visitorMessage": "Salam, xidmətiniz haqqında sualım var",
+      "aiResponse": "Salam! Komandamız hazırda məşğuldur. Agent əlçatan olana qədər sizə kömək edəcəm. Nə ilə yardımçı ola bilərəm?",
+      "transferIndicator": "İnsan agentlər əlçatan olanda devralar"
+    }
   },
   "login": {
     "welcomeBack": "Xoş gəlmisiniz",

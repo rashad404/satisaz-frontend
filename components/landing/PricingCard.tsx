@@ -12,6 +12,7 @@ interface PricingCardProps {
   ctaText: string;
   ctaHref: string;
   highlighted?: boolean;
+  badge?: string;
   className?: string;
 }
 
@@ -23,6 +24,7 @@ export function PricingCard({
   ctaText,
   ctaHref,
   highlighted = false,
+  badge,
   className,
 }: PricingCardProps) {
   return (
@@ -33,11 +35,11 @@ export function PricingCard({
         : 'bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800',
       className
     )}>
-      {highlighted && (
+      {highlighted && badge && (
         <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-white dark:bg-gray-900 rounded-full shadow-lg">
           <span className="text-sm font-medium bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent flex items-center gap-1">
             <Sparkles className="w-4 h-4 text-indigo-600" />
-            Free Forever
+            {badge}
           </span>
         </div>
       )}

@@ -74,11 +74,11 @@ export default function Footer() {
               <span className="hidden sm:inline">info@alert.az</span>
             </a>
             <a
-              href="tel:+994123456789"
+              href="tel:+994703300004"
               className="text-gray-600 dark:text-gray-400 hover:text-[rgb(81,91,195)] transition-colors flex items-center gap-1"
             >
               <Phone className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">+994 12 345 6789</span>
+              <span className="hidden sm:inline">+994 70 3300004</span>
             </a>
           </div>
         </div>

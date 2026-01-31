@@ -585,6 +585,7 @@ export default function HomePage() {
             ctaText={t('landing.pricing.cta')}
             ctaHref="/az/workspaces"
             highlighted
+            badge={t('landing.pricing.badge')}
           />
         </div>
       </section>

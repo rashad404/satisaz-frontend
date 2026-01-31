@@ -655,6 +655,7 @@
     "pricing": {
       "label": "Pricing",
       "title": "Simple, Transparent Pricing",
+      "badge": "Free",
       "planTitle": "Free for Everyone",
       "price": "Free",
       "feature1": "All features included",
@@ -691,7 +692,15 @@
       "msg4": "I'll connect you with an agent who can help reset your password securely.",
       "msg5": "Hi! I'm Sarah from support. I'll help you reset your password."
     },
-    "widgetHeader": "Chat with us"
+    "widgetHeader": "Chat with us",
+    "aiSpotlight": {
+      "badge": "AI Assistant",
+      "title": "AI Helps When You're Busy",
+      "description": "Your team handles conversations first. When agents are unavailable, AI keeps the conversation going until a human can respond.",
+      "visitorMessage": "Hi, I have a question about your service",
+      "aiResponse": "Hello! Our team is currently busy. I'm here to help until an agent becomes available. How can I assist you?",
+      "transferIndicator": "Human agents take over when available"
+    }
   },
   "login": {
     "welcomeBack": "Welcome Back",

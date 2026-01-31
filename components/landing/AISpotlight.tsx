@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import { Bot, Sparkles, RefreshCw, User } from 'lucide-react';
 
@@ -9,10 +10,11 @@ interface AISpotlightProps {
 }
 
 export function AISpotlight({ className }: AISpotlightProps) {
+  const t = useTranslations('landing.aiSpotlight');
   const [displayedText, setDisplayedText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
 
-  const aiResponse = "Hello! Our team is currently busy. I'm here to help until an agent becomes available. How can I assist you?";
+  const aiResponse = t('aiResponse');
 
   useEffect(() => {
     let timeout: NodeJS.Timeout;
@@ -58,16 +60,15 @@ export function AISpotlight({ className }: AISpotlightProps) {
         <div className="text-white space-y-6">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 text-sm">
             <Sparkles className="w-4 h-4" />
-            <span>AI Assistant</span>
+            <span>{t('badge')}</span>
           </div>
 
           <h3 className="text-2xl md:text-3xl font-bold">
-            AI Helps When You're Busy
+            {t('title')}
           </h3>
 
           <p className="text-white/80">
-            Your team handles conversations first. When agents are unavailable,
-            AI keeps the conversation going until a human can respond.
+            {t('description')}
           </p>
 
           <div className="flex flex-wrap gap-3 text-sm">
@@ -91,7 +92,7 @@ export function AISpotlight({ className }: AISpotlightProps) {
           {/* Visitor Message */}
           <div className="flex gap-3 justify-end">
             <div className="bg-white/20 rounded-lg px-4 py-2 text-white text-sm max-w-[80%]">
-              Hi, I have a question about your service
+              {t('visitorMessage')}
             </div>
             <div className="w-8 h-8 rounded-full bg-gray-400 flex items-center justify-center flex-shrink-0">
               <User className="w-4 h-4 text-white" />
@@ -118,7 +119,7 @@ export function AISpotlight({ className }: AISpotlightProps) {
           {/* Transfer Indicator */}
           <div className="flex items-center justify-center gap-2 text-white/60 text-xs">
             <RefreshCw className="w-3 h-3" />
-            <span>Human agents take over when available</span>
+            <span>{t('transferIndicator')}</span>
           </div>
         </div>
       </div>
