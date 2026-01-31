@@ -103,9 +103,17 @@ export function QueueCard({ conversation }: QueueCardProps) {
 
       {/* Visitor info */}
       <div className="flex items-start gap-3 mb-3">
-        <div className="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center flex-shrink-0">
-          <User className="h-6 w-6 text-gray-500 dark:text-gray-400" />
-        </div>
+        {visitor?.metadata?.avatar ? (
+          <img
+            src={visitor.metadata.avatar as string}
+            alt={visitor.name || 'Visitor'}
+            className="w-12 h-12 rounded-full object-cover flex-shrink-0"
+          />
+        ) : (
+          <div className="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center flex-shrink-0">
+            <User className="h-6 w-6 text-gray-500 dark:text-gray-400" />
+          </div>
+        )}
         <div className="min-w-0 flex-1">
           <h4 className="font-medium text-gray-900 dark:text-white text-base truncate">
             {visitor?.name || visitor?.email || 'Anonymous Visitor'}

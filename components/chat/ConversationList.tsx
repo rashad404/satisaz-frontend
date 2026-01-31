@@ -125,9 +125,17 @@ function ConversationItem({ conversation, isActive, onClick }: ConversationItemP
     >
       {/* Avatar */}
       <div className="relative flex-shrink-0">
-        <div className="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
-          <User className="h-6 w-6 text-gray-500 dark:text-gray-400" />
-        </div>
+        {visitor?.metadata?.avatar ? (
+          <img
+            src={visitor.metadata.avatar as string}
+            alt={visitor.name || 'Visitor'}
+            className="w-12 h-12 rounded-full object-cover"
+          />
+        ) : (
+          <div className="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+            <User className="h-6 w-6 text-gray-500 dark:text-gray-400" />
+          </div>
+        )}
         <div className={cn('absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-white dark:border-gray-900', getStatusColor(status))} />
       </div>
 

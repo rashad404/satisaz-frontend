@@ -41,7 +41,14 @@ export interface Visitor {
   visitor_uid: string;
   name?: string;
   email?: string;
-  metadata?: Record<string, unknown>;
+  phone?: string;
+  metadata?: {
+    avatar?: string;
+    wallet_id?: string;
+    gender?: string;
+    dob?: string;
+    [key: string]: unknown;
+  };
   first_seen_at: string;
   last_seen_at: string;
   created_at: string;

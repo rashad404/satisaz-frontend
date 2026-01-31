@@ -5,7 +5,7 @@ import { useChat } from '@/contexts/ChatContext';
 import { useTranslations } from 'next-intl';
 import { Bot, User, MessageSquare, Clock, CheckCheck, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import type { ChatMessage, SenderType } from '@/lib/types/chat';
+import type { ChatMessage, SenderType, Visitor } from '@/lib/types/chat';
 import { MessageInput } from './MessageInput';
 import { ConversationHeader } from './ConversationHeader';
 import { TypingIndicator } from './TypingIndicator';
@@ -82,6 +82,7 @@ export function ChatWindow({ onBack }: ChatWindowProps) {
               <MessageBubble
                 key={message.id}
                 message={message}
+                visitor={activeConversation.visitor}
                 showAvatar={index === 0 || messages[index - 1].sender_type !== message.sender_type}
               />
             ))}
@@ -89,7 +90,7 @@ export function ChatWindow({ onBack }: ChatWindowProps) {
             {/* Typing indicator */}
             {isVisitorTyping && (
               <div className="pb-2">
-                <TypingIndicator name={typingUsers.get(activeConversation.id)?.name || 'Visitor'} />
+                <TypingIndicator name={activeConversation.visitor?.name || activeConversation.visitor?.email?.split('@')[0] || 'Visitor'} />
               </div>
             )}
           </>
@@ -115,10 +116,11 @@ export function ChatWindow({ onBack }: ChatWindowProps) {
 
 interface MessageBubbleProps {
   message: ChatMessage;
+  visitor?: Visitor;
   showAvatar: boolean;
 }
 
-function MessageBubble({ message, showAvatar }: MessageBubbleProps) {
+function MessageBubble({ message, visitor, showAvatar }: MessageBubbleProps) {
   const isAgent = message.sender_type === 'agent' || message.sender_type === 'ai';
   const isSystem = message.sender_type === 'system';
 
@@ -162,13 +164,31 @@ function MessageBubble({ message, showAvatar }: MessageBubbleProps) {
     }
   };
 
+  // Get visitor display name
+  const getVisitorName = () => {
+    if (visitor?.name) return visitor.name;
+    if (visitor?.email) return visitor.email.split('@')[0];
+    return 'Visitor';
+  };
+
+  // Get visitor avatar URL from metadata
+  const visitorAvatar = visitor?.metadata?.avatar;
+
   return (
     <div className={cn('flex gap-3', isAgent && 'flex-row-reverse')}>
       {/* Avatar */}
       {showAvatar ? (
-        <div className={cn('w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0', getAvatarColor(message.sender_type))}>
-          {getSenderIcon(message.sender_type)}
-        </div>
+        message.sender_type === 'visitor' && visitorAvatar ? (
+          <img
+            src={visitorAvatar}
+            alt={getVisitorName()}
+            className="w-8 h-8 rounded-full flex-shrink-0 object-cover"
+          />
+        ) : (
+          <div className={cn('w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0', getAvatarColor(message.sender_type))}>
+            {getSenderIcon(message.sender_type)}
+          </div>
+        )
       ) : (
         <div className="w-8 flex-shrink-0" />
       )}
@@ -180,7 +200,7 @@ function MessageBubble({ message, showAvatar }: MessageBubbleProps) {
           <span className="text-xs text-gray-500 dark:text-gray-400 mb-1">
             {message.sender_type === 'ai' && 'AI Assistant'}
             {message.sender_type === 'agent' && (message.sender?.name || 'Agent')}
-            {message.sender_type === 'visitor' && 'Visitor'}
+            {message.sender_type === 'visitor' && getVisitorName()}
           </span>
         )}
 

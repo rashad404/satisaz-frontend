@@ -13,6 +13,7 @@ import {
   Mail,
   Globe,
   ArrowLeft,
+  Phone,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -123,9 +124,17 @@ export function ConversationHeader({ onBack }: ConversationHeaderProps) {
             <ArrowLeft className="h-5 w-5 text-gray-700 dark:text-gray-300" />
           </button>
         )}
-        <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center flex-shrink-0">
-          <User className="h-5 w-5 text-gray-500 dark:text-gray-400" />
-        </div>
+        {visitor?.metadata?.avatar ? (
+          <img
+            src={visitor.metadata.avatar}
+            alt={visitor.name || 'Visitor'}
+            className="w-10 h-10 rounded-full flex-shrink-0 object-cover"
+          />
+        ) : (
+          <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center flex-shrink-0">
+            <User className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+          </div>
+        )}
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
             <h3 className="font-medium text-gray-900 dark:text-white truncate max-w-[120px] sm:max-w-none">
@@ -142,6 +151,12 @@ export function ConversationHeader({ onBack }: ConversationHeaderProps) {
               <span className="flex items-center gap-1">
                 <Mail className="h-3 w-3" />
                 {visitor.email}
+              </span>
+            )}
+            {visitor?.phone && (
+              <span className="flex items-center gap-1">
+                <Phone className="h-3 w-3" />
+                {visitor.phone}
               </span>
             )}
             {activeConversation.metadata?.page_url && (
