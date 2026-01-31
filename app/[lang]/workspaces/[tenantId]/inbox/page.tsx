@@ -122,7 +122,7 @@ export default function InboxPage() {
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-gray-200 dark:border-gray-800 overflow-x-auto">
+        <div className="flex border-b border-gray-200 dark:border-gray-800">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             return (
@@ -130,19 +130,20 @@ export default function InboxPage() {
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={cn(
-                  'flex-1 flex items-center justify-center gap-1 px-2 py-3 text-xs font-medium border-b-2 transition-colors whitespace-nowrap min-w-0',
+                  'group relative flex-1 flex items-center justify-center gap-1.5 py-3 text-sm font-medium border-b-2 transition-colors',
                   activeTab === tab.id
                     ? 'border-purple-600 text-purple-600 dark:text-purple-400'
                     : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
                 )}
               >
-                <Icon className="h-4 w-4 flex-shrink-0" />
-                <span className="truncate">{tab.label}</span>
-                {tab.count > 0 && (
-                  <span className={cn('px-1.5 py-0.5 text-xs font-medium text-white rounded-full min-w-[1.25rem] text-center flex-shrink-0', tab.countColor)}>
-                    {tab.count}
-                  </span>
-                )}
+                <Icon className="h-4 w-4" />
+                <span className={cn('text-xs font-semibold min-w-[1.25rem]', tab.count > 0 ? '' : 'text-gray-400')}>
+                  {tab.count}
+                </span>
+                {/* Tooltip */}
+                <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
+                  {tab.label}
+                </span>
               </button>
             );
           })}
