@@ -112,7 +112,7 @@ export default function WorkspaceLayout({ children }: WorkspaceLayoutProps) {
       href: `${basePath}/knowledge-base`,
     },
     {
-      label: 'Widget Code',
+      label: 'Widget Settings',
       icon: Code,
       href: `${basePath}/widget`,
     },

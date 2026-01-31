@@ -528,6 +528,171 @@
     "title": "Satis.az - Live Chat Platform",
     "description": "AI-powered live chat platform for your business. Engage visitors in real-time."
   },
+  "landing": {
+    "hero": {
+      "title": "Live Chat Platform for Your Website",
+      "subtitle": "Your team responds to visitors in real-time. When agents are busy, AI steps in to help until a human is available.",
+      "freeBadge": "Free for Everyone",
+      "ctaPrimary": "Get Started Free",
+      "ctaSecondary": "See How It Works",
+      "widgetGreeting": "Hi! How can I help you today?",
+      "stat1": "AI Assisted",
+      "stat2": "Available 24/7",
+      "stat3": "Response Time"
+    },
+    "demo": {
+      "label": "Live Demo",
+      "title": "See It In Action",
+      "description": "Watch how human agents and AI work together seamlessly"
+    },
+    "coreFeatures": {
+      "label": "Platform Features",
+      "title": "Everything You Need"
+    },
+    "features": {
+      "multiTenant": {
+        "title": "Multi-tenant",
+        "description": "Manage multiple websites from one account"
+      },
+      "realtime": {
+        "title": "Real-time Messaging",
+        "description": "Instant WebSocket communication"
+      },
+      "unifiedInbox": {
+        "title": "Unified Inbox",
+        "description": "All workspaces in one place"
+      },
+      "multiLanguage": {
+        "title": "Multi-language",
+        "description": "AZ, EN, RU support built-in"
+      },
+      "mobileFriendly": {
+        "title": "Mobile Friendly",
+        "description": "Responsive design everywhere"
+      },
+      "freeForever": {
+        "title": "Free",
+        "description": "No hidden costs"
+      }
+    },
+    "dashboard": {
+      "label": "Agent Dashboard",
+      "title": "Powerful Agent Tools",
+      "description": "Everything your team needs to provide excellent support",
+      "feature1": "Smart inbox organization (Queue, Mine, Active, All)",
+      "feature2": "Conversation search and transfer",
+      "feature3": "Agent statuses (Online, Away, Offline)",
+      "feature4": "Notes and starred conversations",
+      "feature5": "Template messages for quick responses"
+    },
+    "widget": {
+      "label": "Widget Customization",
+      "title": "Make It Yours",
+      "description": "Customize every aspect of your chat widget to match your brand",
+      "color": "Brand Color",
+      "position": "Position",
+      "left": "Left",
+      "right": "Right",
+      "easyInstall": "Easy Installation",
+      "easyInstallDesc": "Just copy and paste a single line of code"
+    },
+    "ai": {
+      "label": "AI Assistant",
+      "title": "AI Helps When You're Busy",
+      "description": "When your team is unavailable, AI keeps the conversation going until a human agent can respond",
+      "feature1": "Human agents handle conversations first",
+      "feature2": "AI steps in when agents are busy",
+      "feature3": "Seamless handoff back to humans",
+      "feature4": "Supports OpenAI, Claude, Gemini"
+    },
+    "tracking": {
+      "label": "Visitor Intelligence",
+      "title": "Know Your Visitors",
+      "visitors": {
+        "title": "Visitor Tracking",
+        "description": "See who's on your site in real-time",
+        "feature1": "Live visitor list with page info",
+        "feature2": "Visitor details and history",
+        "feature3": "Agent-initiated conversations"
+      },
+      "notifications": {
+        "title": "Smart Notifications",
+        "description": "Never miss a conversation",
+        "feature1": "Email notifications",
+        "feature2": "Sound alerts",
+        "feature3": "SMS via Alert.az",
+        "feature4": "Mute controls"
+      }
+    },
+    "howItWorks": {
+      "label": "How It Works",
+      "title": "Get Started in Minutes",
+      "step1": {
+        "title": "Create & Configure",
+        "description": "Set up your workspace and configure AI settings"
+      },
+      "step2": {
+        "title": "Install Widget",
+        "description": "Paste the widget code on your website"
+      },
+      "step3": {
+        "title": "Start Chatting",
+        "description": "AI and human agents work together seamlessly"
+      }
+    },
+    "socialProof": {
+      "label": "Trusted By",
+      "title": "Companies That Trust Us",
+      "trustedBy": "Trusted by leading companies"
+    },
+    "testimonials": {
+      "alertaz": "Satis.az handles thousands of our customer inquiries. Our team responds quickly, and AI helps when they're busy.",
+      "kreditaz": "Our loan application support is now 24/7. Human agents handle complex cases while AI covers basic questions.",
+      "saytaz": "Managing customer chats across all our client websites from one unified inbox saves us hours every day.",
+      "kimlikaz": "The seamless handoff between agents and AI means our users always get the help they need.",
+      "taskaz": "Template messages and quick responses let our support team handle 3x more conversations."
+    },
+    "pricing": {
+      "label": "Pricing",
+      "title": "Simple, Transparent Pricing",
+      "planTitle": "Free for Everyone",
+      "price": "Free",
+      "feature1": "All features included",
+      "feature2": "Unlimited workspaces",
+      "feature3": "Unlimited conversations",
+      "feature4": "AI assistant included",
+      "feature5": "Human agent tools",
+      "feature6": "No credit card required",
+      "cta": "Get Started Free"
+    },
+    "cta": {
+      "title": "Ready to Transform Your Customer Support?",
+      "description": "Join hundreds of businesses using Satis.az to provide instant, intelligent support.",
+      "button": "Start Free Today"
+    },
+    "footer": {
+      "description": "Live chat platform with AI assistance for modern businesses."
+    },
+    "liveDemo": {
+      "desktop": "Desktop",
+      "mobile": "Mobile",
+      "chatHeader": "Live Chat",
+      "online": "Online",
+      "visitor": "Visitor",
+      "aiAssistant": "AI Assistant",
+      "agent": "Sarah (Agent)",
+      "typeMessage": "Type a message...",
+      "step1": "1. Visitor asks",
+      "step2": "2. AI helps",
+      "step3": "3. Agent responds",
+      "msg1": "Hi, I need help with my account",
+      "msg2": "Hello! Our team is currently busy. I can help you while you wait.",
+      "msg3": "I forgot my password",
+      "msg4": "I'll connect you with an agent who can help reset your password securely.",
+      "msg5": "Hi! I'm Sarah from support. I'll help you reset your password."
+    },
+    "widgetHeader": "Chat with us"
+  },
   "login": {
     "welcomeBack": "Welcome Back",
     "signInToManage": "Sign in to manage your alerts",

@@ -1,0 +1,11 @@
+export { BrowserMockup } from './BrowserMockup';
+export { WidgetPreview } from './WidgetPreview';
+export { SectionHeader } from './SectionHeader';
+export { BentoGrid } from './BentoGrid';
+export { FeatureShowcase } from './FeatureShowcase';
+export { AISpotlight } from './AISpotlight';
+export { PricingCard } from './PricingCard';
+export { AnimatedCounter } from './AnimatedCounter';
+export { LogoBar } from './LogoBar';
+export { TestimonialCard } from './TestimonialCard';
+export { LiveWidgetDemo } from './LiveWidgetDemo';

@@ -527,6 +527,171 @@
     "title": "Satis.az - Canlı Söhbət Platforması",
     "description": "Biznesiniz üçün AI dəstəkli canlı söhbət platforması. Ziyarətçilərlə real vaxtda əlaqə saxlayın."
   },
+  "landing": {
+    "hero": {
+      "title": "Saytınız üçün Canlı Söhbət Platforması",
+      "subtitle": "Komandanız ziyarətçilərə real vaxtda cavab verir. Agentlər məşğul olanda AI kömək edir.",
+      "freeBadge": "Hamı üçün Pulsuz",
+      "ctaPrimary": "Pulsuz Başla",
+      "ctaSecondary": "Necə İşləyir",
+      "widgetGreeting": "Salam! Sizə necə kömək edə bilərəm?",
+      "stat1": "AI Dəstəkli",
+      "stat2": "24/7 Əlçatan",
+      "stat3": "Cavab Vaxtı"
+    },
+    "demo": {
+      "label": "Canlı Demo",
+      "title": "Əyani Nümunə",
+      "description": "İnsan agentlər və AI-ın necə birlikdə işlədiyini izləyin"
+    },
+    "coreFeatures": {
+      "label": "Platforma Xüsusiyyətləri",
+      "title": "Lazım Olan Hər Şey"
+    },
+    "features": {
+      "multiTenant": {
+        "title": "Multi-tenant",
+        "description": "Birdən çox saytı bir hesabdan idarə edin"
+      },
+      "realtime": {
+        "title": "Real-vaxt Mesajlaşma",
+        "description": "Ani WebSocket əlaqəsi"
+      },
+      "unifiedInbox": {
+        "title": "Vahid Poçt Qutusu",
+        "description": "Bütün iş sahələri bir yerdə"
+      },
+      "multiLanguage": {
+        "title": "Çoxdilli",
+        "description": "AZ, EN, RU dəstəyi"
+      },
+      "mobileFriendly": {
+        "title": "Mobil Uyğun",
+        "description": "Hər yerdə responsive dizayn"
+      },
+      "freeForever": {
+        "title": "Pulsuz",
+        "description": "Gizli xərclər yoxdur"
+      }
+    },
+    "dashboard": {
+      "label": "Agent Paneli",
+      "title": "Güclü Agent Alətləri",
+      "description": "Komandanızın mükəmməl dəstək vermək üçün lazım olan hər şey",
+      "feature1": "Ağıllı poçt qutusu təşkili (Növbə, Mənim, Aktiv, Hamısı)",
+      "feature2": "Söhbət axtarışı və transfer",
+      "feature3": "Agent statusları (Onlayn, Uzaqda, Oflayn)",
+      "feature4": "Qeydlər və ulduzlu söhbətlər",
+      "feature5": "Sürətli cavablar üçün şablon mesajlar"
+    },
+    "widget": {
+      "label": "Widget Fərdiləşdirmə",
+      "title": "Brendinizə Uyğunlaşdırın",
+      "description": "Brendinizə uyğun söhbət vidjetinin hər aspektini fərdiləşdirin",
+      "color": "Brend Rəngi",
+      "position": "Mövqe",
+      "left": "Sol",
+      "right": "Sağ",
+      "easyInstall": "Asan Quraşdırma",
+      "easyInstallDesc": "Sadəcə bir sətir kodu kopyalayıb yapışdırın"
+    },
+    "ai": {
+      "label": "AI Köməkçi",
+      "title": "Məşğul Olanda AI Kömək Edir",
+      "description": "Komandanız əlçatan olmadığında AI söhbəti davam etdirir, insan agent cavab verənədək",
+      "feature1": "İnsan agentlər əvvəlcə söhbətləri idarə edir",
+      "feature2": "Agentlər məşğul olanda AI kömək edir",
+      "feature3": "İnsanlara rəvan keçid",
+      "feature4": "OpenAI, Claude, Gemini dəstəkləyir"
+    },
+    "tracking": {
+      "label": "Ziyarətçi Kəşfiyyatı",
+      "title": "Ziyarətçilərinizi Tanıyın",
+      "visitors": {
+        "title": "Ziyarətçi İzləmə",
+        "description": "Saytınızda kimin olduğunu real vaxtda görün",
+        "feature1": "Səhifə məlumatı ilə canlı ziyarətçi siyahısı",
+        "feature2": "Ziyarətçi detalları və tarixçəsi",
+        "feature3": "Agent tərəfindən başladılan söhbətlər"
+      },
+      "notifications": {
+        "title": "Ağıllı Bildirişlər",
+        "description": "Heç bir söhbəti qaçırmayın",
+        "feature1": "Email bildirişləri",
+        "feature2": "Səs siqnalları",
+        "feature3": "Alert.az ilə SMS",
+        "feature4": "Səssiz rejim"
+      }
+    },
+    "howItWorks": {
+      "label": "Necə İşləyir",
+      "title": "Dəqiqələr İçində Başlayın",
+      "step1": {
+        "title": "Yaradın və Konfiqurasiya Edin",
+        "description": "İş sahənizi qurun və AI parametrlərini konfiqurasiya edin"
+      },
+      "step2": {
+        "title": "Widget Quraşdırın",
+        "description": "Widget kodunu saytınıza yapışdırın"
+      },
+      "step3": {
+        "title": "Söhbətə Başlayın",
+        "description": "AI və insan agentlər birlikdə işləyir"
+      }
+    },
+    "socialProof": {
+      "label": "Güvənənlər",
+      "title": "Bizə Güvənən Şirkətlər",
+      "trustedBy": "Aparıcı şirkətlər güvənir"
+    },
+    "testimonials": {
+      "alertaz": "Satis.az minlərlə müştəri sorğumuzu idarə edir. Komandamız tez cavab verir, məşğul olanda AI kömək edir.",
+      "kreditaz": "Kredit müraciəti dəstəyimiz artıq 24/7 işləyir. İnsan agentlər mürəkkəb işlərlə məşğul olur, AI sadə sualları cavablandırır.",
+      "saytaz": "Bütün müştəri saytlarımızdan gələn söhbətləri vahid poçt qutusundan idarə etmək hər gün saatlarla vaxta qənaət edir.",
+      "kimlikaz": "Agentlər və AI arasında rəvan keçid istifadəçilərimizin həmişə lazımi yardımı almasını təmin edir.",
+      "taskaz": "Şablon mesajlar və sürətli cavablar dəstək komandamıza 3 qat daha çox söhbət idarə etməyə imkan verir."
+    },
+    "pricing": {
+      "label": "Qiymətləndirmə",
+      "title": "Sadə, Şəffaf Qiymət",
+      "planTitle": "Hamı üçün Pulsuz",
+      "price": "Pulsuz",
+      "feature1": "Bütün xüsusiyyətlər daxildir",
+      "feature2": "Limitsiz iş sahələri",
+      "feature3": "Limitsiz söhbətlər",
+      "feature4": "AI köməkçi daxildir",
+      "feature5": "İnsan agent alətləri",
+      "feature6": "Kredit kartı tələb olunmur",
+      "cta": "Pulsuz Başla"
+    },
+    "cta": {
+      "title": "Müştəri Dəstəyinizi Dəyişdirməyə Hazırsınız?",
+      "description": "Ani, ağıllı dəstək təqdim etmək üçün Satis.az istifadə edən yüzlərlə biznesə qoşulun.",
+      "button": "Bu gün Pulsuz Başla"
+    },
+    "footer": {
+      "description": "Müasir bizneslər üçün AI köməkçili canlı söhbət platforması."
+    },
+    "liveDemo": {
+      "desktop": "Kompüter",
+      "mobile": "Mobil",
+      "chatHeader": "Canlı Söhbət",
+      "online": "Onlayn",
+      "visitor": "Ziyarətçi",
+      "aiAssistant": "AI Köməkçi",
+      "agent": "Səbinə (Agent)",
+      "typeMessage": "Mesaj yazın...",
+      "step1": "1. Ziyarətçi soruşur",
+      "step2": "2. AI kömək edir",
+      "step3": "3. Agent cavab verir",
+      "msg1": "Salam, hesabımla bağlı kömək lazımdır",
+      "msg2": "Salam! Komandamız hazırda məşğuldur. Gözləyərkən sizə kömək edə bilərəm.",
+      "msg3": "Şifrəmi unutmuşam",
+      "msg4": "Şifrənizi təhlükəsiz sıfırlamaq üçün sizi agentə qoşacağam.",
+      "msg5": "Salam! Mən Səbinəyəm, dəstək xidmətindən. Şifrənizi sıfırlamağa kömək edəcəyəm."
+    },
+    "widgetHeader": "Bizimlə söhbət edin"
+  },
   "login": {
     "welcomeBack": "Xoş gəlmisiniz",
     "signInToManage": "Bildirişlərinizi idarə etmək üçün daxil olun",
