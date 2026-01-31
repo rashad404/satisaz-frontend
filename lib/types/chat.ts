@@ -302,3 +302,10 @@ export interface ConversationTransferredEvent {
   reason?: string;
   transferred_at: string;
 }
+
+// Notification Settings
+export interface NotificationSettings {
+  new_conversation: boolean;
+  transfer_request: boolean;
+  workspace_invite: boolean;
+}

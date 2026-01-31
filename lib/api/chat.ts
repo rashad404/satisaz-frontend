@@ -14,6 +14,7 @@ import type {
   UpdateAiConfigData,
   CreateKnowledgeBaseItemData,
   AgentStatusType,
+  NotificationSettings,
 } from '../types/chat';
 
 // Tenant/Workspace APIs
@@ -92,6 +93,21 @@ export const agentsApi = {
   heartbeat: async (tenantId: number) => {
     const response = await apiClient.post<{ status: string; data: { status: AgentStatusType; last_activity_at: string } }>(
       `/tenants/${tenantId}/agents/heartbeat`
+    );
+    return response.data;
+  },
+
+  getNotificationSettings: async (tenantId: number) => {
+    const response = await apiClient.get<{ status: string; data: NotificationSettings }>(
+      `/tenants/${tenantId}/agents/me/notifications`
+    );
+    return response.data;
+  },
+
+  updateNotificationSettings: async (tenantId: number, settings: Partial<NotificationSettings>) => {
+    const response = await apiClient.patch<{ status: string; data: NotificationSettings }>(
+      `/tenants/${tenantId}/agents/me/notifications`,
+      settings
     );
     return response.data;
   },

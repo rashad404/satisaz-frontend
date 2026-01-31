@@ -13,7 +13,10 @@ import {
   Loader2,
   Clock,
   Globe,
+  Bell,
+  ChevronRight,
 } from 'lucide-react';
+import Link from 'next/link';
 import type { TenantSettings, BusinessHours } from '@/lib/types/chat';
 
 const TIMEZONES = [
@@ -210,6 +213,25 @@ export default function SettingsPage() {
             </div>
           </div>
         </div>
+
+        {/* Notification Settings Link */}
+        <Link
+          href={`/${lang}/workspaces/${tenantId}/settings/notifications`}
+          className="block bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6 hover:border-purple-300 dark:hover:border-purple-700 transition-colors"
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="p-2 bg-purple-100 dark:bg-purple-900/50 rounded-lg">
+                <Bell className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Bildiriş Ayarları</h2>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Email bildirişlərinizi idarə edin</p>
+              </div>
+            </div>
+            <ChevronRight className="h-5 w-5 text-gray-400" />
+          </div>
+        </Link>
 
         {/* AI Settings */}
         <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6">
