@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useChat } from '@/contexts/ChatContext';
 import { useTranslations } from 'next-intl';
 import { ConversationList, ChatWindow, QueueCard } from '@/components/chat';
-import { Search, Inbox, Clock, MessageSquare, User } from 'lucide-react';
+import { Search, Inbox, Clock, MessageSquare, User, Volume2, VolumeX } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { ConversationStatus } from '@/lib/types/chat';
 
@@ -18,9 +18,11 @@ export default function InboxPage() {
     activeConversation,
     currentUserId,
     isConnected,
+    isMuted,
     loadQueue,
     loadConversations,
     selectConversation,
+    toggleMute,
   } = useChat();
 
   const [activeTab, setActiveTab] = useState<TabType>('queue');
@@ -98,6 +100,18 @@ export default function InboxPage() {
           <div className="flex items-center justify-between mb-4">
             <h1 className="text-xl font-bold text-gray-900 dark:text-white">Inbox</h1>
             <div className="flex items-center gap-2">
+              <button
+                onClick={toggleMute}
+                className={cn(
+                  'p-1.5 rounded-lg transition-colors',
+                  isMuted
+                    ? 'text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20'
+                    : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800'
+                )}
+                title={isMuted ? 'Unmute notifications' : 'Mute notifications'}
+              >
+                {isMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
+              </button>
               <span
                 className={cn(
                   'w-2.5 h-2.5 rounded-full',

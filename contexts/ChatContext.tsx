@@ -48,6 +48,9 @@ interface ChatContextValue {
   // WebSocket state
   isConnected: boolean;
 
+  // Sound state
+  isMuted: boolean;
+
   // Actions
   loadTenant: (tenantId?: number) => Promise<void>;
   loadAgents: () => Promise<void>;
@@ -63,6 +66,7 @@ interface ChatContextValue {
   updateMyStatus: (status: AgentStatusType) => Promise<void>;
   sendTypingIndicator: (isTyping: boolean) => void;
   markMessagesAsRead: () => Promise<void>;
+  toggleMute: () => void;
 }
 
 const ChatContext = createContext<ChatContextValue | undefined>(undefined);
@@ -96,6 +100,14 @@ export function ChatProvider({ children, tenantId }: ChatProviderProps) {
   // Typing state
   const [typingUsers, setTypingUsers] = useState<Map<number, { name: string; timestamp: number }>>(new Map());
 
+  // Sound mute state (persisted in localStorage)
+  const [isMuted, setIsMuted] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('satis_agent_muted') === 'true';
+    }
+    return false;
+  });
+
   // Refs for callbacks
   const activeConversationRef = useRef<Conversation | null>(null);
   activeConversationRef.current = activeConversation;
@@ -103,11 +115,25 @@ export function ChatProvider({ children, tenantId }: ChatProviderProps) {
   const currentUserIdRef = useRef<number | null>(null);
   currentUserIdRef.current = currentUserId;
 
+  const isMutedRef = useRef<boolean>(isMuted);
+  isMutedRef.current = isMuted;
+
+  // Toggle mute
+  const toggleMute = useCallback(() => {
+    setIsMuted((prev) => {
+      const newValue = !prev;
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('satis_agent_muted', String(newValue));
+      }
+      return newValue;
+    });
+  }, []);
+
   // WebSocket event handlers
   const handleNewConversation = useCallback((event: NewConversationEvent) => {
     setQueuedConversations((prev) => [event.conversation, ...prev]);
     // Play notification sound
-    playNotificationSound();
+    playNotificationSound(isMutedRef.current);
   }, []);
 
   const handleConversationAccepted = useCallback((event: ConversationAcceptedEvent) => {
@@ -189,7 +215,7 @@ export function ChatProvider({ children, tenantId }: ChatProviderProps) {
 
     // Play sound for visitor messages
     if (message.sender_type === 'visitor') {
-      playNotificationSound();
+      playNotificationSound(isMutedRef.current);
     }
   }, []);
 
@@ -276,7 +302,7 @@ export function ChatProvider({ children, tenantId }: ChatProviderProps) {
     });
 
     // Play notification sound
-    playNotificationSound();
+    playNotificationSound(isMutedRef.current);
   }, []);
 
   // WebSocket connection
@@ -595,6 +621,7 @@ export function ChatProvider({ children, tenantId }: ChatProviderProps) {
     onlineAgentsCount,
     typingUsers,
     isConnected,
+    isMuted,
     loadTenant,
     loadAgents,
     loadConversations,
@@ -609,6 +636,7 @@ export function ChatProvider({ children, tenantId }: ChatProviderProps) {
     updateMyStatus,
     sendTypingIndicator,
     markMessagesAsRead,
+    toggleMute,
   };
 
   return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;
@@ -623,7 +651,8 @@ export function useChat() {
 }
 
 // Helper function to play notification sound
-function playNotificationSound() {
+function playNotificationSound(isMuted: boolean) {
+  if (isMuted) return;
   if (typeof window !== 'undefined') {
     const audio = new Audio('/sounds/notification.mp3');
     audio.volume = 0.5;
