@@ -36,6 +36,37 @@ export default function KnowledgeBasePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState<string>('all');
+  const [userRole, setUserRole] = useState<'admin' | 'agent' | null>(null);
+  const [isOwner, setIsOwner] = useState(false);
+
+  // Check if user can edit (admin or owner only)
+  const canEdit = userRole === 'admin' || isOwner;
+
+  // Fetch user role
+  useEffect(() => {
+    const fetchRole = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/tenants/${tenantId}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json',
+          },
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setUserRole(data.data.role);
+          setIsOwner(data.data.is_owner);
+        }
+      } catch (err) {
+        console.error('Failed to fetch tenant role:', err);
+      }
+    };
+
+    fetchRole();
+  }, [tenantId]);
 
   const [showModal, setShowModal] = useState(false);
   const [editingItem, setEditingItem] = useState<KnowledgeBaseItem | null>(null);
@@ -176,13 +207,15 @@ export default function KnowledgeBasePage() {
             </span>
           </div>
 
-          <button
-            onClick={openCreateModal}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-sm rounded-md transition-colors"
-          >
-            <Plus className="h-4 w-4" />
-            Add
-          </button>
+          {canEdit && (
+            <button
+              onClick={openCreateModal}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-sm rounded-md transition-colors"
+            >
+              <Plus className="h-4 w-4" />
+              Add
+            </button>
+          )}
         </div>
 
         {/* Alerts */}
@@ -267,9 +300,11 @@ export default function KnowledgeBasePage() {
             <p className="text-gray-500 dark:text-gray-400 mb-4">
               {searchQuery || typeFilter !== 'all'
                 ? 'Try adjusting your filters'
-                : 'Add your first knowledge base item to help AI provide better responses'}
+                : canEdit
+                  ? 'Add your first knowledge base item to help AI provide better responses'
+                  : 'No knowledge base items have been added yet'}
             </p>
-            {!searchQuery && typeFilter === 'all' && (
+            {!searchQuery && typeFilter === 'all' && canEdit && (
               <button
                 onClick={openCreateModal}
                 className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors"
@@ -325,38 +360,40 @@ export default function KnowledgeBasePage() {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-1 flex-shrink-0">
-                      <button
-                        onClick={() => handleToggleActive(item)}
-                        className={cn(
-                          'p-1 rounded transition-colors',
-                          item.is_active
-                            ? 'text-green-600 hover:bg-green-100 dark:hover:bg-green-900/50'
-                            : 'text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
-                        )}
-                        title={item.is_active ? 'Deactivate' : 'Activate'}
-                      >
-                        {item.is_active ? (
-                          <ToggleRight className="h-5 w-5" />
-                        ) : (
-                          <ToggleLeft className="h-5 w-5" />
-                        )}
-                      </button>
-                      <button
-                        onClick={() => openEditModal(item)}
-                        className="p-1 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded transition-colors"
-                        title="Edit"
-                      >
-                        <Edit2 className="h-4 w-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(item)}
-                        className="p-1 text-red-500 hover:text-red-700 hover:bg-red-100 dark:hover:bg-red-900/50 rounded transition-colors"
-                        title="Delete"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
+                    {canEdit && (
+                      <div className="flex items-center gap-1 flex-shrink-0">
+                        <button
+                          onClick={() => handleToggleActive(item)}
+                          className={cn(
+                            'p-1 rounded transition-colors',
+                            item.is_active
+                              ? 'text-green-600 hover:bg-green-100 dark:hover:bg-green-900/50'
+                              : 'text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
+                          )}
+                          title={item.is_active ? 'Deactivate' : 'Activate'}
+                        >
+                          {item.is_active ? (
+                            <ToggleRight className="h-5 w-5" />
+                          ) : (
+                            <ToggleLeft className="h-5 w-5" />
+                          )}
+                        </button>
+                        <button
+                          onClick={() => openEditModal(item)}
+                          className="p-1 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded transition-colors"
+                          title="Edit"
+                        >
+                          <Edit2 className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(item)}
+                          className="p-1 text-red-500 hover:text-red-700 hover:bg-red-100 dark:hover:bg-red-900/50 rounded transition-colors"
+                          title="Delete"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               );

@@ -10,6 +10,9 @@ export interface Tenant {
   is_active: boolean;
   created_at: string;
   updated_at: string;
+  // Role-based access control
+  role?: 'admin' | 'agent';
+  is_owner?: boolean;
 }
 
 export interface TenantSettings {

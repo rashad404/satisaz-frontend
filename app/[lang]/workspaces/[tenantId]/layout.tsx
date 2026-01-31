@@ -20,6 +20,7 @@ import {
   Menu,
   X,
   Loader2,
+  Bell,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -40,6 +41,8 @@ export default function WorkspaceLayout({ children }: WorkspaceLayoutProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userRole, setUserRole] = useState<'admin' | 'agent' | null>(null);
+  const [isOwner, setIsOwner] = useState(false);
 
   // Check authentication on mount
   useEffect(() => {
@@ -57,6 +60,34 @@ export default function WorkspaceLayout({ children }: WorkspaceLayoutProps) {
   useEffect(() => {
     setMobileMenuOpen(false);
   }, [pathname]);
+
+  // Fetch role from tenant API
+  useEffect(() => {
+    const fetchRole = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/tenants/${tenantId}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json',
+          },
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setUserRole(data.data.role);
+          setIsOwner(data.data.is_owner);
+        }
+      } catch (err) {
+        console.error('Failed to fetch tenant role:', err);
+      }
+    };
+
+    fetchRole();
+  }, [tenantId]);
+
+  const isAdminOrOwner = userRole === 'admin' || isOwner;
 
   // Show loading while checking auth
   if (isCheckingAuth) {
@@ -97,31 +128,49 @@ export default function WorkspaceLayout({ children }: WorkspaceLayoutProps) {
       href: `${basePath}/conversations`,
     },
     {
-      label: 'Team',
-      icon: Users,
-      href: `${basePath}/team`,
-    },
-    {
-      label: 'AI Configuration',
-      icon: Bot,
-      href: `${basePath}/ai`,
-    },
-    {
       label: 'Knowledge Base',
       icon: BookOpen,
       href: `${basePath}/knowledge-base`,
     },
     {
+      label: 'My Notifications',
+      icon: Bell,
+      href: `${basePath}/notifications`,
+    },
+    // Admin-only items below
+    {
+      label: 'Team',
+      icon: Users,
+      href: `${basePath}/team`,
+      adminOnly: true,
+    },
+    {
+      label: 'AI Configuration',
+      icon: Bot,
+      href: `${basePath}/ai`,
+      adminOnly: true,
+    },
+    {
       label: 'Widget Settings',
       icon: Code,
       href: `${basePath}/widget`,
+      adminOnly: true,
     },
     {
       label: 'Settings',
       icon: Settings,
       href: `${basePath}/settings`,
+      adminOnly: true,
     },
   ];
+
+  // Filter nav items based on role
+  const visibleNavItems = navItems.filter(item => {
+    if ('adminOnly' in item && item.adminOnly && !isAdminOrOwner) {
+      return false;
+    }
+    return true;
+  });
 
   const isActive = (href: string, exact?: boolean) => {
     if (exact) {
@@ -190,7 +239,7 @@ export default function WorkspaceLayout({ children }: WorkspaceLayoutProps) {
 
           {/* Navigation */}
           <nav className="flex-1 overflow-y-auto p-2 space-y-1">
-            {navItems.map((item) => {
+            {visibleNavItems.map((item) => {
               const Icon = item.icon;
               const active = isActive(item.href, item.exact);
 

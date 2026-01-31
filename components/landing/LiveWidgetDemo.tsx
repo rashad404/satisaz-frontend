@@ -23,6 +23,7 @@ export function LiveWidgetDemo({ className }: LiveWidgetDemoProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [currentStep, setCurrentStep] = useState(0);
   const [isTyping, setIsTyping] = useState(false);
+  const [demoCycle, setDemoCycle] = useState(0);
 
   const demoSequence: Message[] = [
     { id: 1, sender: 'visitor', textKey: 'msg1' },
@@ -53,6 +54,7 @@ export function LiveWidgetDemo({ className }: LiveWidgetDemoProps) {
 
       // Reset after completion
       await new Promise(resolve => setTimeout(resolve, 4000));
+      setDemoCycle(prev => prev + 1);
       runDemo();
     };
 
@@ -154,7 +156,7 @@ export function LiveWidgetDemo({ className }: LiveWidgetDemoProps) {
                 <div className="p-3 h-48 overflow-y-auto bg-gray-50 dark:bg-gray-800 space-y-3">
                   {messages.map((msg) => (
                     <div
-                      key={msg.id}
+                      key={`${demoCycle}-${msg.id}`}
                       className={cn(
                         'flex gap-2',
                         msg.sender === 'visitor' ? 'justify-end' : 'justify-start'
