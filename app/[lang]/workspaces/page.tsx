@@ -11,6 +11,7 @@ import {
   Plus,
   ArrowRight,
   Loader2,
+  Home,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -79,14 +80,26 @@ export default function WorkspacesPage() {
         <div className="max-w-6xl mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-purple-600 flex items-center justify-center">
+              <Link
+                href={`/${lang}`}
+                className="w-10 h-10 rounded-xl bg-purple-600 hover:bg-purple-700 flex items-center justify-center transition-colors"
+                title="Back to Home"
+              >
                 <MessageSquare className="h-6 w-6 text-white" />
-              </div>
+              </Link>
               <div>
+                <div className="flex items-center gap-2">
+                  <Link
+                    href={`/${lang}`}
+                    className="text-sm text-gray-500 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 flex items-center gap-1"
+                  >
+                    <Home className="h-3.5 w-3.5" />
+                    Home
+                  </Link>
+                  <span className="text-gray-300 dark:text-gray-600">/</span>
+                  <span className="text-sm text-gray-700 dark:text-gray-300">Workspaces</span>
+                </div>
                 <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Workspaces</h1>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Manage your chat support workspaces
-                </p>
               </div>
             </div>
 

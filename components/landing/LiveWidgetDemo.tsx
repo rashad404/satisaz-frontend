@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import { BrowserMockup } from './BrowserMockup';
@@ -8,6 +8,7 @@ import { Monitor, Smartphone, Bot, User, UserCheck } from 'lucide-react';
 
 interface Message {
   id: number;
+  key: string; // Unique key for React
   sender: 'visitor' | 'ai' | 'human';
   textKey: string;
   typing?: boolean;
@@ -23,42 +24,58 @@ export function LiveWidgetDemo({ className }: LiveWidgetDemoProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [currentStep, setCurrentStep] = useState(0);
   const [isTyping, setIsTyping] = useState(false);
-  const [demoCycle, setDemoCycle] = useState(0);
 
-  const demoSequence: Message[] = [
-    { id: 1, sender: 'visitor', textKey: 'msg1' },
-    { id: 2, sender: 'ai', textKey: 'msg2' },
-    { id: 3, sender: 'visitor', textKey: 'msg3' },
-    { id: 4, sender: 'ai', textKey: 'msg4' },
-    { id: 5, sender: 'human', textKey: 'msg5' },
+  const demoSequence = [
+    { id: 1, sender: 'visitor' as const, textKey: 'msg1' },
+    { id: 2, sender: 'ai' as const, textKey: 'msg2' },
+    { id: 3, sender: 'visitor' as const, textKey: 'msg3' },
+    { id: 4, sender: 'ai' as const, textKey: 'msg4' },
+    { id: 5, sender: 'human' as const, textKey: 'msg5' },
   ];
 
   useEffect(() => {
+    let isActive = true;
+    let cycle = 0;
+
+    const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
     const runDemo = async () => {
-      setMessages([]);
-      setCurrentStep(0);
+      while (isActive) {
+        const currentCycle = cycle;
+        setMessages([]);
+        setCurrentStep(0);
 
-      for (let i = 0; i < demoSequence.length; i++) {
-        // Show typing indicator
-        setIsTyping(true);
-        await new Promise(resolve => setTimeout(resolve, 1200));
-        setIsTyping(false);
+        for (let i = 0; i < demoSequence.length; i++) {
+          if (!isActive) return;
 
-        // Add message
-        setMessages(prev => [...prev, demoSequence[i]]);
-        setCurrentStep(i + 1);
+          // Show typing indicator
+          setIsTyping(true);
+          await sleep(1200);
+          if (!isActive) return;
+          setIsTyping(false);
 
-        // Pause between messages
-        await new Promise(resolve => setTimeout(resolve, 1500));
+          // Add message with unique key
+          const msg = demoSequence[i];
+          setMessages(prev => [...prev, { ...msg, key: `${currentCycle}-${msg.id}` }]);
+          setCurrentStep(i + 1);
+
+          // Pause between messages
+          await sleep(1500);
+        }
+
+        if (!isActive) return;
+
+        // Reset after completion
+        await sleep(4000);
+        cycle += 1;
       }
-
-      // Reset after completion
-      await new Promise(resolve => setTimeout(resolve, 4000));
-      setDemoCycle(prev => prev + 1);
-      runDemo();
     };
 
     runDemo();
+
+    return () => {
+      isActive = false;
+    };
   }, []);
 
   const getSenderIcon = (sender: 'visitor' | 'ai' | 'human') => {
@@ -156,7 +173,7 @@ export function LiveWidgetDemo({ className }: LiveWidgetDemoProps) {
                 <div className="p-3 h-48 overflow-y-auto bg-gray-50 dark:bg-gray-800 space-y-3">
                   {messages.map((msg) => (
                     <div
-                      key={`${demoCycle}-${msg.id}`}
+                      key={msg.key}
                       className={cn(
                         'flex gap-2',
                         msg.sender === 'visitor' ? 'justify-end' : 'justify-start'
