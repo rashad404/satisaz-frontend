@@ -13,6 +13,7 @@ import type {
   NewConversationEvent,
   ConversationAcceptedEvent,
   ConversationClosedEvent,
+  ConversationTransferredEvent,
   NewMessageEvent,
   TypingIndicatorEvent,
   AgentStatusChangedEvent,
@@ -37,6 +38,7 @@ interface ChatContextValue {
 
   // Agent state
   agents: Agent[];
+  currentUserId: number | null;
   myStatus: AgentStatusType;
   onlineAgentsCount: number;
 
@@ -57,6 +59,7 @@ interface ChatContextValue {
   takeoverConversation: (conversationId: number) => Promise<void>;
   closeConversation: (conversationId: number) => Promise<void>;
   transferConversation: (conversationId: number, toAgentId: number, reason?: string) => Promise<void>;
+  declineConversation: (conversationId: number) => Promise<void>;
   updateMyStatus: (status: AgentStatusType) => Promise<void>;
   sendTypingIndicator: (isTyping: boolean) => void;
   markMessagesAsRead: () => Promise<void>;
@@ -86,6 +89,7 @@ export function ChatProvider({ children, tenantId }: ChatProviderProps) {
 
   // Agent state
   const [agents, setAgents] = useState<Agent[]>([]);
+  const [currentUserId, setCurrentUserId] = useState<number | null>(null);
   const [myStatus, setMyStatus] = useState<AgentStatusType>('offline');
   const [onlineAgentsCount, setOnlineAgentsCount] = useState(0);
 
@@ -95,6 +99,9 @@ export function ChatProvider({ children, tenantId }: ChatProviderProps) {
   // Refs for callbacks
   const activeConversationRef = useRef<Conversation | null>(null);
   activeConversationRef.current = activeConversation;
+
+  const currentUserIdRef = useRef<number | null>(null);
+  currentUserIdRef.current = currentUserId;
 
   // WebSocket event handlers
   const handleNewConversation = useCallback((event: NewConversationEvent) => {
@@ -236,6 +243,42 @@ export function ChatProvider({ children, tenantId }: ChatProviderProps) {
     }
   }, []);
 
+  const handleConversationTransferred = useCallback((event: ConversationTransferredEvent) => {
+    const targetAgentId = Number(event.transferred_to_agent_id);
+    const myId = Number(currentUserIdRef.current);
+
+    console.log('[ChatContext] Transfer event - targetAgentId:', targetAgentId, 'myId:', myId, 'match:', targetAgentId === myId);
+
+    // Only show in queue if transferred to current user
+    if (targetAgentId !== myId) {
+      // Remove from queue if it was there (e.g., it was in general queue before)
+      setQueuedConversations((prev) => prev.filter((c) => c.id !== event.conversation_id));
+      return;
+    }
+
+    console.log('[ChatContext] Adding transferred conversation to queue:', event.conversation_id);
+
+    // Add/update conversation in queue with transfer metadata
+    setQueuedConversations((prev) => {
+      const existing = prev.find((c) => c.id === event.conversation_id);
+      const updatedConversation = {
+        ...event.conversation,
+        transferred_to_agent_id: event.transferred_to_agent_id,
+        transferred_from_agent_name: event.transferred_from_agent.name,
+        transferred_at: event.transferred_at,
+        transfer_reason: event.reason,
+      };
+
+      if (existing) {
+        return prev.map((c) => c.id === event.conversation_id ? updatedConversation : c);
+      }
+      return [updatedConversation, ...prev];
+    });
+
+    // Play notification sound
+    playNotificationSound();
+  }, []);
+
   // WebSocket connection
   const { isConnected, subscribeToConversation } = useWebSocket({
     tenantId,
@@ -243,6 +286,7 @@ export function ChatProvider({ children, tenantId }: ChatProviderProps) {
     onNewConversation: handleNewConversation,
     onConversationAccepted: handleConversationAccepted,
     onConversationClosed: handleConversationClosed,
+    onConversationTransferred: handleConversationTransferred,
     onNewMessage: handleNewMessage,
     onTypingIndicator: handleTypingIndicator,
     onAgentStatusChanged: handleAgentStatusChanged,
@@ -262,6 +306,7 @@ export function ChatProvider({ children, tenantId }: ChatProviderProps) {
       // Find current user and set their status
       const currentUser = await authService.getCurrentUser();
       if (currentUser) {
+        setCurrentUserId(currentUser.id);
         const me = agentsResponse.data.find(a => a.id === currentUser.id);
         if (me?.status) {
           setMyStatus(me.status);
@@ -290,6 +335,7 @@ export function ChatProvider({ children, tenantId }: ChatProviderProps) {
       // Find current user and auto-set to online when accessing dashboard
       const currentUser = await authService.getCurrentUser();
       if (currentUser) {
+        setCurrentUserId(currentUser.id);
         const me = agentsResponse.data.find(a => a.id === currentUser.id);
         const currentStatus = me?.status || 'offline';
 
@@ -443,6 +489,18 @@ export function ChatProvider({ children, tenantId }: ChatProviderProps) {
     }
   }, [tenantId]);
 
+  // Decline transferred conversation
+  const declineConversation = useCallback(async (conversationId: number) => {
+    try {
+      await chatApi.conversations.decline(tenantId, conversationId);
+      // Remove from queue - will be re-added via WebSocket event with cleared transfer metadata
+      setQueuedConversations((prev) => prev.filter((c) => c.id !== conversationId));
+    } catch (error) {
+      console.error('Failed to decline conversation:', error);
+      throw error;
+    }
+  }, [tenantId]);
+
   // Update my status
   const updateMyStatus = useCallback(async (status: AgentStatusType) => {
     try {
@@ -532,6 +590,7 @@ export function ChatProvider({ children, tenantId }: ChatProviderProps) {
     messages,
     isLoadingMessages,
     agents,
+    currentUserId,
     myStatus,
     onlineAgentsCount,
     typingUsers,
@@ -546,6 +605,7 @@ export function ChatProvider({ children, tenantId }: ChatProviderProps) {
     takeoverConversation,
     closeConversation,
     transferConversation,
+    declineConversation,
     updateMyStatus,
     sendTypingIndicator,
     markMessagesAsRead,

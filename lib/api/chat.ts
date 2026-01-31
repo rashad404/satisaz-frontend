@@ -149,6 +149,13 @@ export const conversationsApi = {
     return response.data;
   },
 
+  decline: async (tenantId: number, conversationId: number) => {
+    const response = await apiClient.post<{ status: string; message: string }>(
+      `/tenants/${tenantId}/conversations/${conversationId}/decline`
+    );
+    return response.data;
+  },
+
   close: async (tenantId: number, conversationId: number) => {
     const response = await apiClient.post<{ status: string }>(
       `/tenants/${tenantId}/conversations/${conversationId}/close`

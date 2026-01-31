@@ -10,13 +10,18 @@ import type { Conversation, ConversationStatus } from '@/lib/types/chat';
 interface ConversationListProps {
   filter?: ConversationStatus | 'all';
   searchQuery?: string;
+  assignedToMe?: boolean;
 }
 
-export function ConversationList({ filter = 'all', searchQuery = '' }: ConversationListProps) {
+export function ConversationList({ filter = 'all', searchQuery = '', assignedToMe = false }: ConversationListProps) {
   const t = useTranslations();
-  const { conversations, activeConversation, selectConversation, isLoadingConversations } = useChat();
+  const { conversations, activeConversation, selectConversation, isLoadingConversations, currentUserId } = useChat();
 
   const filteredConversations = conversations.filter((conv) => {
+    // Filter by assigned to me
+    if (assignedToMe && conv.assigned_agent_id !== currentUserId) {
+      return false;
+    }
     // Filter by status
     if (filter !== 'all' && conv.status !== filter) {
       return false;

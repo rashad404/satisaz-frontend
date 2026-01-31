@@ -78,6 +78,11 @@ export interface Conversation {
     sender_type: SenderType;
     created_at: string;
   };
+  // Transfer-related fields (populated from queue endpoint)
+  transferred_to_agent_id?: number;
+  transferred_from_agent_name?: string;
+  transferred_at?: string;
+  transfer_reason?: string;
 }
 
 export interface Agent {
@@ -277,4 +282,16 @@ export interface MessageReadEvent {
   message_ids: number[];
   read_by: 'visitor' | 'agent';
   read_at: string;
+}
+
+export interface ConversationTransferredEvent {
+  conversation_id: number;
+  conversation: Conversation;
+  transferred_to_agent_id: number;
+  transferred_from_agent: {
+    id: number;
+    name: string;
+  };
+  reason?: string;
+  transferred_at: string;
 }

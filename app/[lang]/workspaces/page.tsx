@@ -9,9 +9,6 @@ import type { Tenant } from '@/lib/types/chat';
 import {
   MessageSquare,
   Plus,
-  Settings,
-  Users,
-  Bot,
   ArrowRight,
   Loader2,
 } from 'lucide-react';
@@ -195,19 +192,7 @@ function WorkspaceCard({ workspace, lang }: WorkspaceCardProps) {
         {workspace.slug}.satis.az
       </p>
 
-      <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-700">
-        <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
-          <span className="flex items-center gap-1">
-            <Users className="h-4 w-4" />
-            Team
-          </span>
-          {workspace.settings?.ai_timeout_seconds && (
-            <span className="flex items-center gap-1">
-              <Bot className="h-4 w-4" />
-              AI
-            </span>
-          )}
-        </div>
+      <div className="flex items-center justify-end pt-4 border-t border-gray-100 dark:border-gray-700">
         <ArrowRight className="h-4 w-4 text-gray-400" />
       </div>
     </Link>

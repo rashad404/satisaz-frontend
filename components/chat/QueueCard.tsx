@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useChat } from '@/contexts/ChatContext';
-import { User, Clock, MessageSquare, CheckCircle } from 'lucide-react';
+import { User, Clock, MessageSquare, CheckCircle, XCircle, ArrowRightLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Conversation } from '@/lib/types/chat';
 
@@ -11,11 +11,15 @@ interface QueueCardProps {
 }
 
 export function QueueCard({ conversation }: QueueCardProps) {
-  const { acceptConversation } = useChat();
+  const { acceptConversation, declineConversation, currentUserId } = useChat();
   const [isAccepting, setIsAccepting] = useState(false);
+  const [isDeclining, setIsDeclining] = useState(false);
   const [waitTime, setWaitTime] = useState(0);
 
-  const { visitor, queue_entered_at, metadata } = conversation;
+  const { visitor, queue_entered_at, metadata, transferred_to_agent_id, transferred_from_agent_name, transfer_reason } = conversation;
+
+  // Check if this conversation is transferred to the current user
+  const isTransferredToMe = transferred_to_agent_id === currentUserId;
 
   // Update wait time every second
   useEffect(() => {
@@ -48,6 +52,18 @@ export function QueueCard({ conversation }: QueueCardProps) {
     }
   };
 
+  const handleDecline = async () => {
+    if (isDeclining) return;
+    setIsDeclining(true);
+    try {
+      await declineConversation(conversation.id);
+    } catch (error) {
+      console.error('Failed to decline conversation:', error);
+    } finally {
+      setIsDeclining(false);
+    }
+  };
+
   const formatWaitTime = (seconds: number) => {
     if (seconds < 60) {
       return `${seconds}s`;
@@ -64,7 +80,27 @@ export function QueueCard({ conversation }: QueueCardProps) {
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 hover:border-purple-300 dark:hover:border-purple-600 active:bg-gray-50 dark:active:bg-gray-700/50 transition-colors">
+    <div className={cn(
+      "bg-white dark:bg-gray-800 rounded-xl border p-4 transition-colors",
+      isTransferredToMe
+        ? "border-blue-300 dark:border-blue-600 bg-blue-50/50 dark:bg-blue-900/20"
+        : "border-gray-200 dark:border-gray-700 hover:border-purple-300 dark:hover:border-purple-600"
+    )}>
+      {/* Transfer badge */}
+      {isTransferredToMe && (
+        <div className="flex items-center gap-2 mb-3 p-2 bg-blue-100 dark:bg-blue-900/40 rounded-lg text-blue-700 dark:text-blue-300">
+          <ArrowRightLeft className="h-4 w-4 flex-shrink-0" />
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-medium truncate">
+              Transferred to you by {transferred_from_agent_name}
+            </p>
+            {transfer_reason && (
+              <p className="text-xs opacity-80 truncate">{transfer_reason}</p>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Visitor info */}
       <div className="flex items-start gap-3 mb-3">
         <div className="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center flex-shrink-0">
@@ -103,27 +139,68 @@ export function QueueCard({ conversation }: QueueCardProps) {
       {/* Metadata - hidden on mobile for cleaner UI */}
       {metadata?.page_url && (
         <p className="hidden sm:block text-xs text-gray-400 mb-3 truncate">
-          From: {new URL(metadata.page_url as string).pathname}
+          Page: {new URL(metadata.page_url as string).pathname}
         </p>
       )}
 
-      {/* Accept button - full width on mobile for easy tap */}
-      <button
-        onClick={handleAccept}
-        disabled={isAccepting}
-        className={cn(
-          'w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-medium text-base transition-colors',
-          'bg-purple-600 text-white hover:bg-purple-700 active:bg-purple-800',
-          'disabled:opacity-50 disabled:cursor-not-allowed'
-        )}
-      >
-        {isAccepting ? (
-          <div className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-        ) : (
-          <CheckCircle className="h-5 w-5" />
-        )}
-        Accept Conversation
-      </button>
+      {/* Action buttons */}
+      {isTransferredToMe ? (
+        <div className="flex gap-2">
+          {/* Accept button */}
+          <button
+            onClick={handleAccept}
+            disabled={isAccepting || isDeclining}
+            className={cn(
+              'flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-medium text-base transition-colors',
+              'bg-purple-600 text-white hover:bg-purple-700 active:bg-purple-800',
+              'disabled:opacity-50 disabled:cursor-not-allowed'
+            )}
+          >
+            {isAccepting ? (
+              <div className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            ) : (
+              <CheckCircle className="h-5 w-5" />
+            )}
+            Accept
+          </button>
+          {/* Decline button */}
+          <button
+            onClick={handleDecline}
+            disabled={isAccepting || isDeclining}
+            className={cn(
+              'flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-medium text-base transition-colors',
+              'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200',
+              'hover:bg-gray-300 dark:hover:bg-gray-600 active:bg-gray-400 dark:active:bg-gray-500',
+              'disabled:opacity-50 disabled:cursor-not-allowed'
+            )}
+          >
+            {isDeclining ? (
+              <div className="h-5 w-5 border-2 border-gray-400/30 border-t-gray-400 rounded-full animate-spin" />
+            ) : (
+              <XCircle className="h-5 w-5" />
+            )}
+            Decline
+          </button>
+        </div>
+      ) : (
+        /* Regular accept button - full width */
+        <button
+          onClick={handleAccept}
+          disabled={isAccepting}
+          className={cn(
+            'w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-medium text-base transition-colors',
+            'bg-purple-600 text-white hover:bg-purple-700 active:bg-purple-800',
+            'disabled:opacity-50 disabled:cursor-not-allowed'
+          )}
+        >
+          {isAccepting ? (
+            <div className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+          ) : (
+            <CheckCircle className="h-5 w-5" />
+          )}
+          Accept Conversation
+        </button>
+      )}
     </div>
   );
 }

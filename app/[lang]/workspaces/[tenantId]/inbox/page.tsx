@@ -4,11 +4,11 @@ import { useState, useEffect } from 'react';
 import { useChat } from '@/contexts/ChatContext';
 import { useTranslations } from 'next-intl';
 import { ConversationList, ChatWindow, QueueCard } from '@/components/chat';
-import { Search, Inbox, Clock, MessageSquare } from 'lucide-react';
+import { Search, Inbox, Clock, MessageSquare, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { ConversationStatus } from '@/lib/types/chat';
 
-type TabType = 'queue' | 'active' | 'all';
+type TabType = 'queue' | 'mine' | 'active' | 'all';
 
 export default function InboxPage() {
   const t = useTranslations();
@@ -16,6 +16,7 @@ export default function InboxPage() {
     queuedConversations,
     conversations,
     activeConversation,
+    currentUserId,
     isConnected,
     loadQueue,
     loadConversations,
@@ -35,6 +36,8 @@ export default function InboxPage() {
     return () => clearInterval(interval);
   }, [loadQueue]);
 
+  const myConversations = conversations.filter((c) => c.assigned_agent_id === currentUserId);
+
   const tabs = [
     {
       id: 'queue' as const,
@@ -42,6 +45,13 @@ export default function InboxPage() {
       icon: Clock,
       count: queuedConversations.length,
       countColor: queuedConversations.length > 0 ? 'bg-yellow-500' : 'bg-gray-400',
+    },
+    {
+      id: 'mine' as const,
+      label: 'Mine',
+      icon: User,
+      count: myConversations.filter((c) => c.status !== 'closed').length,
+      countColor: 'bg-purple-500',
     },
     {
       id: 'active' as const,
@@ -62,6 +72,7 @@ export default function InboxPage() {
   const getFilteredStatus = (): ConversationStatus | 'all' => {
     if (activeTab === 'queue') return 'queued';
     if (activeTab === 'active') return 'active';
+    if (activeTab === 'mine') return 'all';
     return statusFilter;
   };
 
@@ -110,8 +121,8 @@ export default function InboxPage() {
           </div>
         </div>
 
-        {/* Tabs - larger touch targets */}
-        <div className="flex border-b border-gray-200 dark:border-gray-800">
+        {/* Tabs */}
+        <div className="flex border-b border-gray-200 dark:border-gray-800 overflow-x-auto">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             return (
@@ -119,16 +130,16 @@ export default function InboxPage() {
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={cn(
-                  'flex-1 flex items-center justify-center gap-2 px-3 py-4 text-sm font-medium border-b-2 transition-colors active:bg-gray-100 dark:active:bg-gray-800',
+                  'flex-1 flex items-center justify-center gap-1 px-2 py-3 text-xs font-medium border-b-2 transition-colors whitespace-nowrap min-w-0',
                   activeTab === tab.id
                     ? 'border-purple-600 text-purple-600 dark:text-purple-400'
                     : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
                 )}
               >
-                <Icon className="h-5 w-5" />
-                <span className="hidden sm:inline">{tab.label}</span>
+                <Icon className="h-4 w-4 flex-shrink-0" />
+                <span className="truncate">{tab.label}</span>
                 {tab.count > 0 && (
-                  <span className={cn('px-2 py-0.5 text-xs font-medium text-white rounded-full min-w-[1.5rem] text-center', tab.countColor)}>
+                  <span className={cn('px-1.5 py-0.5 text-xs font-medium text-white rounded-full min-w-[1.25rem] text-center flex-shrink-0', tab.countColor)}>
                     {tab.count}
                   </span>
                 )}
@@ -160,6 +171,7 @@ export default function InboxPage() {
             <ConversationList
               filter={getFilteredStatus()}
               searchQuery={searchQuery}
+              assignedToMe={activeTab === 'mine'}
             />
           </div>
         )}

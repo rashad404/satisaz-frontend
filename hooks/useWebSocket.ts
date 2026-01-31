@@ -5,6 +5,7 @@ import type {
   NewConversationEvent,
   ConversationAcceptedEvent,
   ConversationClosedEvent,
+  ConversationTransferredEvent,
   NewMessageEvent,
   TypingIndicatorEvent,
   AgentStatusChangedEvent,
@@ -28,6 +29,7 @@ interface WebSocketHookOptions {
   onNewConversation?: EventCallback<NewConversationEvent>;
   onConversationAccepted?: EventCallback<ConversationAcceptedEvent>;
   onConversationClosed?: EventCallback<ConversationClosedEvent>;
+  onConversationTransferred?: EventCallback<ConversationTransferredEvent>;
   onNewMessage?: EventCallback<NewMessageEvent>;
   onTypingIndicator?: EventCallback<TypingIndicatorEvent>;
   onAgentStatusChanged?: EventCallback<AgentStatusChangedEvent>;
@@ -43,6 +45,7 @@ export function useWebSocket(options: WebSocketHookOptions) {
     onNewConversation,
     onConversationAccepted,
     onConversationClosed,
+    onConversationTransferred,
     onNewMessage,
     onTypingIndicator,
     onAgentStatusChanged,
@@ -145,6 +148,10 @@ export function useWebSocket(options: WebSocketHookOptions) {
         console.log('[WebSocket] Received conversation.closed event:', e);
         onConversationClosed?.(e);
       })
+      .listen('.conversation.transferred', (e: ConversationTransferredEvent) => {
+        console.log('[WebSocket] Received conversation.transferred event:', e);
+        onConversationTransferred?.(e);
+      })
       .listen('.message.new', (e: NewMessageEvent) => {
         console.log('[WebSocket] Received message.new on tenant channel:', e);
         onNewMessage?.(e);
@@ -161,7 +168,7 @@ export function useWebSocket(options: WebSocketHookOptions) {
 
     channelsRef.current.add(channelName);
     console.log('[WebSocket] Subscribed to tenant channel:', channelName);
-  }, [tenantId, onNewConversation, onConversationAccepted, onConversationClosed, onNewMessage, onAgentStatusChanged, onAiTookOver, onHumanTookOver]);
+  }, [tenantId, onNewConversation, onConversationAccepted, onConversationClosed, onConversationTransferred, onNewMessage, onAgentStatusChanged, onAiTookOver, onHumanTookOver]);
 
   // Subscribe to conversation channel
   const subscribeConversationChannel = useCallback(() => {
