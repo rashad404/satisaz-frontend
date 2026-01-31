@@ -25,9 +25,22 @@ export default function InboxPage() {
     toggleMute,
   } = useChat();
 
-  const [activeTab, setActiveTab] = useState<TabType>('queue');
+  const [activeTab, setActiveTab] = useState<TabType>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('satis_inbox_tab');
+      if (saved && ['queue', 'mine', 'active', 'all'].includes(saved)) {
+        return saved as TabType;
+      }
+    }
+    return 'queue';
+  });
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<ConversationStatus | 'all'>('all');
+
+  // Persist active tab
+  useEffect(() => {
+    localStorage.setItem('satis_inbox_tab', activeTab);
+  }, [activeTab]);
 
   // Refresh queue periodically (conversations update via WebSocket)
   useEffect(() => {

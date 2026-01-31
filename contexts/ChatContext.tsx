@@ -414,6 +414,13 @@ export function ChatProvider({ children, tenantId }: ChatProviderProps) {
 
   // Select conversation
   const selectConversation = useCallback(async (conversationId: number | null) => {
+    // Persist selected conversation
+    if (conversationId) {
+      localStorage.setItem(`satis_inbox_conversation_${tenantId}`, String(conversationId));
+    } else {
+      localStorage.removeItem(`satis_inbox_conversation_${tenantId}`);
+    }
+
     if (!conversationId) {
       setActiveConversation(null);
       setMessages([]);
@@ -438,6 +445,8 @@ export function ChatProvider({ children, tenantId }: ChatProviderProps) {
       }));
     } catch (error) {
       console.error('Failed to load conversation:', error);
+      // Clear saved conversation if it failed to load
+      localStorage.removeItem(`satis_inbox_conversation_${tenantId}`);
     } finally {
       setIsLoadingMessages(false);
     }
@@ -576,6 +585,14 @@ export function ChatProvider({ children, tenantId }: ChatProviderProps) {
     loadConversations();
     loadQueue();
   }, [tenantId, loadTenant, loadConversations, loadQueue]);
+
+  // Restore saved conversation after initial load
+  useEffect(() => {
+    const savedConversationId = localStorage.getItem(`satis_inbox_conversation_${tenantId}`);
+    if (savedConversationId && !activeConversation) {
+      selectConversation(parseInt(savedConversationId, 10));
+    }
+  }, [tenantId]); // Only run once on mount, don't include selectConversation to avoid loops
 
   // Heartbeat to keep status alive (backend auto-marks offline after 5 min of no heartbeat)
   useEffect(() => {
