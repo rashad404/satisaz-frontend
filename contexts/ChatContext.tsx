@@ -118,6 +118,9 @@ export function ChatProvider({ children, tenantId }: ChatProviderProps) {
   const isMutedRef = useRef<boolean>(isMuted);
   isMutedRef.current = isMuted;
 
+  // Track if we've done the initial auto-online (don't override manual status changes)
+  const hasAutoOnlinedRef = useRef<boolean>(false);
+
   // Toggle mute
   const toggleMute = useCallback(() => {
     setIsMuted((prev) => {
@@ -358,15 +361,17 @@ export function ChatProvider({ children, tenantId }: ChatProviderProps) {
       setAgents(agentsResponse.data);
       setOnlineAgentsCount(agentsResponse.data.filter((a) => a.status === 'online').length);
 
-      // Find current user and auto-set to online when accessing dashboard
+      // Find current user and set their status
       const currentUser = await authService.getCurrentUser();
       if (currentUser) {
         setCurrentUserId(currentUser.id);
         const me = agentsResponse.data.find(a => a.id === currentUser.id);
         const currentStatus = me?.status || 'offline';
 
-        // Auto-set to online when agent accesses the dashboard
-        if (currentStatus === 'offline') {
+        // Only auto-set to online on FIRST load (not on subsequent loads)
+        // This respects manual status changes (e.g., agent manually going offline)
+        if (!hasAutoOnlinedRef.current && currentStatus === 'offline') {
+          hasAutoOnlinedRef.current = true;
           try {
             await chatApi.agents.updateStatus(targetId, 'online');
             setMyStatus('online');
