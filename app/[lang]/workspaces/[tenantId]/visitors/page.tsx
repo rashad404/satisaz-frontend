@@ -40,6 +40,9 @@ export default function VisitorsPage() {
     lastPage: 1,
     total: 0,
   });
+  // Separate counts for tabs
+  const [totalCount, setTotalCount] = useState(0);
+  const [onlineCount, setOnlineCount] = useState(0);
 
   // Selected visitor for detail panel
   const [selectedVisitor, setSelectedVisitor] = useState<VisitorDetails | null>(null);
@@ -71,12 +74,29 @@ export default function VisitorsPage() {
         lastPage: response.data.last_page,
         total: response.data.total,
       });
+
+      // Update the appropriate count based on current filter
+      if (onlineOnly) {
+        setOnlineCount(response.data.total);
+      } else {
+        setTotalCount(response.data.total);
+      }
     } catch (err) {
       console.error('Failed to load visitors:', err);
     } finally {
       setIsLoading(false);
     }
   }, [tenantId, searchQuery, onlineOnly, identifiedOnly]);
+
+  // Load online count separately on mount
+  const loadOnlineCount = useCallback(async () => {
+    try {
+      const response = await visitorsApi.list(tenantId, { online_only: 1, per_page: 1 } as any);
+      setOnlineCount(response.data.total);
+    } catch (err) {
+      console.error('Failed to load online count:', err);
+    }
+  }, [tenantId]);
 
   // WebSocket handler for new visitors
   const handleNewVisitor = useCallback((event: NewVisitorEvent) => {
@@ -87,17 +107,27 @@ export default function VisitorsPage() {
       return [event.visitor, ...prev];
     });
     setPagination(prev => ({ ...prev, total: prev.total + 1 }));
+    setTotalCount(prev => prev + 1);
+    if (event.visitor.is_online) {
+      setOnlineCount(prev => prev + 1);
+    }
   }, []);
 
   // WebSocket handler for visitor coming online
   const handleVisitorOnline = useCallback((event: VisitorOnlineEvent) => {
+    // Check if visitor was previously offline in our list
     setVisitors(prev => {
-      const exists = prev.some(v => v.id === event.visitor.id);
-      if (exists) {
-        // Update existing visitor to show as online
+      const existingVisitor = prev.find(v => v.id === event.visitor.id);
+      const wasOffline = !existingVisitor || !existingVisitor.is_online;
+
+      // Schedule count update outside of this setState
+      if (wasOffline) {
+        setTimeout(() => setOnlineCount(c => c + 1), 0);
+      }
+
+      if (existingVisitor) {
         return prev.map(v => v.id === event.visitor.id ? { ...v, ...event.visitor, is_online: true } : v);
       }
-      // Add to list if not present (could happen if list was filtered)
       return [event.visitor, ...prev];
     });
   }, []);
@@ -112,6 +142,11 @@ export default function VisitorsPage() {
   useEffect(() => {
     loadVisitors();
   }, [loadVisitors]);
+
+  // Load online count on mount
+  useEffect(() => {
+    loadOnlineCount();
+  }, [loadOnlineCount]);
 
   const handleSelectVisitor = async (visitor: VisitorListItem) => {
     setLoadingDetails(true);
@@ -216,7 +251,7 @@ export default function VisitorsPage() {
               )}
             >
               <Users className="h-4 w-4" />
-              Hamısı ({pagination.total})
+              Hamısı ({totalCount})
             </button>
             <button
               onClick={() => setActiveTab('online')}
@@ -228,7 +263,7 @@ export default function VisitorsPage() {
               )}
             >
               <span className="w-2 h-2 rounded-full bg-green-500" />
-              Online
+              Online ({onlineCount})
             </button>
           </div>
 
