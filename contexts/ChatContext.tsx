@@ -19,6 +19,7 @@ import type {
   AgentStatusChangedEvent,
   AiTookOverEvent,
   HumanTookOverEvent,
+  NotificationSettings,
 } from '@/lib/types/chat';
 
 interface ChatContextValue {
@@ -51,6 +52,9 @@ interface ChatContextValue {
   // Sound state
   isMuted: boolean;
 
+  // Notification settings
+  notificationSettings: NotificationSettings;
+
   // Actions
   loadTenant: (tenantId?: number) => Promise<void>;
   loadAgents: () => Promise<void>;
@@ -67,6 +71,7 @@ interface ChatContextValue {
   sendTypingIndicator: (isTyping: boolean) => void;
   markMessagesAsRead: () => Promise<void>;
   toggleMute: () => void;
+  loadNotificationSettings: () => Promise<void>;
 }
 
 const ChatContext = createContext<ChatContextValue | undefined>(undefined);
@@ -108,6 +113,13 @@ export function ChatProvider({ children, tenantId }: ChatProviderProps) {
     return false;
   });
 
+  // Notification settings state
+  const [notificationSettings, setNotificationSettings] = useState<NotificationSettings>({
+    sound: { new_conversation: true, new_message: true },
+    email: { new_conversation: true, transfer_request: true, workspace_invite: true },
+    sms: { new_conversation: false, transfer_request: false },
+  });
+
   // Refs for callbacks
   const activeConversationRef = useRef<Conversation | null>(null);
   activeConversationRef.current = activeConversation;
@@ -117,6 +129,9 @@ export function ChatProvider({ children, tenantId }: ChatProviderProps) {
 
   const isMutedRef = useRef<boolean>(isMuted);
   isMutedRef.current = isMuted;
+
+  const notificationSettingsRef = useRef<NotificationSettings>(notificationSettings);
+  notificationSettingsRef.current = notificationSettings;
 
   // Track if we've done the initial auto-online (don't override manual status changes)
   const hasAutoOnlinedRef = useRef<boolean>(false);
@@ -138,8 +153,8 @@ export function ChatProvider({ children, tenantId }: ChatProviderProps) {
     // Agent-initiated chats are created as ACTIVE and already assigned
     if (event.conversation.status === 'queued' && event.conversation.handler_type === 'unassigned') {
       setQueuedConversations((prev) => [event.conversation, ...prev]);
-      // Play notification sound
-      playNotificationSound(isMutedRef.current);
+      // Play notification sound (respects both mute toggle and notification settings)
+      playNotificationSound(isMutedRef.current, notificationSettingsRef.current.sound.new_conversation);
     } else {
       // For agent-initiated or already-assigned conversations, add to conversations list
       setConversations((prev) => {
@@ -228,10 +243,10 @@ export function ChatProvider({ children, tenantId }: ChatProviderProps) {
       return c;
     }));
 
-    // Play sound for visitor messages
+    // Play sound for visitor messages (respects both mute toggle and notification settings)
     if (message.sender_type === 'visitor') {
-      console.log('[ChatContext] Playing message sound for visitor message, muted:', isMutedRef.current);
-      playMessageSound(isMutedRef.current);
+      console.log('[ChatContext] Playing message sound for visitor message, muted:', isMutedRef.current, 'setting:', notificationSettingsRef.current.sound.new_message);
+      playMessageSound(isMutedRef.current, notificationSettingsRef.current.sound.new_message);
     }
   }, []);
 
@@ -317,8 +332,9 @@ export function ChatProvider({ children, tenantId }: ChatProviderProps) {
       return [updatedConversation, ...prev];
     });
 
-    // Play notification sound
-    playNotificationSound(isMutedRef.current);
+    // Play notification sound (respects both mute toggle and notification settings)
+    // Transfer uses new_conversation sound setting
+    playNotificationSound(isMutedRef.current, notificationSettingsRef.current.sound.new_conversation);
   }, []);
 
   // WebSocket connection
@@ -359,6 +375,18 @@ export function ChatProvider({ children, tenantId }: ChatProviderProps) {
     }
   }, [tenantId]);
 
+  // Load notification settings
+  const loadNotificationSettings = useCallback(async () => {
+    if (!tenantId) return;
+
+    try {
+      const notifResponse = await chatApi.agents.getNotificationSettings(tenantId);
+      setNotificationSettings(notifResponse.data);
+    } catch (error) {
+      console.error('Failed to load notification settings:', error);
+    }
+  }, [tenantId]);
+
   // Load tenant data
   const loadTenant = useCallback(async (id?: number) => {
     const targetId = id || tenantId;
@@ -373,6 +401,14 @@ export function ChatProvider({ children, tenantId }: ChatProviderProps) {
       const agentsResponse = await chatApi.agents.list(targetId);
       setAgents(agentsResponse.data);
       setOnlineAgentsCount(agentsResponse.data.filter((a) => a.status === 'online').length);
+
+      // Load notification settings
+      try {
+        const notifResponse = await chatApi.agents.getNotificationSettings(targetId);
+        setNotificationSettings(notifResponse.data);
+      } catch (err) {
+        console.error('Failed to load notification settings:', err);
+      }
 
       // Find current user and set their status
       const currentUser = await authService.getCurrentUser();
@@ -706,6 +742,7 @@ export function ChatProvider({ children, tenantId }: ChatProviderProps) {
     typingUsers,
     isConnected,
     isMuted,
+    notificationSettings,
     loadTenant,
     loadAgents,
     loadConversations,
@@ -721,6 +758,7 @@ export function ChatProvider({ children, tenantId }: ChatProviderProps) {
     sendTypingIndicator,
     markMessagesAsRead,
     toggleMute,
+    loadNotificationSettings,
   };
 
   return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;
@@ -735,8 +773,8 @@ export function useChat() {
 }
 
 // Helper function to play notification sound for new chats in queue
-function playNotificationSound(isMuted: boolean) {
-  if (isMuted) return;
+function playNotificationSound(isMuted: boolean, settingEnabled: boolean = true) {
+  if (isMuted || !settingEnabled) return;
   if (typeof window !== 'undefined') {
     const audio = new Audio('/sounds/notification.mp3');
     audio.volume = 0.5;
@@ -750,8 +788,8 @@ function playNotificationSound(isMuted: boolean) {
 const MESSAGE_SOUND = 'data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAABhgC7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7//////////////////////////////////////////////////////////////////8AAAAATGF2YzU4LjEzAAAAAAAAAAAAAAAAJAAAAAAAAAAAAYYoRwmHAAAAAAD/+9DEAAAIAANIAAAAgAAA0gAAABBHOHgfB8HygIAmD5QEHLhgGHne7gQdFy4Py4IHB8oGP/BwfLu7u7vd3d3d3e9wQOXB8HygIPg+D5d3vd7u93/8EAQ/B8u7u7u93d7u7u7vd7u93d7hAQBB/UAALgIKCgoAAAA4EFhUBBYoAsLCwsLCwsEBAQEAgICAg4ODn//5QEP/Lg+D4Pg/KHQEBAQEH/lwfKAgICAg+D/5cH/5d3/y7vd3u93d7u9//tQxBUAAADSAAAAAAAAANIAAAAA3e7vd7vd3u7u73d7u7u7u7u73d3d3d3d7u93d3d7u7vd7u7vd3d7u7vf/+7u73d3d3d7vd3e7vd3u7u93/+93d3e7u93e7u7vd7u93d3u7u7u93u7u93d7u7vd3e7u7u93u7vd3d7';
 
 // Helper function to play message notification sound
-function playMessageSound(isMuted: boolean) {
-  if (isMuted) return;
+function playMessageSound(isMuted: boolean, settingEnabled: boolean = true) {
+  if (isMuted || !settingEnabled) return;
   if (typeof window !== 'undefined') {
     try {
       const audio = new Audio(MESSAGE_SOUND);

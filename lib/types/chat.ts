@@ -373,7 +373,17 @@ export interface ConversationTransferredEvent {
 
 // Notification Settings
 export interface NotificationSettings {
-  new_conversation: boolean;
-  transfer_request: boolean;
-  workspace_invite: boolean;
+  sound: {
+    new_conversation: boolean;
+    new_message: boolean;
+  };
+  email: {
+    new_conversation: boolean;
+    transfer_request: boolean;
+    workspace_invite: boolean;
+  };
+  sms: {
+    new_conversation: boolean;
+    transfer_request: boolean;
+  };
 }
