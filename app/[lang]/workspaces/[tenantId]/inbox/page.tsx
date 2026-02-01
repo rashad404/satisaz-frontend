@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useChat } from '@/contexts/ChatContext';
 import { useTranslations } from 'next-intl';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { ConversationList, ChatWindow, QueueCard } from '@/components/chat';
 import { Search, Inbox, Clock, MessageSquare, User, Volume2, VolumeX } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -14,6 +14,8 @@ type TabType = 'queue' | 'mine' | 'active' | 'all';
 export default function InboxPage() {
   const t = useTranslations();
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
   const {
     queuedConversations,
     conversations,
@@ -62,9 +64,11 @@ export default function InboxPage() {
         selectConversation(id);
         // Switch to "mine" tab since agent-initiated chats are assigned to the agent
         setActiveTab('mine');
+        // Clear the URL parameter to prevent it from persisting
+        router.replace(pathname, { scroll: false });
       }
     }
-  }, [searchParams, selectConversation, loadConversations, processedUrlParam]);
+  }, [searchParams, selectConversation, loadConversations, processedUrlParam, router, pathname]);
 
   // Refresh queue periodically (conversations update via WebSocket)
   useEffect(() => {
