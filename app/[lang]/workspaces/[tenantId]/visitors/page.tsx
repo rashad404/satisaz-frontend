@@ -18,7 +18,8 @@ import {
   Users,
   Filter,
 } from 'lucide-react';
-import type { VisitorListItem, VisitorDetails } from '@/lib/types/chat';
+import type { VisitorListItem, VisitorDetails, NewVisitorEvent, VisitorOnlineEvent } from '@/lib/types/chat';
+import { useWebSocket } from '@/hooks/useWebSocket';
 
 export default function VisitorsPage() {
   const params = useParams();
@@ -29,8 +30,11 @@ export default function VisitorsPage() {
   const [visitors, setVisitors] = useState<VisitorListItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [onlineOnly, setOnlineOnly] = useState(false);
+  const [activeTab, setActiveTab] = useState<'all' | 'online'>('all');
   const [identifiedOnly, setIdentifiedOnly] = useState(false);
+
+  // Derive onlineOnly from activeTab
+  const onlineOnly = activeTab === 'online';
   const [pagination, setPagination] = useState({
     currentPage: 1,
     lastPage: 1,
@@ -49,13 +53,17 @@ export default function VisitorsPage() {
   const loadVisitors = useCallback(async (page = 1) => {
     setIsLoading(true);
     try {
-      const response = await visitorsApi.list(tenantId, {
-        search: searchQuery || undefined,
-        online_only: onlineOnly || undefined,
-        identified_only: identifiedOnly || undefined,
+      // Build params object, only include truthy values
+      // Use 1/0 for booleans since axios serializes them as strings in URLs
+      const params: Record<string, string | number> = {
         per_page: 20,
         page,
-      });
+      };
+      if (searchQuery) params.search = searchQuery;
+      if (onlineOnly) params.online_only = 1;
+      if (identifiedOnly) params.identified_only = 1;
+
+      const response = await visitorsApi.list(tenantId, params as any);
       setVisitors(response.data.data);
       setPagination({
         currentPage: response.data.current_page,
@@ -69,17 +77,40 @@ export default function VisitorsPage() {
     }
   }, [tenantId, searchQuery, onlineOnly, identifiedOnly]);
 
+  // WebSocket handler for new visitors
+  const handleNewVisitor = useCallback((event: NewVisitorEvent) => {
+    // Add new visitor to the top of the list
+    setVisitors(prev => {
+      // Don't add duplicates
+      if (prev.some(v => v.id === event.visitor.id)) return prev;
+      return [event.visitor, ...prev];
+    });
+    setPagination(prev => ({ ...prev, total: prev.total + 1 }));
+  }, []);
+
+  // WebSocket handler for visitor coming online
+  const handleVisitorOnline = useCallback((event: VisitorOnlineEvent) => {
+    setVisitors(prev => {
+      const exists = prev.some(v => v.id === event.visitor.id);
+      if (exists) {
+        // Update existing visitor to show as online
+        return prev.map(v => v.id === event.visitor.id ? { ...v, ...event.visitor, is_online: true } : v);
+      }
+      // Add to list if not present (could happen if list was filtered)
+      return [event.visitor, ...prev];
+    });
+  }, []);
+
+  // WebSocket connection for real-time updates
+  const { isConnected } = useWebSocket({
+    tenantId,
+    onNewVisitor: handleNewVisitor,
+    onVisitorOnline: handleVisitorOnline,
+  });
+
   useEffect(() => {
     loadVisitors();
   }, [loadVisitors]);
-
-  // Reload visitors every 30 seconds for live updates
-  useEffect(() => {
-    const interval = setInterval(() => {
-      loadVisitors(pagination.currentPage);
-    }, 30000);
-    return () => clearInterval(interval);
-  }, [loadVisitors, pagination.currentPage]);
 
   const handleSelectVisitor = async (visitor: VisitorListItem) => {
     setLoadingDetails(true);
@@ -171,23 +202,36 @@ export default function VisitorsPage() {
             />
           </div>
 
-          {/* Filters */}
-          <div className="flex gap-2">
+          {/* Tabs */}
+          <div className="flex border-b border-gray-200 dark:border-gray-800 -mx-4 px-4">
             <button
-              onClick={() => setOnlineOnly(!onlineOnly)}
+              onClick={() => setActiveTab('all')}
               className={cn(
-                'flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-md transition-colors',
-                onlineOnly
-                  ? 'bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300'
-                  : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                'flex-1 flex items-center justify-center gap-1.5 py-2 text-sm font-medium border-b-2 transition-colors',
+                activeTab === 'all'
+                  ? 'border-purple-600 text-purple-600 dark:border-purple-400 dark:text-purple-400'
+                  : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
               )}
             >
-              <span className={cn(
-                'w-2 h-2 rounded-full',
-                onlineOnly ? 'bg-green-500' : 'bg-gray-400'
-              )} />
+              <Users className="h-4 w-4" />
+              Hamısı ({pagination.total})
+            </button>
+            <button
+              onClick={() => setActiveTab('online')}
+              className={cn(
+                'flex-1 flex items-center justify-center gap-1.5 py-2 text-sm font-medium border-b-2 transition-colors',
+                activeTab === 'online'
+                  ? 'border-green-600 text-green-600 dark:border-green-400 dark:text-green-400'
+                  : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+              )}
+            >
+              <span className="w-2 h-2 rounded-full bg-green-500" />
               Online
             </button>
+          </div>
+
+          {/* Identified Filter */}
+          <div className="flex gap-2 mt-3">
             <button
               onClick={() => setIdentifiedOnly(!identifiedOnly)}
               className={cn(

@@ -16,6 +16,7 @@ import {
   Mail,
   Smartphone,
   MessageCircle,
+  Eye,
 } from 'lucide-react';
 import type { NotificationSettings } from '@/lib/types/chat';
 
@@ -23,6 +24,7 @@ const DEFAULT_SETTINGS: NotificationSettings = {
   sound: {
     new_conversation: true,
     new_message: true,
+    new_visitor: false,
   },
   email: {
     new_conversation: true,
@@ -58,7 +60,7 @@ export default function NotificationsPage() {
       // Deep merge with defaults
       const loaded = response.data;
       setSettings({
-        sound: { ...DEFAULT_SETTINGS.sound, ...loaded?.sound },
+        sound: { ...DEFAULT_SETTINGS.sound, ...(loaded?.sound || {}) },
         email: { ...DEFAULT_SETTINGS.email, ...loaded?.email },
         sms: { ...DEFAULT_SETTINGS.sms, ...loaded?.sms },
       });
@@ -170,6 +172,22 @@ export default function NotificationsPage() {
               <ToggleSwitch
                 checked={settings.sound.new_message}
                 onChange={() => handleToggle('sound', 'new_message')}
+              />
+            </div>
+
+            <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+              <div className="flex items-center gap-3">
+                <div className="p-1.5 bg-green-100 dark:bg-green-900/50 rounded text-green-600 dark:text-green-400">
+                  <Eye className="h-4 w-4" />
+                </div>
+                <div>
+                  <span className="text-sm font-medium text-gray-900 dark:text-white">Online ziyarətçilər</span>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Ziyarətçi online olanda səs çalsın (yeni və ya qayıdan)</p>
+                </div>
+              </div>
+              <ToggleSwitch
+                checked={settings.sound.new_visitor}
+                onChange={() => handleToggle('sound', 'new_visitor')}
               />
             </div>
           </div>

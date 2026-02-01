@@ -359,6 +359,14 @@ export interface MessageReadEvent {
   read_at: string;
 }
 
+export interface NewVisitorEvent {
+  visitor: VisitorListItem;
+}
+
+export interface VisitorOnlineEvent {
+  visitor: VisitorListItem;
+}
+
 export interface ConversationTransferredEvent {
   conversation_id: number;
   conversation: Conversation;
@@ -376,6 +384,7 @@ export interface NotificationSettings {
   sound: {
     new_conversation: boolean;
     new_message: boolean;
+    new_visitor: boolean;
   };
   email: {
     new_conversation: boolean;

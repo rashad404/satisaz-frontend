@@ -15,6 +15,8 @@ import type {
   ConversationClosedEvent,
   ConversationTransferredEvent,
   NewMessageEvent,
+  NewVisitorEvent,
+  VisitorOnlineEvent,
   TypingIndicatorEvent,
   AgentStatusChangedEvent,
   AiTookOverEvent,
@@ -115,7 +117,7 @@ export function ChatProvider({ children, tenantId }: ChatProviderProps) {
 
   // Notification settings state
   const [notificationSettings, setNotificationSettings] = useState<NotificationSettings>({
-    sound: { new_conversation: true, new_message: true },
+    sound: { new_conversation: true, new_message: true, new_visitor: false },
     email: { new_conversation: true, transfer_request: true, workspace_invite: true },
     sms: { new_conversation: false, transfer_request: false },
   });
@@ -337,6 +339,17 @@ export function ChatProvider({ children, tenantId }: ChatProviderProps) {
     playNotificationSound(isMutedRef.current, notificationSettingsRef.current.sound.new_conversation);
   }, []);
 
+  const handleNewVisitor = useCallback((event: NewVisitorEvent) => {
+    // Play visitor sound (respects both mute toggle and notification settings)
+    playVisitorSound(isMutedRef.current, notificationSettingsRef.current.sound.new_visitor);
+  }, []);
+
+  const handleVisitorOnline = useCallback((event: VisitorOnlineEvent) => {
+    console.log('[ChatContext] handleVisitorOnline called:', event.visitor.id, event.visitor.name);
+    // Play visitor sound for returning visitors (uses same setting as new visitor)
+    playVisitorSound(isMutedRef.current, notificationSettingsRef.current.sound.new_visitor);
+  }, []);
+
   // WebSocket connection
   const { isConnected, subscribeToConversation } = useWebSocket({
     tenantId,
@@ -346,6 +359,8 @@ export function ChatProvider({ children, tenantId }: ChatProviderProps) {
     onConversationClosed: handleConversationClosed,
     onConversationTransferred: handleConversationTransferred,
     onNewMessage: handleNewMessage,
+    onNewVisitor: handleNewVisitor,
+    onVisitorOnline: handleVisitorOnline,
     onTypingIndicator: handleTypingIndicator,
     onAgentStatusChanged: handleAgentStatusChanged,
     onAiTookOver: handleAiTookOver,
@@ -818,6 +833,43 @@ function playMessageSound(isMuted: boolean, settingEnabled: boolean = true) {
       });
     } catch (e) {
       // Ignore errors
+    }
+  }
+}
+
+// Helper function to play visitor notification sound (gentler than message sound)
+function playVisitorSound(isMuted: boolean, settingEnabled: boolean = false) {
+  console.log('[Sound] playVisitorSound called, muted:', isMuted, 'enabled:', settingEnabled);
+  if (isMuted || !settingEnabled) return;
+  if (typeof window !== 'undefined') {
+    try {
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+
+      // Play two short beeps for visitor online notification
+      const playBeep = (startTime: number, frequency: number) => {
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+
+        oscillator.frequency.value = frequency;
+        oscillator.type = 'sine';
+
+        gainNode.gain.setValueAtTime(0.3, startTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + 0.12);
+
+        oscillator.start(startTime);
+        oscillator.stop(startTime + 0.12);
+      };
+
+      // Two ascending beeps
+      playBeep(audioContext.currentTime, 440);        // A4
+      playBeep(audioContext.currentTime + 0.15, 554); // C#5
+
+      console.log('[Sound] Visitor sound played');
+    } catch (e) {
+      console.error('[Sound] Failed to play visitor sound:', e);
     }
   }
 }
