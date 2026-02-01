@@ -48,6 +48,7 @@ export default function VisitorsPage() {
   // Start chat modal
   const [showStartChat, setShowStartChat] = useState(false);
   const [chatMessage, setChatMessage] = useState('');
+  const [openWidget, setOpenWidget] = useState(false);
   const [startingChat, setStartingChat] = useState(false);
 
   const loadVisitors = useCallback(async (page = 1) => {
@@ -129,7 +130,7 @@ export default function VisitorsPage() {
 
     setStartingChat(true);
     try {
-      const response = await visitorsApi.startChat(tenantId, selectedVisitor.id, chatMessage.trim());
+      const response = await visitorsApi.startChat(tenantId, selectedVisitor.id, chatMessage.trim(), openWidget);
       // Navigate to the conversation in inbox
       router.push(`/${lang}/workspaces/${tenantId}/inbox?conversation=${response.data.conversation_id}`);
     } catch (err: unknown) {
@@ -147,6 +148,7 @@ export default function VisitorsPage() {
       setStartingChat(false);
       setShowStartChat(false);
       setChatMessage('');
+      setOpenWidget(false);
     }
   };
 
@@ -552,6 +554,18 @@ export default function VisitorsPage() {
               className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none mb-4"
               autoFocus
             />
+
+            <label className="flex items-center gap-2 mb-4 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={openWidget}
+                onChange={(e) => setOpenWidget(e.target.checked)}
+                className="w-4 h-4 text-purple-600 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 rounded focus:ring-purple-500"
+              />
+              <span className="text-sm text-gray-700 dark:text-gray-300">
+                Open chat widget automatically
+              </span>
+            </label>
 
             <div className="flex justify-end gap-3">
               <button

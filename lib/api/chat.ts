@@ -393,14 +393,14 @@ export const visitorsApi = {
     return response.data;
   },
 
-  startChat: async (tenantId: number, visitorId: number, message: string) => {
+  startChat: async (tenantId: number, visitorId: number, message: string, openWidget: boolean = true) => {
     const response = await apiClient.post<{
       status: string;
       data: {
         conversation_id: number;
         message: ChatMessage;
       };
-    }>(`/tenants/${tenantId}/visitors/${visitorId}/start-chat`, { message });
+    }>(`/tenants/${tenantId}/visitors/${visitorId}/start-chat`, { message, open_widget: openWidget });
     return response.data;
   },
 };
