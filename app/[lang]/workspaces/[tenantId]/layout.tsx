@@ -22,6 +22,7 @@ import {
   Loader2,
   Bell,
   Eye,
+  User,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -142,6 +143,11 @@ export default function WorkspaceLayout({ children }: WorkspaceLayoutProps) {
       label: 'My Notifications',
       icon: Bell,
       href: `${basePath}/notifications`,
+    },
+    {
+      label: 'My Profile',
+      icon: User,
+      href: `${basePath}/profile`,
     },
     // Admin-only items below
     {
