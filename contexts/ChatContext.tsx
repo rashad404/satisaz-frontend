@@ -134,9 +134,21 @@ export function ChatProvider({ children, tenantId }: ChatProviderProps) {
 
   // WebSocket event handlers
   const handleNewConversation = useCallback((event: NewConversationEvent) => {
-    setQueuedConversations((prev) => [event.conversation, ...prev]);
-    // Play notification sound
-    playNotificationSound(isMutedRef.current);
+    // Only add to queue if it's actually a queued, unassigned conversation
+    // Agent-initiated chats are created as ACTIVE and already assigned
+    if (event.conversation.status === 'queued' && event.conversation.handler_type === 'unassigned') {
+      setQueuedConversations((prev) => [event.conversation, ...prev]);
+      // Play notification sound
+      playNotificationSound(isMutedRef.current);
+    } else {
+      // For agent-initiated or already-assigned conversations, add to conversations list
+      setConversations((prev) => {
+        if (prev.some((c) => c.id === event.conversation.id)) {
+          return prev;
+        }
+        return [event.conversation, ...prev];
+      });
+    }
   }, []);
 
   const handleConversationAccepted = useCallback((event: ConversationAcceptedEvent) => {
@@ -417,8 +429,25 @@ export function ChatProvider({ children, tenantId }: ChatProviderProps) {
     }
   }, [tenantId]);
 
+  // Track if a conversation selection is in progress to prevent race conditions
+  const selectionInProgressRef = useRef<number | null>(null);
+
   // Select conversation
   const selectConversation = useCallback(async (conversationId: number | null) => {
+    // Prevent duplicate/racing selections
+    if (conversationId && selectionInProgressRef.current === conversationId) {
+      console.log('[ChatContext] Selection already in progress for:', conversationId);
+      return;
+    }
+
+    // If we're already viewing this conversation, skip
+    if (conversationId && activeConversationRef.current?.id === conversationId) {
+      console.log('[ChatContext] Already viewing conversation:', conversationId);
+      return;
+    }
+
+    console.log('[ChatContext] selectConversation called:', conversationId);
+
     // Persist selected conversation
     if (conversationId) {
       localStorage.setItem(`satis_inbox_conversation_${tenantId}`, String(conversationId));
@@ -427,14 +456,30 @@ export function ChatProvider({ children, tenantId }: ChatProviderProps) {
     }
 
     if (!conversationId) {
+      selectionInProgressRef.current = null;
       setActiveConversation(null);
       setMessages([]);
       return;
     }
 
+    // Mark selection in progress
+    selectionInProgressRef.current = conversationId;
+
+    // Clear previous conversation state before loading new one
+    setActiveConversation(null);
+    setMessages([]);
     setIsLoadingMessages(true);
+
     try {
       const response = await chatApi.conversations.get(tenantId, conversationId);
+
+      // Check if we're still trying to load this conversation (not superseded)
+      if (selectionInProgressRef.current !== conversationId) {
+        console.log('[ChatContext] Selection superseded, skipping:', conversationId, 'current:', selectionInProgressRef.current);
+        return;
+      }
+
+      console.log('[ChatContext] Loaded conversation:', conversationId, 'messages:', response.data.messages?.length);
       setActiveConversation(response.data);
       setMessages(response.data.messages || []);
 
@@ -453,7 +498,11 @@ export function ChatProvider({ children, tenantId }: ChatProviderProps) {
       // Clear saved conversation if it failed to load
       localStorage.removeItem(`satis_inbox_conversation_${tenantId}`);
     } finally {
-      setIsLoadingMessages(false);
+      // Only clear loading state if this was the last selection
+      if (selectionInProgressRef.current === conversationId) {
+        selectionInProgressRef.current = null;
+        setIsLoadingMessages(false);
+      }
     }
   }, [tenantId, subscribeToConversation]);
 
@@ -478,8 +527,10 @@ export function ChatProvider({ children, tenantId }: ChatProviderProps) {
 
   // Accept conversation
   const acceptConversation = useCallback(async (conversationId: number) => {
+    console.log('[ChatContext] Accepting conversation:', conversationId);
     try {
       const response = await chatApi.conversations.accept(tenantId, conversationId);
+      console.log('[ChatContext] Accept response:', response.data.id, response.data.status);
       // Remove from queue
       setQueuedConversations((prev) => prev.filter((c) => c.id !== conversationId));
       // Add to conversations if not there
@@ -591,10 +642,20 @@ export function ChatProvider({ children, tenantId }: ChatProviderProps) {
     loadQueue();
   }, [tenantId, loadTenant, loadConversations, loadQueue]);
 
+  // Track if we've done the initial restore (to prevent repeated restores)
+  const hasRestoredRef = useRef<boolean>(false);
+
   // Restore saved conversation after initial load
   useEffect(() => {
+    // Only restore once per session
+    if (hasRestoredRef.current) {
+      return;
+    }
+    hasRestoredRef.current = true;
+
     const savedConversationId = localStorage.getItem(`satis_inbox_conversation_${tenantId}`);
-    if (savedConversationId && !activeConversation) {
+    if (savedConversationId) {
+      console.log('[ChatContext] Restoring saved conversation:', savedConversationId);
       selectConversation(parseInt(savedConversationId, 10));
     }
   }, [tenantId]); // Only run once on mount, don't include selectConversation to avoid loops

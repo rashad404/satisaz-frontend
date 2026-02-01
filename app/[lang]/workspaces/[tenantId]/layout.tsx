@@ -21,6 +21,7 @@ import {
   X,
   Loader2,
   Bell,
+  Eye,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -126,6 +127,11 @@ export default function WorkspaceLayout({ children }: WorkspaceLayoutProps) {
       label: 'Conversations',
       icon: MessageSquare,
       href: `${basePath}/conversations`,
+    },
+    {
+      label: 'Visitors',
+      icon: Eye,
+      href: `${basePath}/visitors`,
     },
     {
       label: 'Knowledge Base',

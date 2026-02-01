@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useChat } from '@/contexts/ChatContext';
 import { useTranslations } from 'next-intl';
+import { useSearchParams } from 'next/navigation';
 import { ConversationList, ChatWindow, QueueCard } from '@/components/chat';
 import { Search, Inbox, Clock, MessageSquare, User, Volume2, VolumeX } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -12,6 +13,7 @@ type TabType = 'queue' | 'mine' | 'active' | 'all';
 
 export default function InboxPage() {
   const t = useTranslations();
+  const searchParams = useSearchParams();
   const {
     queuedConversations,
     conversations,
@@ -41,6 +43,28 @@ export default function InboxPage() {
   useEffect(() => {
     localStorage.setItem('satis_inbox_tab', activeTab);
   }, [activeTab]);
+
+  // Track if we've processed the URL param (to prevent re-processing on activeConversation changes)
+  const [processedUrlParam, setProcessedUrlParam] = useState<string | null>(null);
+
+  // Handle conversation URL parameter (e.g., ?conversation=123)
+  useEffect(() => {
+    const conversationId = searchParams.get('conversation');
+    // Only process if there's a URL param and we haven't processed this exact param yet
+    if (conversationId && processedUrlParam !== conversationId) {
+      const id = parseInt(conversationId, 10);
+      if (!isNaN(id)) {
+        console.log('[InboxPage] Processing URL conversation param:', id);
+        setProcessedUrlParam(conversationId);
+        // Refresh conversations list to include the new conversation
+        loadConversations();
+        // Select the conversation directly (no need to accept - it's already assigned)
+        selectConversation(id);
+        // Switch to "mine" tab since agent-initiated chats are assigned to the agent
+        setActiveTab('mine');
+      }
+    }
+  }, [searchParams, selectConversation, loadConversations, processedUrlParam]);
 
   // Refresh queue periodically (conversations update via WebSocket)
   useEffect(() => {

@@ -58,6 +58,53 @@ export interface Visitor {
   updated_at: string;
 }
 
+export interface VisitorListItem {
+  id: number;
+  visitor_uid: string;
+  name?: string;
+  email?: string;
+  phone?: string;
+  metadata?: Record<string, unknown>;
+  is_online: boolean;
+  is_identified: boolean;
+  current_page?: string;
+  current_page_title?: string;
+  page_view_count: number;
+  conversations_count: number;
+  first_seen_at: string;
+  last_seen_at: string;
+}
+
+export interface VisitorDetails extends VisitorListItem {
+  page_views: VisitorPageView[];
+  conversations: VisitorConversationSummary[];
+}
+
+export interface VisitorPageView {
+  id: number;
+  page_url: string;
+  page_title?: string;
+  viewed_at: string;
+}
+
+export interface VisitorConversationSummary {
+  id: number;
+  status: ConversationStatus;
+  handler_type: HandlerType;
+  assigned_agent?: Agent;
+  messages_count: number;
+  created_at: string;
+  closed_at?: string;
+}
+
+export interface VisitorFilters {
+  online_only?: boolean;
+  identified_only?: boolean;
+  search?: string;
+  per_page?: number;
+  page?: number;
+}
+
 export type ConversationStatus = 'queued' | 'active' | 'waiting' | 'closed';
 export type HandlerType = 'human' | 'ai' | 'unassigned';
 export type SenderType = 'visitor' | 'agent' | 'ai' | 'system';

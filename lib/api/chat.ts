@@ -15,6 +15,9 @@ import type {
   CreateKnowledgeBaseItemData,
   AgentStatusType,
   NotificationSettings,
+  VisitorListItem,
+  VisitorDetails,
+  VisitorFilters,
 } from '../types/chat';
 
 // Tenant/Workspace APIs
@@ -307,6 +310,41 @@ export const knowledgeBaseApi = {
   },
 };
 
+// Visitor APIs
+export const visitorsApi = {
+  list: async (tenantId: number, filters?: VisitorFilters) => {
+    const response = await apiClient.get<{
+      status: string;
+      data: {
+        data: VisitorListItem[];
+        current_page: number;
+        last_page: number;
+        per_page: number;
+        total: number;
+      };
+    }>(`/tenants/${tenantId}/visitors`, { params: filters });
+    return response.data;
+  },
+
+  get: async (tenantId: number, visitorId: number) => {
+    const response = await apiClient.get<{ status: string; data: VisitorDetails }>(
+      `/tenants/${tenantId}/visitors/${visitorId}`
+    );
+    return response.data;
+  },
+
+  startChat: async (tenantId: number, visitorId: number, message: string) => {
+    const response = await apiClient.post<{
+      status: string;
+      data: {
+        conversation_id: number;
+        message: ChatMessage;
+      };
+    }>(`/tenants/${tenantId}/visitors/${visitorId}/start-chat`, { message });
+    return response.data;
+  },
+};
+
 // Export all APIs
 export const chatApi = {
   tenants: tenantsApi,
@@ -315,6 +353,7 @@ export const chatApi = {
   messages: messagesApi,
   aiConfig: aiConfigApi,
   knowledgeBase: knowledgeBaseApi,
+  visitors: visitorsApi,
 };
 
 export default chatApi;
