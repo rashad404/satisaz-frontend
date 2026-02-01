@@ -3,7 +3,7 @@
 import { useCallback } from 'react';
 import { useChat } from '@/contexts/ChatContext';
 import { useTranslations } from 'next-intl';
-import { MessageSquare, Bot, User, Clock } from 'lucide-react';
+import { MessageSquare, Bot, User, Clock, StickyNote } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Conversation, ConversationStatus } from '@/lib/types/chat';
 
@@ -11,15 +11,20 @@ interface ConversationListProps {
   filter?: ConversationStatus | 'all';
   searchQuery?: string;
   assignedToMe?: boolean;
+  hasNotes?: boolean;
 }
 
-export function ConversationList({ filter = 'all', searchQuery = '', assignedToMe = false }: ConversationListProps) {
+export function ConversationList({ filter = 'all', searchQuery = '', assignedToMe = false, hasNotes = false }: ConversationListProps) {
   const t = useTranslations();
   const { conversations, activeConversation, selectConversation, isLoadingConversations, currentUserId } = useChat();
 
   const filteredConversations = conversations.filter((conv) => {
     // Filter by assigned to me
     if (assignedToMe && conv.assigned_agent_id !== currentUserId) {
+      return false;
+    }
+    // Filter by has notes
+    if (hasNotes && (conv.notes_count ?? 0) === 0) {
       return false;
     }
     // Filter by status
@@ -52,10 +57,20 @@ export function ConversationList({ filter = 'all', searchQuery = '', assignedToM
   if (filteredConversations.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-gray-500 dark:text-gray-400 p-6">
-        <MessageSquare className="h-16 w-16 mb-3 opacity-50" />
-        <p className="text-base font-medium text-center">
-          {searchQuery ? 'No conversations match your search' : 'No conversations yet'}
-        </p>
+        {hasNotes ? (
+          <>
+            <StickyNote className="h-16 w-16 mb-3 opacity-50" />
+            <p className="text-base font-medium text-center">No conversations with notes</p>
+            <p className="text-sm mt-1 text-center">Add notes to conversations to see them here</p>
+          </>
+        ) : (
+          <>
+            <MessageSquare className="h-16 w-16 mb-3 opacity-50" />
+            <p className="text-base font-medium text-center">
+              {searchQuery ? 'No conversations match your search' : 'No conversations yet'}
+            </p>
+          </>
+        )}
       </div>
     );
   }
@@ -81,7 +96,7 @@ interface ConversationItemProps {
 }
 
 function ConversationItem({ conversation, isActive, onClick }: ConversationItemProps) {
-  const { visitor, last_message, unread_count, handler_type, status, updated_at } = conversation;
+  const { visitor, last_message, unread_count, handler_type, status, updated_at, notes_count } = conversation;
 
   const getStatusColor = (status: ConversationStatus) => {
     switch (status) {
@@ -176,6 +191,12 @@ function ConversationItem({ conversation, isActive, onClick }: ConversationItemP
             <span className="inline-flex items-center gap-1 text-xs text-yellow-600 dark:text-yellow-400">
               <Clock className="h-3.5 w-3.5" />
               In queue
+            </span>
+          )}
+          {(notes_count ?? 0) > 0 && (
+            <span className="inline-flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400">
+              <StickyNote className="h-3.5 w-3.5" />
+              {notes_count}
             </span>
           )}
           {(unread_count ?? 0) > 0 && (

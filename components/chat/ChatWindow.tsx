@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useChat } from '@/contexts/ChatContext';
 import { useTranslations } from 'next-intl';
 import { Bot, User, MessageSquare, Clock, CheckCheck, Check } from 'lucide-react';
@@ -9,6 +9,7 @@ import type { ChatMessage, SenderType, Visitor } from '@/lib/types/chat';
 import { MessageInput } from './MessageInput';
 import { ConversationHeader } from './ConversationHeader';
 import { TypingIndicator } from './TypingIndicator';
+import { NotesPanel } from './NotesPanel';
 
 interface ChatWindowProps {
   onBack?: () => void;
@@ -19,6 +20,7 @@ export function ChatWindow({ onBack }: ChatWindowProps) {
   const { activeConversation, messages, isLoadingMessages, typingUsers, markMessagesAsRead } = useChat();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const [showNotes, setShowNotes] = useState(false);
 
   // Check if visitor is typing
   const isVisitorTyping = activeConversation ? typingUsers.has(activeConversation.id) : false;
@@ -48,66 +50,83 @@ export function ChatWindow({ onBack }: ChatWindowProps) {
   }
 
   return (
-    <div className="flex flex-col h-full bg-white dark:bg-gray-900">
-      {/* Header */}
-      <ConversationHeader onBack={onBack} />
+    <div className="flex h-full bg-white dark:bg-gray-900">
+      {/* Main Chat Area - hidden on mobile when notes are open */}
+      <div className={cn(
+        "flex flex-col flex-1 min-w-0",
+        showNotes && "hidden md:flex"
+      )}>
+        {/* Header */}
+        <ConversationHeader
+          onBack={onBack}
+          showNotes={showNotes}
+          onToggleNotes={() => setShowNotes(!showNotes)}
+        />
 
-      {/* Messages */}
-      <div
-        ref={messagesContainerRef}
-        className="flex-1 overflow-y-auto p-4 space-y-4"
-      >
-        {isLoadingMessages ? (
-          <div className="flex items-center justify-center h-full">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600" />
-          </div>
-        ) : messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-gray-500 dark:text-gray-400">
-            <MessageSquare className="h-12 w-12 mb-2 opacity-50" />
-            <p className="text-sm">No messages yet</p>
-          </div>
-        ) : (
-          <>
-            {/* Conversation start indicator */}
-            <div className="flex items-center justify-center gap-2 py-4">
-              <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
-              <span className="text-xs text-gray-500 dark:text-gray-400">
-                Conversation started {new Date(activeConversation.created_at).toLocaleString()}
-              </span>
-              <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
+        {/* Messages */}
+        <div
+          ref={messagesContainerRef}
+          className="flex-1 overflow-y-auto p-4 space-y-4"
+        >
+          {isLoadingMessages ? (
+            <div className="flex items-center justify-center h-full">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600" />
             </div>
-
-            {/* Messages */}
-            {messages.map((message, index) => (
-              <MessageBubble
-                key={message.id}
-                message={message}
-                visitor={activeConversation.visitor}
-                showAvatar={index === 0 || messages[index - 1].sender_type !== message.sender_type}
-              />
-            ))}
-
-            {/* Typing indicator */}
-            {isVisitorTyping && (
-              <div className="pb-2">
-                <TypingIndicator name={activeConversation.visitor?.name || activeConversation.visitor?.email?.split('@')[0] || 'Visitor'} />
+          ) : messages.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full text-gray-500 dark:text-gray-400">
+              <MessageSquare className="h-12 w-12 mb-2 opacity-50" />
+              <p className="text-sm">No messages yet</p>
+            </div>
+          ) : (
+            <>
+              {/* Conversation start indicator */}
+              <div className="flex items-center justify-center gap-2 py-4">
+                <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
+                <span className="text-xs text-gray-500 dark:text-gray-400">
+                  Conversation started {new Date(activeConversation.created_at).toLocaleString()}
+                </span>
+                <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
               </div>
-            )}
-          </>
+
+              {/* Messages */}
+              {messages.map((message, index) => (
+                <MessageBubble
+                  key={message.id}
+                  message={message}
+                  visitor={activeConversation.visitor}
+                  showAvatar={index === 0 || messages[index - 1].sender_type !== message.sender_type}
+                />
+              ))}
+
+              {/* Typing indicator */}
+              {isVisitorTyping && (
+                <div className="pb-2">
+                  <TypingIndicator name={activeConversation.visitor?.name || activeConversation.visitor?.email?.split('@')[0] || 'Visitor'} />
+                </div>
+              )}
+            </>
+          )}
+          <div ref={messagesEndRef} className="h-1" />
+        </div>
+
+        {/* Message input */}
+        {activeConversation.status !== 'closed' && <MessageInput />}
+
+        {/* Closed indicator */}
+        {activeConversation.status === 'closed' && (
+          <div className="p-4 bg-gray-100 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 text-center text-gray-500 dark:text-gray-400">
+            <p className="text-sm">This conversation has been closed</p>
+            <p className="text-xs mt-1">
+              Closed at {activeConversation.closed_at ? new Date(activeConversation.closed_at).toLocaleString() : 'Unknown'}
+            </p>
+          </div>
         )}
-        <div ref={messagesEndRef} className="h-1" />
       </div>
 
-      {/* Message input */}
-      {activeConversation.status !== 'closed' && <MessageInput />}
-
-      {/* Closed indicator */}
-      {activeConversation.status === 'closed' && (
-        <div className="p-4 bg-gray-100 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 text-center text-gray-500 dark:text-gray-400">
-          <p className="text-sm">This conversation has been closed</p>
-          <p className="text-xs mt-1">
-            Closed at {activeConversation.closed_at ? new Date(activeConversation.closed_at).toLocaleString() : 'Unknown'}
-          </p>
+      {/* Notes Panel - full width on mobile, side panel on desktop */}
+      {showNotes && (
+        <div className="w-full md:w-72 lg:w-80 flex-shrink-0">
+          <NotesPanel onClose={() => setShowNotes(false)} />
         </div>
       )}
     </div>

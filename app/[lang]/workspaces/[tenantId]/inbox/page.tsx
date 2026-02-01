@@ -5,11 +5,11 @@ import { useChat } from '@/contexts/ChatContext';
 import { useTranslations } from 'next-intl';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { ConversationList, ChatWindow, QueueCard } from '@/components/chat';
-import { Search, Inbox, Clock, MessageSquare, User, Volume2, VolumeX } from 'lucide-react';
+import { Search, Inbox, Clock, MessageSquare, User, Volume2, VolumeX, StickyNote } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { ConversationStatus } from '@/lib/types/chat';
 
-type TabType = 'queue' | 'mine' | 'active' | 'all';
+type TabType = 'queue' | 'mine' | 'active' | 'notes' | 'all';
 
 export default function InboxPage() {
   const t = useTranslations();
@@ -32,7 +32,7 @@ export default function InboxPage() {
   const [activeTab, setActiveTab] = useState<TabType>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('satis_inbox_tab');
-      if (saved && ['queue', 'mine', 'active', 'all'].includes(saved)) {
+      if (saved && ['queue', 'mine', 'active', 'notes', 'all'].includes(saved)) {
         return saved as TabType;
       }
     }
@@ -80,6 +80,7 @@ export default function InboxPage() {
   }, [loadQueue]);
 
   const myConversations = conversations.filter((c) => c.assigned_agent_id === currentUserId);
+  const conversationsWithNotes = conversations.filter((c) => (c.notes_count ?? 0) > 0);
 
   const tabs = [
     {
@@ -104,6 +105,13 @@ export default function InboxPage() {
       countColor: 'bg-green-500',
     },
     {
+      id: 'notes' as const,
+      label: 'Notes',
+      icon: StickyNote,
+      count: conversationsWithNotes.length,
+      countColor: 'bg-amber-500',
+    },
+    {
       id: 'all' as const,
       label: 'All',
       icon: Inbox,
@@ -116,6 +124,7 @@ export default function InboxPage() {
     if (activeTab === 'queue') return 'queued';
     if (activeTab === 'active') return 'active';
     if (activeTab === 'mine') return 'all';
+    if (activeTab === 'notes') return 'all';
     return statusFilter;
   };
 
@@ -228,6 +237,7 @@ export default function InboxPage() {
               filter={getFilteredStatus()}
               searchQuery={searchQuery}
               assignedToMe={activeTab === 'mine'}
+              hasNotes={activeTab === 'notes'}
             />
           </div>
         )}

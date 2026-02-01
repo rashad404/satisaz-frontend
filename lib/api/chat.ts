@@ -18,6 +18,7 @@ import type {
   VisitorListItem,
   VisitorDetails,
   VisitorFilters,
+  ConversationNote,
 } from '../types/chat';
 
 // Tenant/Workspace APIs
@@ -310,6 +311,31 @@ export const knowledgeBaseApi = {
   },
 };
 
+// Notes APIs
+export const notesApi = {
+  list: async (tenantId: number, conversationId: number) => {
+    const response = await apiClient.get<{ status: string; data: ConversationNote[] }>(
+      `/tenants/${tenantId}/conversations/${conversationId}/notes`
+    );
+    return response.data;
+  },
+
+  create: async (tenantId: number, conversationId: number, content: string) => {
+    const response = await apiClient.post<{ status: string; data: ConversationNote }>(
+      `/tenants/${tenantId}/conversations/${conversationId}/notes`,
+      { content }
+    );
+    return response.data;
+  },
+
+  delete: async (tenantId: number, conversationId: number, noteId: number) => {
+    const response = await apiClient.delete<{ status: string }>(
+      `/tenants/${tenantId}/conversations/${conversationId}/notes/${noteId}`
+    );
+    return response.data;
+  },
+};
+
 // Visitor APIs
 export const visitorsApi = {
   list: async (tenantId: number, filters?: VisitorFilters) => {
@@ -351,6 +377,7 @@ export const chatApi = {
   agents: agentsApi,
   conversations: conversationsApi,
   messages: messagesApi,
+  notes: notesApi,
   aiConfig: aiConfigApi,
   knowledgeBase: knowledgeBaseApi,
   visitors: visitorsApi,

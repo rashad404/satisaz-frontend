@@ -128,7 +128,9 @@ export interface Conversation {
   visitor?: Visitor;
   assigned_agent?: Agent;
   messages?: ChatMessage[];
+  notes?: ConversationNote[];
   messages_count?: number;
+  notes_count?: number;
   unread_count?: number;
   last_message?: {
     content: string;
@@ -202,6 +204,16 @@ export interface ChatTransfer {
   to_agent?: Agent;
 }
 
+export interface ConversationNote {
+  id: number;
+  conversation_id: number;
+  agent_id: number;
+  agent?: Agent;
+  content: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface AiConfiguration {
   id: number;
   tenant_id: number;
@@ -232,6 +244,7 @@ export interface ConversationFilters {
   status?: ConversationStatus | 'all';
   handler_type?: HandlerType | 'all';
   assigned_to_me?: boolean;
+  has_notes?: boolean;
   per_page?: number;
   page?: number;
 }

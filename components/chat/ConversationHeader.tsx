@@ -14,14 +14,17 @@ import {
   Globe,
   ArrowLeft,
   Phone,
+  StickyNote,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface ConversationHeaderProps {
   onBack?: () => void;
+  showNotes?: boolean;
+  onToggleNotes?: () => void;
 }
 
-export function ConversationHeader({ onBack }: ConversationHeaderProps) {
+export function ConversationHeader({ onBack, showNotes, onToggleNotes }: ConversationHeaderProps) {
   const t = useTranslations();
   const {
     activeConversation,
@@ -186,6 +189,22 @@ export function ConversationHeader({ onBack }: ConversationHeaderProps) {
 
       {/* Right: Actions */}
       <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+        {/* Notes toggle button */}
+        {onToggleNotes && (
+          <button
+            onClick={onToggleNotes}
+            className={cn(
+              "p-2.5 rounded-lg transition-colors",
+              showNotes
+                ? "text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-900/50"
+                : "text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+            )}
+            title="Notes"
+          >
+            <StickyNote className="h-5 w-5" />
+          </button>
+        )}
+
         {/* Takeover button (only show when AI is handling) */}
         {handler_type === 'ai' && status !== 'closed' && (
           <button
