@@ -14,6 +14,7 @@ import {
   Clock,
   Globe,
   Bell,
+  User,
   ChevronRight,
 } from 'lucide-react';
 import Link from 'next/link';
@@ -213,6 +214,25 @@ export default function SettingsPage() {
             </div>
           </div>
         </div>
+
+        {/* Profile Settings Link */}
+        <Link
+          href={`/${lang}/workspaces/${tenantId}/settings/profile`}
+          className="block bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6 hover:border-purple-300 dark:hover:border-purple-700 transition-colors"
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="p-2 bg-purple-100 dark:bg-purple-900/50 rounded-lg">
+                <User className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Profil Ayarları</h2>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Görünən ad və avatarınızı dəyişin</p>
+              </div>
+            </div>
+            <ChevronRight className="h-5 w-5 text-gray-400" />
+          </div>
+        </Link>
 
         {/* Notification Settings Link */}
         <Link

@@ -146,12 +146,17 @@ export interface Conversation {
 
 export interface Agent {
   id: number;
-  name: string;
+  name: string;           // Resolved (display_name ?? real_name)
   email?: string;
-  avatar?: string;
+  avatar?: string;        // Resolved (display_avatar ?? real_avatar)
   role?: 'admin' | 'agent';
   status?: AgentStatusType;
   is_owner?: boolean;
+  // For editing - raw values
+  display_name?: string | null;
+  display_avatar?: string | null;
+  real_name?: string;
+  real_avatar?: string;
 }
 
 export type AgentStatusType = 'online' | 'away' | 'offline';

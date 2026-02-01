@@ -115,6 +115,40 @@ export const agentsApi = {
     );
     return response.data;
   },
+
+  getMyProfile: async (tenantId: number) => {
+    const response = await apiClient.get<{ status: string; data: Agent }>(
+      `/tenants/${tenantId}/agents/me/profile`
+    );
+    return response.data;
+  },
+
+  updateMyProfile: async (tenantId: number, data: { display_name?: string | null; display_avatar?: File | null; clear_avatar?: boolean }) => {
+    const formData = new FormData();
+
+    if (data.display_name !== undefined) {
+      formData.append('display_name', data.display_name || '');
+    }
+
+    if (data.display_avatar) {
+      formData.append('display_avatar', data.display_avatar);
+    }
+
+    if (data.clear_avatar) {
+      formData.append('clear_avatar', '1');
+    }
+
+    const response = await apiClient.patch<{ status: string; data: Agent; message: string }>(
+      `/tenants/${tenantId}/agents/me/profile`,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    );
+    return response.data;
+  },
 };
 
 // Conversation APIs
