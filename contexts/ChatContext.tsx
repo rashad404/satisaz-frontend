@@ -230,7 +230,8 @@ export function ChatProvider({ children, tenantId }: ChatProviderProps) {
 
     // Play sound for visitor messages
     if (message.sender_type === 'visitor') {
-      playNotificationSound(isMutedRef.current);
+      console.log('[ChatContext] Playing message sound for visitor message, muted:', isMutedRef.current);
+      playMessageSound(isMutedRef.current);
     }
   }, []);
 
@@ -733,7 +734,7 @@ export function useChat() {
   return context;
 }
 
-// Helper function to play notification sound
+// Helper function to play notification sound for new chats in queue
 function playNotificationSound(isMuted: boolean) {
   if (isMuted) return;
   if (typeof window !== 'undefined') {
@@ -742,6 +743,44 @@ function playNotificationSound(isMuted: boolean) {
     audio.play().catch(() => {
       // Ignore errors (e.g., if user hasn't interacted with page yet)
     });
+  }
+}
+
+// Base64 encoded short notification sound (same as widget)
+const MESSAGE_SOUND = 'data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAABhgC7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7//////////////////////////////////////////////////////////////////8AAAAATGF2YzU4LjEzAAAAAAAAAAAAAAAAJAAAAAAAAAAAAYYoRwmHAAAAAAD/+9DEAAAIAANIAAAAgAAA0gAAABBHOHgfB8HygIAmD5QEHLhgGHne7gQdFy4Py4IHB8oGP/BwfLu7u7vd3d3d3e9wQOXB8HygIPg+D5d3vd7u93/8EAQ/B8u7u7u93d7u7u7vd7u93d7hAQBB/UAALgIKCgoAAAA4EFhUBBYoAsLCwsLCwsEBAQEAgICAg4ODn//5QEP/Lg+D4Pg/KHQEBAQEH/lwfKAgICAg+D/5cH/5d3/y7vd3u93d7u9//tQxBUAAADSAAAAAAAAANIAAAAA3e7vd7vd3u7u73d7u7u7u7u73d3d3d3d7u93d3d7u7vd7u7vd3d7u7vf/+7u73d3d3d7vd3e7vd3u7u93/+93d3e7u93e7u7vd7u93d3u7u7u93u7u93d7u7vd3e7u7u93u7vd3d7';
+
+// Helper function to play message notification sound
+function playMessageSound(isMuted: boolean) {
+  if (isMuted) return;
+  if (typeof window !== 'undefined') {
+    try {
+      const audio = new Audio(MESSAGE_SOUND);
+      audio.volume = 0.5;
+      audio.play().catch(() => {
+        // Fallback to Web Audio API if Audio element fails
+        try {
+          const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+          const oscillator = audioContext.createOscillator();
+          const gainNode = audioContext.createGain();
+
+          oscillator.connect(gainNode);
+          gainNode.connect(audioContext.destination);
+
+          oscillator.frequency.value = 800;
+          oscillator.type = 'sine';
+
+          gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
+
+          oscillator.start(audioContext.currentTime);
+          oscillator.stop(audioContext.currentTime + 0.15);
+        } catch (e) {
+          // Ignore
+        }
+      });
+    } catch (e) {
+      // Ignore errors
+    }
   }
 }
 
