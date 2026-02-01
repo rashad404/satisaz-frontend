@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useParams, usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import { ChatProvider } from '@/contexts/ChatContext';
+import { ChatProvider, useChat } from '@/contexts/ChatContext';
 import { AgentStatusSelector } from '@/components/chat';
 import {
   MessageSquare,
@@ -193,6 +193,56 @@ export default function WorkspaceLayout({ children }: WorkspaceLayoutProps) {
 
   return (
     <ChatProvider tenantId={tenantId}>
+      <WorkspaceLayoutInner
+        lang={lang}
+        sidebarCollapsed={sidebarCollapsed}
+        setSidebarCollapsed={setSidebarCollapsed}
+        mobileMenuOpen={mobileMenuOpen}
+        setMobileMenuOpen={setMobileMenuOpen}
+        visibleNavItems={visibleNavItems}
+        basePath={basePath}
+        isActive={isActive}
+      >
+        {children}
+      </WorkspaceLayoutInner>
+    </ChatProvider>
+  );
+}
+
+// Inner component that can use ChatContext (inside ChatProvider)
+function WorkspaceLayoutInner({
+  lang,
+  sidebarCollapsed,
+  setSidebarCollapsed,
+  mobileMenuOpen,
+  setMobileMenuOpen,
+  visibleNavItems,
+  basePath,
+  isActive,
+  children,
+}: {
+  lang: string;
+  sidebarCollapsed: boolean;
+  setSidebarCollapsed: (v: boolean) => void;
+  mobileMenuOpen: boolean;
+  setMobileMenuOpen: (v: boolean) => void;
+  visibleNavItems: Array<{ label: string; icon: any; href: string; exact?: boolean; badge?: number; adminOnly?: boolean }>;
+  basePath: string;
+  isActive: (href: string, exact?: boolean) => boolean;
+  children: React.ReactNode;
+}) {
+  // Get online visitors count from ChatContext
+  const { onlineVisitorsCount } = useChat();
+
+  // Add badge to Visitors nav item
+  const navItemsWithBadge = visibleNavItems.map(item => {
+    if (item.href === `${basePath}/visitors`) {
+      return { ...item, badge: onlineVisitorsCount > 0 ? onlineVisitorsCount : undefined, badgeColor: 'green' };
+    }
+    return item;
+  });
+
+  return (
       <div className="flex h-screen bg-gray-50 dark:bg-gray-950">
         {/* Mobile menu overlay */}
         {mobileMenuOpen && (
@@ -251,7 +301,7 @@ export default function WorkspaceLayout({ children }: WorkspaceLayoutProps) {
 
           {/* Navigation */}
           <nav className="flex-1 overflow-y-auto p-2 space-y-1">
-            {visibleNavItems.map((item) => {
+            {navItemsWithBadge.map((item) => {
               const Icon = item.icon;
               const active = isActive(item.href, item.exact);
 
@@ -273,7 +323,10 @@ export default function WorkspaceLayout({ children }: WorkspaceLayoutProps) {
                     <>
                       <span className="flex-1 font-medium">{item.label}</span>
                       {item.badge !== undefined && (
-                        <span className="px-2 py-0.5 text-xs font-medium bg-purple-600 text-white rounded-full">
+                        <span className={cn(
+                          "px-2 py-0.5 text-xs font-medium text-white rounded-full",
+                          (item as any).badgeColor === 'green' ? 'bg-green-500' : 'bg-purple-600'
+                        )}>
                           {item.badge}
                         </span>
                       )}
@@ -318,6 +371,5 @@ export default function WorkspaceLayout({ children }: WorkspaceLayoutProps) {
           </main>
         </div>
       </div>
-    </ChatProvider>
   );
 }

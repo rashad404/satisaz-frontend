@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
-import { chatApi } from '@/lib/api/chat';
+import { chatApi, visitorsApi } from '@/lib/api/chat';
 import authService from '@/lib/api/auth';
 import { useWebSocket } from '@/hooks/useWebSocket';
 import type {
@@ -47,6 +47,9 @@ interface ChatContextValue {
 
   // Typing state
   typingUsers: Map<number, { name: string; timestamp: number }>;
+
+  // Visitors state
+  onlineVisitorsCount: number;
 
   // WebSocket state
   isConnected: boolean;
@@ -106,6 +109,9 @@ export function ChatProvider({ children, tenantId }: ChatProviderProps) {
 
   // Typing state
   const [typingUsers, setTypingUsers] = useState<Map<number, { name: string; timestamp: number }>>(new Map());
+
+  // Online visitors count
+  const [onlineVisitorsCount, setOnlineVisitorsCount] = useState(0);
 
   // Sound mute state (persisted in localStorage)
   const [isMuted, setIsMuted] = useState<boolean>(() => {
@@ -340,12 +346,18 @@ export function ChatProvider({ children, tenantId }: ChatProviderProps) {
   }, []);
 
   const handleNewVisitor = useCallback((event: NewVisitorEvent) => {
+    // Update online count if new visitor is online
+    if (event.visitor.is_online) {
+      setOnlineVisitorsCount(c => c + 1);
+    }
     // Play visitor sound (respects both mute toggle and notification settings)
     playVisitorSound(isMutedRef.current, notificationSettingsRef.current.sound.new_visitor);
   }, []);
 
   const handleVisitorOnline = useCallback((event: VisitorOnlineEvent) => {
     console.log('[ChatContext] handleVisitorOnline called:', event.visitor.id, event.visitor.name);
+    // Update online count
+    setOnlineVisitorsCount(c => c + 1);
     // Play visitor sound for returning visitors (uses same setting as new visitor)
     playVisitorSound(isMutedRef.current, notificationSettingsRef.current.sound.new_visitor);
   }, []);
@@ -692,6 +704,17 @@ export function ChatProvider({ children, tenantId }: ChatProviderProps) {
     loadTenant(tenantId);
     loadConversations();
     loadQueue();
+
+    // Load initial online visitors count
+    const loadOnlineCount = async () => {
+      try {
+        const response = await visitorsApi.list(tenantId, { online_only: 1, per_page: 1 } as any);
+        setOnlineVisitorsCount(response.data.total);
+      } catch (err) {
+        console.error('Failed to load online visitors count:', err);
+      }
+    };
+    loadOnlineCount();
   }, [tenantId, loadTenant, loadConversations, loadQueue]);
 
   // Track if we've done the initial restore (to prevent repeated restores)
@@ -755,6 +778,7 @@ export function ChatProvider({ children, tenantId }: ChatProviderProps) {
     myStatus,
     onlineAgentsCount,
     typingUsers,
+    onlineVisitorsCount,
     isConnected,
     isMuted,
     notificationSettings,

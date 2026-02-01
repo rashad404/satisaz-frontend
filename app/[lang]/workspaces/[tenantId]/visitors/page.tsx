@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { visitorsApi } from '@/lib/api/chat';
+import { useChat } from '@/contexts/ChatContext';
 import { cn } from '@/lib/utils';
 import {
   Eye,
@@ -18,8 +19,7 @@ import {
   Users,
   Filter,
 } from 'lucide-react';
-import type { VisitorListItem, VisitorDetails, NewVisitorEvent, VisitorOnlineEvent } from '@/lib/types/chat';
-import { useWebSocket } from '@/hooks/useWebSocket';
+import type { VisitorListItem, VisitorDetails } from '@/lib/types/chat';
 
 export default function VisitorsPage() {
   const params = useParams();
@@ -40,9 +40,10 @@ export default function VisitorsPage() {
     lastPage: 1,
     total: 0,
   });
-  // Separate counts for tabs
+  // Total count for "All" tab
   const [totalCount, setTotalCount] = useState(0);
-  const [onlineCount, setOnlineCount] = useState(0);
+  // Online count from shared context (updates in real-time across all pages)
+  const { onlineVisitorsCount } = useChat();
 
   // Selected visitor for detail panel
   const [selectedVisitor, setSelectedVisitor] = useState<VisitorDetails | null>(null);
@@ -75,10 +76,8 @@ export default function VisitorsPage() {
         total: response.data.total,
       });
 
-      // Update the appropriate count based on current filter
-      if (onlineOnly) {
-        setOnlineCount(response.data.total);
-      } else {
+      // Update total count when on "all" tab
+      if (!onlineOnly) {
         setTotalCount(response.data.total);
       }
     } catch (err) {
@@ -88,65 +87,10 @@ export default function VisitorsPage() {
     }
   }, [tenantId, searchQuery, onlineOnly, identifiedOnly]);
 
-  // Load online count separately on mount
-  const loadOnlineCount = useCallback(async () => {
-    try {
-      const response = await visitorsApi.list(tenantId, { online_only: 1, per_page: 1 } as any);
-      setOnlineCount(response.data.total);
-    } catch (err) {
-      console.error('Failed to load online count:', err);
-    }
-  }, [tenantId]);
-
-  // WebSocket handler for new visitors
-  const handleNewVisitor = useCallback((event: NewVisitorEvent) => {
-    // Add new visitor to the top of the list
-    setVisitors(prev => {
-      // Don't add duplicates
-      if (prev.some(v => v.id === event.visitor.id)) return prev;
-      return [event.visitor, ...prev];
-    });
-    setPagination(prev => ({ ...prev, total: prev.total + 1 }));
-    setTotalCount(prev => prev + 1);
-    if (event.visitor.is_online) {
-      setOnlineCount(prev => prev + 1);
-    }
-  }, []);
-
-  // WebSocket handler for visitor coming online
-  const handleVisitorOnline = useCallback((event: VisitorOnlineEvent) => {
-    // Check if visitor was previously offline in our list
-    setVisitors(prev => {
-      const existingVisitor = prev.find(v => v.id === event.visitor.id);
-      const wasOffline = !existingVisitor || !existingVisitor.is_online;
-
-      // Schedule count update outside of this setState
-      if (wasOffline) {
-        setTimeout(() => setOnlineCount(c => c + 1), 0);
-      }
-
-      if (existingVisitor) {
-        return prev.map(v => v.id === event.visitor.id ? { ...v, ...event.visitor, is_online: true } : v);
-      }
-      return [event.visitor, ...prev];
-    });
-  }, []);
-
-  // WebSocket connection for real-time updates
-  const { isConnected } = useWebSocket({
-    tenantId,
-    onNewVisitor: handleNewVisitor,
-    onVisitorOnline: handleVisitorOnline,
-  });
 
   useEffect(() => {
     loadVisitors();
   }, [loadVisitors]);
-
-  // Load online count on mount
-  useEffect(() => {
-    loadOnlineCount();
-  }, [loadOnlineCount]);
 
   const handleSelectVisitor = async (visitor: VisitorListItem) => {
     setLoadingDetails(true);
@@ -263,7 +207,7 @@ export default function VisitorsPage() {
               )}
             >
               <span className="w-2 h-2 rounded-full bg-green-500" />
-              Online ({onlineCount})
+              Online ({onlineVisitorsCount})
             </button>
           </div>
 
