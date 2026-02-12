@@ -6,6 +6,7 @@ import { contactsApi } from '@/lib/api/chat';
 import { ContactDetail } from './components/ContactDetail';
 import { ContactForm } from './components/ContactForm';
 import { cn } from '@/lib/utils';
+import { PageGuide } from '@/components/ui/PageGuide';
 import {
   Users,
   Search,
@@ -18,6 +19,10 @@ import {
   ChevronRight,
   Tag,
   X,
+  UserCheck,
+  MessageSquare,
+  SlidersHorizontal,
+  Sparkles,
 } from 'lucide-react';
 import type { ChatContact, ContactStage, ContactFilters } from '@/lib/types/chat';
 
@@ -127,6 +132,43 @@ export default function ContactsPage() {
               <Users className="h-5 w-5 text-purple-600 dark:text-purple-400" />
               <h1 className="text-base font-medium text-gray-900 dark:text-white">Contacts</h1>
               <span className="text-sm text-gray-500 dark:text-gray-400">({pagination.total})</span>
+              <PageGuide
+                storageKey="contacts"
+                title="Kontaktlar - İstifadə Qaydası"
+                description="Bu səhifə bütün müştərilərinizi bir yerdə idarə etmək üçündür. Söhbətdən gələn, əllə əlavə edilən və ya import olunan müştəriləri burada izləyin. Mərhələlərlə satış prosesini, teqlərlə qruplaşdırmanı və qeydlərlə ətraflı məlumatı asanlıqla idarə edin."
+                steps={[
+                  {
+                    icon: <MessageSquare className="h-4.5 w-4.5" />,
+                    title: 'Söhbətdən kontakt yaradın',
+                    description: 'Inbox səhifəsində müştəri ilə danışıq zamanı yuxarıdakı "Save Contact" düyməsinə basın. Müştərinin adı, emaili və telefonu avtomatik doldurulacaq.',
+                  },
+                  {
+                    icon: <Plus className="h-4.5 w-4.5" />,
+                    title: 'Əllə kontakt əlavə edin',
+                    description: '"Add" düyməsinə basaraq yeni kontakt yarada bilərsiniz. Ad, email, telefon, mərhələ və teqlər əlavə edin.',
+                  },
+                  {
+                    icon: <SlidersHorizontal className="h-4.5 w-4.5" />,
+                    title: 'Mərhələləri idarə edin',
+                    description: 'Hər kontaktın 4 mərhələsi var: Potential (maraqlanır), Qualified (ciddi müştəri), Customer (satış olub), Lost (itirilmiş). Kontaktın detallarına daxil olub mərhələni dəyişə bilərsiniz.',
+                  },
+                  {
+                    icon: <Tag className="h-4.5 w-4.5" />,
+                    title: 'Teqlərlə qruplaşdırın',
+                    description: 'Kontaktlara teqlər əlavə edin (məs: "hosting", "domain", "VIP"). Sonra teqlərə görə filterləyin.',
+                  },
+                  {
+                    icon: <UserCheck className="h-4.5 w-4.5" />,
+                    title: 'Avtomatik bağlantı',
+                    description: 'Kontakt yaradıldıqdan sonra, həmin müştəridən gələn yeni söhbətlər avtomatik olaraq bu kontakta bağlanacaq.',
+                  },
+                  {
+                    icon: <Sparkles className="h-4.5 w-4.5" />,
+                    title: 'Məsləhət',
+                    description: 'Hər potensial müştəri ilə söhbət edəndə onu kontakt kimi saxlayın. Beləliklə, heç bir müştəri itirilməz.',
+                  },
+                ]}
+              />
             </div>
             <button
               onClick={() => setShowCreateForm(true)}
