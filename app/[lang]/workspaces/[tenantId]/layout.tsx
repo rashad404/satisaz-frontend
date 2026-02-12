@@ -23,6 +23,7 @@ import {
   Bell,
   Eye,
   User,
+  UserCheck,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -133,6 +134,11 @@ export default function WorkspaceLayout({ children }: WorkspaceLayoutProps) {
       label: 'Visitors',
       icon: Eye,
       href: `${basePath}/visitors`,
+    },
+    {
+      label: 'Contacts',
+      icon: UserCheck,
+      href: `${basePath}/contacts`,
     },
     {
       label: 'Knowledge Base',

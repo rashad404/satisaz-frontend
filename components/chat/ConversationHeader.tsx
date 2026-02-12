@@ -2,12 +2,16 @@
 
 import { useState } from 'react';
 import { useChat } from '@/contexts/ChatContext';
+import { useParams } from 'next/navigation';
+import Link from 'next/link';
 import { useTranslations } from 'next-intl';
+import { ContactForm } from '@/app/[lang]/workspaces/[tenantId]/contacts/components/ContactForm';
 import {
   User,
   Bot,
   MoreVertical,
   UserPlus,
+  UserCheck,
   XCircle,
   Clock,
   Mail,
@@ -26,6 +30,9 @@ interface ConversationHeaderProps {
 
 export function ConversationHeader({ onBack, showNotes, onToggleNotes }: ConversationHeaderProps) {
   const t = useTranslations();
+  const params = useParams();
+  const lang = params.lang as string;
+  const tenantId = Number(params.tenantId);
   const {
     activeConversation,
     takeoverConversation,
@@ -35,6 +42,8 @@ export function ConversationHeader({ onBack, showNotes, onToggleNotes }: Convers
   } = useChat();
   const [showMenu, setShowMenu] = useState(false);
   const [showTransferModal, setShowTransferModal] = useState(false);
+  const [showContactForm, setShowContactForm] = useState(false);
+  const [contactSaved, setContactSaved] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
 
   if (!activeConversation) return null;
@@ -205,6 +214,27 @@ export function ConversationHeader({ onBack, showNotes, onToggleNotes }: Convers
           </button>
         )}
 
+        {/* Save as Contact / Show Contact */}
+        {!activeConversation.contact_id && !contactSaved ? (
+          <button
+            onClick={() => setShowContactForm(true)}
+            className="inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 text-sm font-medium text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-900/50 hover:bg-green-200 dark:hover:bg-green-900 active:bg-green-300 rounded-lg transition-colors"
+            title="Save as Contact"
+          >
+            <UserCheck className="h-4 w-4" />
+            <span className="hidden sm:inline">Save Contact</span>
+          </button>
+        ) : (activeConversation.contact_id || contactSaved) ? (
+          <Link
+            href={`/${lang}/workspaces/${tenantId}/contacts?id=${activeConversation.contact_id}`}
+            className="inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 text-sm font-medium text-blue-700 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/50 hover:bg-blue-200 dark:hover:bg-blue-900 rounded-lg transition-colors"
+            title="Show Contact"
+          >
+            <UserCheck className="h-4 w-4" />
+            <span className="hidden sm:inline">Show Contact</span>
+          </Link>
+        ) : null}
+
         {/* Takeover button (only show when AI is handling) */}
         {handler_type === 'ai' && status !== 'closed' && (
           <button
@@ -254,6 +284,21 @@ export function ConversationHeader({ onBack, showNotes, onToggleNotes }: Convers
           </div>
         )}
       </div>
+
+      {/* Save as Contact Modal */}
+      {showContactForm && activeConversation && (
+        <ContactForm
+          tenantId={tenantId}
+          conversationId={activeConversation.id}
+          prefill={{
+            name: visitor?.name || undefined,
+            email: visitor?.email || undefined,
+            phone: visitor?.phone || undefined,
+          }}
+          onClose={() => setShowContactForm(false)}
+          onSaved={() => setContactSaved(true)}
+        />
+      )}
 
       {/* Transfer Modal */}
       {showTransferModal && (

@@ -3,10 +3,14 @@ import type {
   Tenant,
   Conversation,
   ChatMessage,
+  ChatContact,
   Agent,
   AiConfiguration,
   KnowledgeBaseItem,
   ConversationFilters,
+  ContactFilters,
+  CreateContactData,
+  CreateContactFromConversationData,
   SendMessageData,
   CreateTenantData,
   UpdateTenantData,
@@ -405,6 +409,68 @@ export const visitorsApi = {
   },
 };
 
+// Contact/Lead APIs
+export const contactsApi = {
+  list: async (tenantId: number, filters?: ContactFilters) => {
+    const response = await apiClient.get<{
+      status: string;
+      data: {
+        data: ChatContact[];
+        current_page: number;
+        last_page: number;
+        per_page: number;
+        total: number;
+      };
+    }>(`/tenants/${tenantId}/contacts`, { params: filters });
+    return response.data;
+  },
+
+  get: async (tenantId: number, contactId: number) => {
+    const response = await apiClient.get<{ status: string; data: ChatContact }>(
+      `/tenants/${tenantId}/contacts/${contactId}`
+    );
+    return response.data;
+  },
+
+  create: async (tenantId: number, data: CreateContactData) => {
+    const response = await apiClient.post<{ status: string; data: ChatContact }>(
+      `/tenants/${tenantId}/contacts`,
+      data
+    );
+    return response.data;
+  },
+
+  update: async (tenantId: number, contactId: number, data: Partial<CreateContactData>) => {
+    const response = await apiClient.put<{ status: string; data: ChatContact }>(
+      `/tenants/${tenantId}/contacts/${contactId}`,
+      data
+    );
+    return response.data;
+  },
+
+  delete: async (tenantId: number, contactId: number) => {
+    const response = await apiClient.delete<{ status: string }>(
+      `/tenants/${tenantId}/contacts/${contactId}`
+    );
+    return response.data;
+  },
+
+  tags: async (tenantId: number) => {
+    const response = await apiClient.get<{ status: string; data: string[] }>(
+      `/tenants/${tenantId}/contacts/tags`
+    );
+    return response.data;
+  },
+
+  fromConversation: async (tenantId: number, data: CreateContactFromConversationData) => {
+    const response = await apiClient.post<{ status: string; data: ChatContact }>(
+      `/tenants/${tenantId}/contacts/from-conversation`,
+      data
+    );
+    return response.data;
+  },
+};
+
 // Export all APIs
 export const chatApi = {
   tenants: tenantsApi,
@@ -415,6 +481,7 @@ export const chatApi = {
   aiConfig: aiConfigApi,
   knowledgeBase: knowledgeBaseApi,
   visitors: visitorsApi,
+  contacts: contactsApi,
 };
 
 export default chatApi;

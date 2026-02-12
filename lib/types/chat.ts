@@ -114,6 +114,7 @@ export interface Conversation {
   id: number;
   tenant_id: number;
   visitor_id: number;
+  contact_id?: number;
   assigned_agent_id?: number;
   status: ConversationStatus;
   handler_type: HandlerType;
@@ -377,6 +378,58 @@ export interface ConversationTransferredEvent {
   };
   reason?: string;
   transferred_at: string;
+}
+
+// Contact / Lead Types
+export type ContactStage = 'potential' | 'qualified' | 'customer' | 'lost';
+export type ContactSource = 'chat' | 'manual' | 'import';
+
+export interface ChatContact {
+  id: number;
+  tenant_id: number;
+  visitor_id?: number;
+  name?: string;
+  email?: string;
+  phone?: string;
+  stage: ContactStage;
+  tags: string[];
+  data: Record<string, unknown>;
+  source: ContactSource;
+  source_conversation_id?: number;
+  assigned_agent_id?: number;
+  assigned_agent?: {
+    id: number;
+    name: string;
+    avatar?: string;
+  };
+  notes?: string;
+  converted_at?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ContactFilters {
+  stage?: ContactStage;
+  tag?: string;
+  search?: string;
+  assigned_agent_id?: number;
+  per_page?: number;
+  page?: number;
+}
+
+export interface CreateContactData {
+  name?: string;
+  email?: string;
+  phone?: string;
+  stage?: ContactStage;
+  tags?: string[];
+  data?: Record<string, unknown>;
+  assigned_agent_id?: number;
+  notes?: string;
+}
+
+export interface CreateContactFromConversationData extends CreateContactData {
+  conversation_id: number;
 }
 
 // Notification Settings
