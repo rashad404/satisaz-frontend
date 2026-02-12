@@ -94,7 +94,8 @@ export function ContactDetail({ contact, tenantId, onClose, onUpdated, onDeleted
             </button>
             <button
               onClick={onClose}
-              className="p-1.5 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 lg:hidden"
+              className="p-1.5 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
+              title="Close"
             >
               <X className="h-5 w-5" />
             </button>
