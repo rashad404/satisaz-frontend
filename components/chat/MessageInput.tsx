@@ -10,6 +10,7 @@ export function MessageInput() {
   const [content, setContent] = useState('');
   const [files, setFiles] = useState<File[]>([]);
   const [isSending, setIsSending] = useState(false);
+  const isSendingRef = useRef(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -54,8 +55,9 @@ export function MessageInput() {
   }, []);
 
   const handleSend = useCallback(async () => {
-    if ((!content.trim() && files.length === 0) || isSending || !activeConversation) return;
+    if ((!content.trim() && files.length === 0) || isSendingRef.current || !activeConversation) return;
 
+    isSendingRef.current = true;
     setIsSending(true);
     sendTypingIndicator(false);
 
@@ -71,9 +73,10 @@ export function MessageInput() {
     } catch (error) {
       console.error('Failed to send message:', error);
     } finally {
+      isSendingRef.current = false;
       setIsSending(false);
     }
-  }, [content, files, isSending, activeConversation, sendMessage, sendTypingIndicator]);
+  }, [content, files, activeConversation, sendMessage, sendTypingIndicator]);
 
   const handleKeyDown = useCallback((e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
