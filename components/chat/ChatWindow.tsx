@@ -11,6 +11,18 @@ import { ConversationHeader } from './ConversationHeader';
 import { TypingIndicator } from './TypingIndicator';
 import { NotesPanel } from './NotesPanel';
 
+// Simple markdown rendering for chat messages
+function renderMarkdown(text: string): string {
+  if (!text) return '';
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, '<em>$1</em>')
+    .replace(/\n/g, '<br>');
+}
+
 interface ChatWindowProps {
   onBack?: () => void;
 }
@@ -233,7 +245,7 @@ function MessageBubble({ message, visitor, showAvatar }: MessageBubbleProps) {
           )}
         >
           {/* Text content */}
-          <p className="whitespace-pre-wrap break-words">{message.content}</p>
+          <p className="whitespace-pre-wrap break-words" dangerouslySetInnerHTML={{ __html: renderMarkdown(message.content) }} />
 
           {/* File attachments */}
           {message.files && message.files.length > 0 && (
