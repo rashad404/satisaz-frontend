@@ -103,9 +103,16 @@ export async function openWalletLogin(options: WalletLoginOptions = {}): Promise
     popup.location.href = authUrl;
 
     // 4. Listen for postMessage from popup
+    let resolved = false;
+    const cleanup = () => {
+      resolved = true;
+      window.removeEventListener('message', handleMessage);
+      if (popupPollInterval) clearInterval(popupPollInterval);
+    };
+
     const handleMessage = (event: MessageEvent) => {
       if (event.data?.type === 'oauth_success') {
-        window.removeEventListener('message', handleMessage);
+        cleanup();
         popup?.close();
         window.dispatchEvent(new Event('authStateChanged'));
 
@@ -115,7 +122,7 @@ export async function openWalletLogin(options: WalletLoginOptions = {}): Promise
           window.location.reload();
         }
       } else if (event.data?.type === 'oauth_error' || event.data?.type === 'oauth_denied') {
-        window.removeEventListener('message', handleMessage);
+        cleanup();
         popup?.close();
         if (onError) {
           onError(event.data?.message || 'Login failed');
@@ -123,6 +130,27 @@ export async function openWalletLogin(options: WalletLoginOptions = {}): Promise
       }
     };
     window.addEventListener('message', handleMessage);
+
+    // Fallback: poll for popup close + check localStorage for token.
+    // window.opener can be nulled by browsers after cross-origin redirects,
+    // so postMessage may never arrive. This catches that case.
+    const tokenBefore = localStorage.getItem('token');
+    const popupPollInterval = setInterval(() => {
+      if (resolved) return;
+      if (popup?.closed) {
+        cleanup();
+        const tokenAfter = localStorage.getItem('token');
+        if (tokenAfter && tokenAfter !== tokenBefore) {
+          // Token appeared while popup was open — login succeeded
+          window.dispatchEvent(new Event('authStateChanged'));
+          if (onSuccess) {
+            onSuccess();
+          } else {
+            window.location.reload();
+          }
+        }
+      }
+    }, 500);
   } catch (err: any) {
     console.error('[Wallet Login] Error:', err);
     popup?.close();
