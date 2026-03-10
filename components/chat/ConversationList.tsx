@@ -146,9 +146,7 @@ function ConversationItem({ conversation, isActive, onClick }: ConversationItemP
             <User className="h-6 w-6 text-gray-500 dark:text-gray-400" />
           </div>
         )}
-        {visitor?.is_online && (
-          <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-white dark:border-gray-900 bg-green-500" />
-        )}
+        <div className={cn('absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-white dark:border-gray-900', visitor?.is_online ? 'bg-green-500' : 'bg-gray-400')} />
       </div>
 
       {/* Content */}
