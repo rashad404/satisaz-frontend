@@ -98,6 +98,7 @@ export default function ProfilePage() {
         display_avatar: avatarFile || null,
       });
       setProfile(response.data);
+      setDisplayName(response.data.display_name || '');
       setAvatarFile(null);
       setAvatarPreview(response.data.display_avatar || null);
       setSuccess('Profil yadda saxlanıldı');
