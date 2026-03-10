@@ -19,6 +19,8 @@ import {
   ArrowLeft,
   Phone,
   StickyNote,
+  Hash,
+  Check,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -45,6 +47,7 @@ export function ConversationHeader({ onBack, showNotes, onToggleNotes }: Convers
   const [showContactForm, setShowContactForm] = useState(false);
   const [contactSaved, setContactSaved] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [copiedId, setCopiedId] = useState(false);
 
   if (!activeConversation) return null;
 
@@ -160,6 +163,18 @@ export function ConversationHeader({ onBack, showNotes, onToggleNotes }: Convers
           {/* Desktop: show details */}
           <div className="hidden sm:block text-xs text-gray-500 dark:text-gray-400 mt-0.5 space-y-0.5">
             <div className="flex items-center gap-3">
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(String(activeConversation.id));
+                  setCopiedId(true);
+                  setTimeout(() => setCopiedId(false), 1500);
+                }}
+                className="flex items-center gap-1 hover:text-purple-600 dark:hover:text-purple-400 transition-colors cursor-pointer"
+                title={`Copy chat ID #${activeConversation.id}`}
+              >
+                {copiedId ? <Check className="h-3 w-3 text-green-500" /> : <Hash className="h-3 w-3 flex-shrink-0" />}
+                <span className={copiedId ? 'text-green-500' : ''}>{activeConversation.id}</span>
+              </button>
               {visitor?.email && (
                 <span className="flex items-center gap-1">
                   <Mail className="h-3 w-3 flex-shrink-0" />
