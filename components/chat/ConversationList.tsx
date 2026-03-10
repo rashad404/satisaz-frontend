@@ -3,7 +3,7 @@
 import { useCallback } from 'react';
 import { useChat } from '@/contexts/ChatContext';
 import { useTranslations } from 'next-intl';
-import { MessageSquare, Bot, User, Clock, StickyNote } from 'lucide-react';
+import { MessageSquare, Bot, User, StickyNote } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Conversation, ConversationStatus } from '@/lib/types/chat';
 
@@ -98,18 +98,13 @@ interface ConversationItemProps {
 function ConversationItem({ conversation, isActive, onClick }: ConversationItemProps) {
   const { visitor, last_message, unread_count, handler_type, status, updated_at, notes_count } = conversation;
 
-  const getStatusColor = (status: ConversationStatus) => {
+  const getStatusLabel = (status: ConversationStatus) => {
     switch (status) {
-      case 'active':
-        return 'bg-green-500';
-      case 'queued':
-        return 'bg-yellow-500';
-      case 'waiting':
-        return 'bg-orange-500';
-      case 'closed':
-        return 'bg-gray-400';
-      default:
-        return 'bg-gray-400';
+      case 'active': return { text: 'Active', color: 'text-green-600 dark:text-green-400' };
+      case 'queued': return { text: 'Queue', color: 'text-yellow-600 dark:text-yellow-400' };
+      case 'waiting': return { text: 'Waiting', color: 'text-orange-600 dark:text-orange-400' };
+      case 'closed': return { text: 'Closed', color: 'text-gray-500 dark:text-gray-400' };
+      default: return { text: status, color: 'text-gray-500 dark:text-gray-400' };
     }
   };
 
@@ -151,7 +146,9 @@ function ConversationItem({ conversation, isActive, onClick }: ConversationItemP
             <User className="h-6 w-6 text-gray-500 dark:text-gray-400" />
           </div>
         )}
-        <div className={cn('absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-white dark:border-gray-900', getStatusColor(status))} />
+        {visitor?.is_online && (
+          <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-white dark:border-gray-900 bg-green-500" />
+        )}
       </div>
 
       {/* Content */}
@@ -187,12 +184,14 @@ function ConversationItem({ conversation, isActive, onClick }: ConversationItemP
 
         {/* Status badges */}
         <div className="flex items-center gap-2 mt-1.5">
-          {status === 'queued' && (
-            <span className="inline-flex items-center gap-1 text-xs text-yellow-600 dark:text-yellow-400">
-              <Clock className="h-3.5 w-3.5" />
-              In queue
-            </span>
-          )}
+          {(() => {
+            const sl = getStatusLabel(status);
+            return (
+              <span className={cn('text-xs font-medium', sl.color)}>
+                {sl.text}
+              </span>
+            );
+          })()}
           {(notes_count ?? 0) > 0 && (
             <span className="inline-flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400">
               <StickyNote className="h-3.5 w-3.5" />

@@ -52,6 +52,7 @@ export interface Visitor {
     dob?: string;
     [key: string]: unknown;
   };
+  is_online?: boolean;
   first_seen_at: string;
   last_seen_at: string;
   created_at: string;
