@@ -10,6 +10,7 @@ import type {
   ChatMessage,
   Agent,
   AgentStatusType,
+  AgentStatusMode,
   NewConversationEvent,
   ConversationAcceptedEvent,
   ConversationClosedEvent,
@@ -43,6 +44,7 @@ interface ChatContextValue {
   agents: Agent[];
   currentUserId: number | null;
   myStatus: AgentStatusType;
+  statusMode: AgentStatusMode;
   onlineAgentsCount: number;
 
   // Typing state
@@ -73,6 +75,7 @@ interface ChatContextValue {
   transferConversation: (conversationId: number, toAgentId: number, reason?: string) => Promise<void>;
   declineConversation: (conversationId: number) => Promise<void>;
   updateMyStatus: (status: AgentStatusType) => Promise<void>;
+  updateStatusMode: (mode: AgentStatusMode) => Promise<void>;
   sendTypingIndicator: (isTyping: boolean) => void;
   markMessagesAsRead: () => Promise<void>;
   toggleMute: () => void;
@@ -107,6 +110,14 @@ export function ChatProvider({ children, tenantId }: ChatProviderProps) {
   const [myStatus, setMyStatus] = useState<AgentStatusType>('offline');
   const [onlineAgentsCount, setOnlineAgentsCount] = useState(0);
 
+  // Status mode: persisted to localStorage
+  const [statusMode, setStatusMode] = useState<AgentStatusMode>(() => {
+    if (typeof window !== 'undefined') {
+      return (localStorage.getItem(`satis_status_mode_${tenantId}`) as AgentStatusMode) || 'auto';
+    }
+    return 'auto';
+  });
+
   // Typing state
   const [typingUsers, setTypingUsers] = useState<Map<number, { name: string; timestamp: number }>>(new Map());
 
@@ -140,9 +151,6 @@ export function ChatProvider({ children, tenantId }: ChatProviderProps) {
 
   const notificationSettingsRef = useRef<NotificationSettings>(notificationSettings);
   notificationSettingsRef.current = notificationSettings;
-
-  // Track if we've done the initial auto-online (don't override manual status changes)
-  const hasAutoOnlinedRef = useRef<boolean>(false);
 
   // Toggle mute
   const toggleMute = useCallback(() => {
@@ -437,26 +445,25 @@ export function ChatProvider({ children, tenantId }: ChatProviderProps) {
         console.error('Failed to load notification settings:', err);
       }
 
-      // Find current user and set their status
+      // Find current user and apply status based on mode
       const currentUser = await authService.getCurrentUser();
       if (currentUser) {
         setCurrentUserId(currentUser.id);
         const me = agentsResponse.data.find(a => a.id === currentUser.id);
-        const currentStatus = me?.status || 'offline';
+        const savedMode = (localStorage.getItem(`satis_status_mode_${targetId}`) as AgentStatusMode) || 'auto';
 
-        // Only auto-set to online on FIRST load (not on subsequent loads)
-        // This respects manual status changes (e.g., agent manually going offline)
-        if (!hasAutoOnlinedRef.current && currentStatus === 'offline') {
-          hasAutoOnlinedRef.current = true;
+        if (savedMode === 'auto') {
+          // Auto mode: go online when page opens
           try {
             await chatApi.agents.updateStatus(targetId, 'online');
             setMyStatus('online');
           } catch (err) {
-            console.error('Failed to auto-set online status:', err);
-            setMyStatus(currentStatus);
+            console.error('Failed to auto-set online:', err);
+            setMyStatus(me?.status || 'offline');
           }
         } else {
-          setMyStatus(currentStatus);
+          // Manual mode: respect what backend has
+          setMyStatus(me?.status || 'offline');
         }
       }
     } catch (error) {
@@ -667,6 +674,22 @@ export function ChatProvider({ children, tenantId }: ChatProviderProps) {
     }
   }, [tenantId]);
 
+  // Update status mode (auto/online/away/offline)
+  const updateStatusMode = useCallback(async (mode: AgentStatusMode) => {
+    localStorage.setItem(`satis_status_mode_${tenantId}`, mode);
+    setStatusMode(mode);
+
+    if (mode === 'auto') {
+      // Auto: set online now (will go offline on page close)
+      await chatApi.agents.updateStatus(tenantId, 'online');
+      setMyStatus('online');
+    } else {
+      // Manual: set the chosen status
+      await chatApi.agents.updateStatus(tenantId, mode as AgentStatusType);
+      setMyStatus(mode as AgentStatusType);
+    }
+  }, [tenantId]);
+
   // Send typing indicator
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const sendTypingIndicator = useCallback((isTyping: boolean) => {
@@ -737,7 +760,7 @@ export function ChatProvider({ children, tenantId }: ChatProviderProps) {
 
   // Heartbeat to keep status alive (backend auto-marks offline after 5 min of no heartbeat)
   useEffect(() => {
-    if (myStatus === 'online') {
+    if (myStatus === 'online' || myStatus === 'away') {
       const interval = setInterval(() => {
         chatApi.agents.heartbeat(tenantId).catch(console.error);
       }, 30000); // Every 30 seconds
@@ -745,6 +768,27 @@ export function ChatProvider({ children, tenantId }: ChatProviderProps) {
       return () => clearInterval(interval);
     }
   }, [tenantId, myStatus]);
+
+  // Auto mode: go offline when page closes
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      const mode = localStorage.getItem(`satis_status_mode_${tenantId}`) || 'auto';
+      if (mode === 'auto') {
+        const token = localStorage.getItem('token');
+        if (token) {
+          fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/tenants/${tenantId}/agents/status`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify({ status: 'offline' }),
+            keepalive: true,
+          }).catch(() => {});
+        }
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [tenantId]);
 
   // Clean up typing indicators older than 5 seconds
   useEffect(() => {
@@ -776,6 +820,7 @@ export function ChatProvider({ children, tenantId }: ChatProviderProps) {
     agents,
     currentUserId,
     myStatus,
+    statusMode,
     onlineAgentsCount,
     typingUsers,
     onlineVisitorsCount,
@@ -794,6 +839,7 @@ export function ChatProvider({ children, tenantId }: ChatProviderProps) {
     transferConversation,
     declineConversation,
     updateMyStatus,
+    updateStatusMode,
     sendTypingIndicator,
     markMessagesAsRead,
     toggleMute,

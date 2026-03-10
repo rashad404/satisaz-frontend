@@ -2,34 +2,43 @@
 
 import { useState } from 'react';
 import { useChat } from '@/contexts/ChatContext';
-import { Circle, ChevronDown } from 'lucide-react';
+import { Circle, ChevronDown, Monitor } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import type { AgentStatusType } from '@/lib/types/chat';
+import type { AgentStatusMode } from '@/lib/types/chat';
 
 export function AgentStatusSelector() {
-  const { myStatus, updateMyStatus, onlineAgentsCount } = useChat();
+  const { myStatus, statusMode, updateStatusMode, onlineAgentsCount } = useChat();
   const [isOpen, setIsOpen] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
 
-  const statusOptions: { value: AgentStatusType; label: string; color: string }[] = [
-    { value: 'online', label: 'Online', color: 'bg-green-500' },
-    { value: 'away', label: 'Away', color: 'bg-yellow-500' },
-    { value: 'offline', label: 'Offline', color: 'bg-gray-400' },
+  const modeOptions: { value: AgentStatusMode; label: string; description: string; color: string; icon?: 'monitor' }[] = [
+    { value: 'auto', label: 'Auto', description: 'Online when page open', color: 'bg-blue-500', icon: 'monitor' },
+    { value: 'online', label: 'Online', description: 'Always online', color: 'bg-green-500' },
+    { value: 'away', label: 'Away', description: 'Always away', color: 'bg-yellow-500' },
+    { value: 'offline', label: 'Offline', description: 'Always offline', color: 'bg-gray-400' },
   ];
 
-  const currentStatus = statusOptions.find((s) => s.value === myStatus) || statusOptions[2];
+  // Show the actual status dot color based on real backend status
+  const statusColorMap: Record<string, string> = {
+    online: 'bg-green-500',
+    away: 'bg-yellow-500',
+    offline: 'bg-gray-400',
+  };
 
-  const handleStatusChange = async (status: AgentStatusType) => {
-    if (isUpdating || status === myStatus) {
+  const currentMode = modeOptions.find((m) => m.value === statusMode) || modeOptions[0];
+  const dotColor = statusColorMap[myStatus] || 'bg-gray-400';
+
+  const handleModeChange = async (mode: AgentStatusMode) => {
+    if (isUpdating || mode === statusMode) {
       setIsOpen(false);
       return;
     }
 
     setIsUpdating(true);
     try {
-      await updateMyStatus(status);
+      await updateStatusMode(mode);
     } catch (error) {
-      console.error('Failed to update status:', error);
+      console.error('Failed to update status mode:', error);
     } finally {
       setIsUpdating(false);
       setIsOpen(false);
@@ -47,9 +56,9 @@ export function AgentStatusSelector() {
           'disabled:opacity-50'
         )}
       >
-        <span className={cn('w-2.5 h-2.5 rounded-full', currentStatus.color)} />
+        <span className={cn('w-2.5 h-2.5 rounded-full', dotColor)} />
         <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
-          {currentStatus.label}
+          {currentMode.label}
         </span>
         <ChevronDown className={cn('h-4 w-4 text-gray-500 transition-transform', isOpen && 'rotate-180')} />
       </button>
@@ -57,21 +66,25 @@ export function AgentStatusSelector() {
       {isOpen && (
         <>
           <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} />
-          <div className="absolute left-0 top-full mt-1 w-40 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-20">
-            {statusOptions.map((option) => (
+          <div className="absolute left-0 top-full mt-1 w-52 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-20">
+            {modeOptions.map((option) => (
               <button
                 key={option.value}
-                onClick={() => handleStatusChange(option.value)}
+                onClick={() => handleModeChange(option.value)}
                 className={cn(
-                  'w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700',
-                  option.value === myStatus && 'bg-gray-50 dark:bg-gray-700/50'
+                  'w-full flex items-center gap-2.5 px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700',
+                  option.value === statusMode && 'bg-gray-50 dark:bg-gray-700/50'
                 )}
               >
-                <span className={cn('w-2.5 h-2.5 rounded-full', option.color)} />
-                <span className="text-gray-700 dark:text-gray-200">{option.label}</span>
-                {option.value === myStatus && (
-                  <span className="ml-auto text-xs text-gray-400">Current</span>
+                {option.icon === 'monitor' ? (
+                  <Monitor className="w-3 h-3 text-blue-500 flex-shrink-0" />
+                ) : (
+                  <span className={cn('w-2.5 h-2.5 rounded-full flex-shrink-0', option.color)} />
                 )}
+                <div className="text-left">
+                  <span className="text-gray-700 dark:text-gray-200">{option.label}</span>
+                  <span className="text-xs text-gray-400 dark:text-gray-500 ml-1.5">{option.description}</span>
+                </div>
               </button>
             ))}
 

@@ -161,6 +161,7 @@ export interface Agent {
 }
 
 export type AgentStatusType = 'online' | 'away' | 'offline';
+export type AgentStatusMode = 'auto' | 'online' | 'away' | 'offline';
 
 export interface AgentStatus {
   agent: Agent;
