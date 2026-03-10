@@ -129,6 +129,7 @@ export const agentsApi = {
 
   updateMyProfile: async (tenantId: number, data: { display_name?: string | null; display_avatar?: File | null; clear_avatar?: boolean }) => {
     const formData = new FormData();
+    formData.append('_method', 'PATCH');
 
     if (data.display_name !== undefined) {
       formData.append('display_name', data.display_name || '');
@@ -142,7 +143,7 @@ export const agentsApi = {
       formData.append('clear_avatar', '1');
     }
 
-    const response = await apiClient.patch<{ status: string; data: Agent; message: string }>(
+    const response = await apiClient.post<{ status: string; data: Agent; message: string }>(
       `/tenants/${tenantId}/agents/me/profile`,
       formData,
       {
