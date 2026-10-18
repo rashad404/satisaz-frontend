@@ -144,7 +144,8 @@ export function ChatProvider({ children, tenantId }: ChatProviderProps) {
     if (!tenantId) return;
     try {
       const res = await aiReviewApi.listDrafts(tenantId, 'open');
-      setAiDrafts(res.data);
+      // newest conversation first; a redraft keeps the conversation's place in the queue
+      setAiDrafts([...res.data].sort((a, b) => b.conversation_id - a.conversation_id));
       setAiReviewModeState(!!res.meta?.review_mode);
     } catch (e) {
       console.error('Failed to load AI drafts:', e);
@@ -160,8 +161,8 @@ export function ChatProvider({ children, tenantId }: ChatProviderProps) {
     const d = e.draft;
     setAiDrafts((prev) => {
       const open = d.status === 'pending' || d.status === 'regenerating';
-      const rest = prev.filter((x) => x.id !== d.id);
-      return open ? [...rest, d].sort((a, b) => a.created_at.localeCompare(b.created_at)) : rest;
+      const rest = prev.filter((x) => x.id !== d.id && (open ? x.conversation_id !== d.conversation_id : true));
+      return open ? [...rest, d].sort((a, b) => b.conversation_id - a.conversation_id) : rest;
     });
   }, []);
 
