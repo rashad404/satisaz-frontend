@@ -37,6 +37,7 @@ export interface WidgetSettings {
   show_agent_avatar?: boolean;
   show_agent_name?: boolean;
   language?: 'az' | 'en' | 'ru';
+  visitor_notifications?: { email?: boolean; sms?: boolean }; // notify offline visitors of agent replies via Alert.az (off by default)
 }
 
 export interface Visitor {

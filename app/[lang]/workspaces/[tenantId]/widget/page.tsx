@@ -369,6 +369,38 @@ export default function WidgetCodePage() {
               </div>
             </div>
 
+            {/* Visitor notifications (Alert.az) */}
+            <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6">
+              <div className="flex items-center gap-2 mb-1">
+                <Settings2 className="h-5 w-5 text-purple-600" />
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Visitor notifications</h2>
+              </div>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                When an agent replies and the visitor is no longer on the site, tell them via Alert.az. At most one notice per conversation per hour.
+                Only visitors logged in through Kimlik.az receive the reply text itself; others get a notice to open the chat.
+              </p>
+              <div className="space-y-3">
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={!!widgetSettings.visitor_notifications?.email}
+                    onChange={(e) => setWidgetSettings({ ...widgetSettings, visitor_notifications: { ...(widgetSettings.visitor_notifications || {}), email: e.target.checked } })}
+                    className="w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                  />
+                  <span className="text-gray-700 dark:text-gray-300">E-mail the visitor when we reply (needs their e-mail)</span>
+                </label>
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={!!widgetSettings.visitor_notifications?.sms}
+                    onChange={(e) => setWidgetSettings({ ...widgetSettings, visitor_notifications: { ...(widgetSettings.visitor_notifications || {}), sms: e.target.checked } })}
+                    className="w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                  />
+                  <span className="text-gray-700 dark:text-gray-300">SMS the visitor when we reply (needs their phone, costs per message)</span>
+                </label>
+              </div>
+            </div>
+
             {/* Save Button */}
             <button
               onClick={handleSave}
