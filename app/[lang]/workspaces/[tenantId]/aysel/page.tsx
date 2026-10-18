@@ -231,6 +231,13 @@ function DraftCard({ draft, tenantId, lang, onError }: { draft: AiDraft; tenantI
           {draft.suggestions?.length > 0 && (
             <p className="text-xs text-gray-500">Təkliflər: {draft.suggestions.join(' | ')}</p>
           )}
+          {!!(draft.metadata as any)?.escalation && (
+            <p className="text-xs rounded-lg bg-amber-50 dark:bg-amber-900/30 text-amber-800 dark:text-amber-200 px-3 py-2">
+              Aysel komandaya yönləndirmə təklif edir: {(draft.metadata as any).escalation.reason}
+              {(draft.metadata as any).escalation.summary ? ` — ${(draft.metadata as any).escalation.summary}` : ''}
+              <span className="block mt-1 text-amber-700 dark:text-amber-300">Özünüz cavablamaq üçün "Özüm cavablayıram", yoxsa cavabı göndərin.</span>
+            </p>
+          )}
 
           {showSuggest && (
             <div className="flex gap-2">
