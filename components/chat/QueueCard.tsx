@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useChat } from '@/contexts/ChatContext';
-import { User, Clock, MessageSquare, CheckCircle, XCircle, ArrowRightLeft } from 'lucide-react';
+import { User, Clock, MessageSquare, CheckCircle, XCircle, ArrowRightLeft, ShieldCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Conversation } from '@/lib/types/chat';
 
@@ -116,8 +116,9 @@ export function QueueCard({ conversation }: QueueCardProps) {
           </div>
         )}
         <div className="min-w-0 flex-1">
-          <h4 className="font-medium text-gray-900 dark:text-white text-base truncate">
-            {visitor?.name || visitor?.email || 'Anonymous Visitor'}
+          <h4 className="font-medium text-gray-900 dark:text-white text-base truncate flex items-center gap-2">
+            <span className="truncate">{visitor?.name || visitor?.email || 'Anonymous Visitor'}</span>
+            {visitor?.is_verified && <span className="inline-flex items-center gap-0.5 rounded-full bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 px-1.5 py-0.5 text-[10px] font-medium" title="Logged in on the website"><ShieldCheck className="h-3 w-3" /> Logged in</span>}
           </h4>
           {visitor?.email && (
             <p className="text-sm text-gray-500 dark:text-gray-400 truncate">{visitor.email}</p>

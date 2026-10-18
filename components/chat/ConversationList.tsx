@@ -3,7 +3,7 @@
 import { useCallback } from 'react';
 import { useChat } from '@/contexts/ChatContext';
 import { useTranslations } from 'next-intl';
-import { MessageSquare, Bot, User, StickyNote } from 'lucide-react';
+import { MessageSquare, Bot, User, StickyNote, ShieldCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Conversation, ConversationStatus } from '@/lib/types/chat';
 
@@ -153,7 +153,8 @@ function ConversationItem({ conversation, isActive, onClick }: ConversationItemP
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between gap-2">
           <span className="font-medium text-gray-900 dark:text-white truncate text-base">
-            {visitor?.name || visitor?.email || 'Anonymous Visitor'}
+            <span className="truncate">{visitor?.name || visitor?.email || 'Anonymous Visitor'}</span>
+            {visitor?.is_verified && <span className="ml-2 inline-flex items-center gap-0.5 rounded-full bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 px-1.5 py-0.5 text-[10px] font-medium" title="Logged in on the website"><ShieldCheck className="h-3 w-3" /> Logged in</span>}
           </span>
           <span className="text-xs text-gray-500 dark:text-gray-400 flex-shrink-0">
             {formatTime(updated_at)}

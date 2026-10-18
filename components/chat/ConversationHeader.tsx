@@ -21,6 +21,7 @@ import {
   StickyNote,
   Hash,
   Check,
+  ShieldCheck,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -153,7 +154,8 @@ export function ConversationHeader({ onBack, showNotes, onToggleNotes }: Convers
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
             <h3 className="font-medium text-gray-900 dark:text-white truncate max-w-[120px] sm:max-w-none">
-              {visitor?.name || visitor?.email || 'Anonymous'}
+              <span className="truncate">{visitor?.name || visitor?.email || 'Anonymous'}</span>
+              {visitor?.is_verified && <span className="ml-2 inline-flex items-center gap-0.5 rounded-full bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 px-1.5 py-0.5 text-[10px] font-medium" title="Logged in on the website"><ShieldCheck className="h-3 w-3" /> Logged in</span>}
             </h3>
             <div className="flex items-center gap-1.5">
               {getStatusBadge()}

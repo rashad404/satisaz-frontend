@@ -46,6 +46,7 @@ export interface Visitor {
   name?: string;
   email?: string;
   phone?: string;
+  is_verified?: boolean; // logged in on the host site (HMAC-verified identity)
   metadata?: {
     avatar?: string;
     wallet_id?: string;
