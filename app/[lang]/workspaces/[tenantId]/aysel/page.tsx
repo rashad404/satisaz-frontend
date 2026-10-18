@@ -62,6 +62,7 @@ export default function AyselReviewPage() {
   const acceptedLessons = useMemo(() => lessons.filter(l => l.status === 'accepted'), [lessons]);
 
   return (
+    <div className="h-full overflow-y-auto">
     <div className="p-4 md:p-6 max-w-6xl mx-auto">
       <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
         <div className="flex items-center gap-3">
@@ -159,6 +160,7 @@ export default function AyselReviewPage() {
           </div>
         )
       )}
+    </div>
     </div>
   );
 }
