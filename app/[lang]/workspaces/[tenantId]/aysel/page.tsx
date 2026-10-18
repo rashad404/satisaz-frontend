@@ -38,6 +38,8 @@ export default function AyselReviewPage() {
   const [tab, setTab] = useState<Tab>('queue');
   const [modeSaving, setModeSaving] = useState(false);
   const [history, setHistory] = useState<AiDraft[]>([]);
+  const [historyPage, setHistoryPage] = useState(1);
+  const [historyMeta, setHistoryMeta] = useState<{ total: number; last_page: number }>({ total: 0, last_page: 1 });
   const [lessons, setLessons] = useState<AiLesson[]>([]);
   const [error, setError] = useState<string | null>(null);
 
@@ -47,8 +49,12 @@ export default function AyselReviewPage() {
     try { const r = await aiReviewApi.lessons(tenantId, 'all'); setLessons(r.data); } catch (e) { console.error(e); }
   }, [tenantId]);
   const loadHistory = useCallback(async () => {
-    try { const r = await aiReviewApi.listDrafts(tenantId, 'history', 100); setHistory(r.data); } catch (e) { console.error(e); }
-  }, [tenantId]);
+    try {
+      const r = await aiReviewApi.listDrafts(tenantId, 'history', 50, historyPage);
+      setHistory(r.data);
+      setHistoryMeta({ total: r.meta?.total ?? r.data.length, last_page: r.meta?.last_page ?? 1 });
+    } catch (e) { console.error(e); }
+  }, [tenantId, historyPage]);
 
   useEffect(() => { if (tab === 'lessons') loadLessons(); if (tab === 'history') loadHistory(); }, [tab, loadLessons, loadHistory]);
   useEffect(() => { if (aiLessonEvent) loadLessons(); }, [aiLessonEvent, loadLessons]);
@@ -146,6 +152,7 @@ export default function AyselReviewPage() {
       {tab === 'history' && (
         history.length === 0 ? <EmptyState text="Tarixçə boşdur." /> : (
           <div className="space-y-2">
+            <Pager page={historyPage} lastPage={historyMeta.last_page} total={historyMeta.total} onPage={setHistoryPage} />
             {history.map(d => (
               <div key={d.id} className="rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 py-3 text-sm">
                 <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500 mb-1">
@@ -157,10 +164,26 @@ export default function AyselReviewPage() {
                 <p className="text-gray-800 dark:text-gray-200 whitespace-pre-wrap">{d.final_text || d.draft}</p>
               </div>
             ))}
+            <Pager page={historyPage} lastPage={historyMeta.last_page} total={historyMeta.total} onPage={(p) => { setHistoryPage(p); }} />
           </div>
         )
       )}
     </div>
+    </div>
+  );
+}
+
+function Pager({ page, lastPage, total, onPage }: { page: number; lastPage: number; total: number; onPage: (p: number) => void }) {
+  if (lastPage <= 1) return <p className="text-xs text-gray-500">Cəmi {total}</p>;
+  return (
+    <div className="flex items-center justify-between text-sm py-1">
+      <span className="text-xs text-gray-500">Cəmi {total} · səhifə {page} / {lastPage}</span>
+      <div className="flex gap-2">
+        <button onClick={() => onPage(page - 1)} disabled={page <= 1}
+          className="rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-1 disabled:opacity-40">Əvvəlki</button>
+        <button onClick={() => onPage(page + 1)} disabled={page >= lastPage}
+          className="rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-1 disabled:opacity-40">Növbəti</button>
+      </div>
     </div>
   );
 }

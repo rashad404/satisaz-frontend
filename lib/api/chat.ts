@@ -392,10 +392,10 @@ export const aiReviewApi = {
     );
     return response.data;
   },
-  listDrafts: async (tenantId: number, status: 'open' | 'history' | 'all' = 'open', limit = 100) => {
-    const response = await apiClient.get<{ status: string; data: AiDraft[]; meta: { review_mode: boolean; pending_count: number } }>(
+  listDrafts: async (tenantId: number, status: 'open' | 'history' | 'all' = 'open', limit = 100, page = 1) => {
+    const response = await apiClient.get<{ status: string; data: AiDraft[]; meta: { review_mode: boolean; pending_count: number; total?: number; page?: number; last_page?: number } }>(
       `/tenants/${tenantId}/ai-drafts`,
-      { params: { status, limit } }
+      { params: { status, limit, page } }
     );
     return response.data;
   },
