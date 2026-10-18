@@ -43,14 +43,18 @@ export function formatCurrency(amount: number, currency: string = 'AZN'): string
 
 export function formatDate(date: string | Date, locale: string = 'az'): string {
   const dateObj = typeof date === 'string' ? new Date(date) : date;
+  if (Number.isNaN(dateObj.getTime())) return '';
 
-  const localeMap: Record<string, string> = {
-    az: 'az-AZ',
-    en: 'en-US',
-    ru: 'ru-RU',
-  };
+  // Intl has no Azerbaijani month names (renders "M10"), so spell them out for az.
+  if (locale === 'az') {
+    const months = ['yanvar', 'fevral', 'mart', 'aprel', 'may', 'iyun', 'iyul', 'avqust', 'sentyabr', 'oktyabr', 'noyabr', 'dekabr'];
+    const hh = String(dateObj.getHours()).padStart(2, '0');
+    const mm = String(dateObj.getMinutes()).padStart(2, '0');
+    return `${dateObj.getDate()} ${months[dateObj.getMonth()]} ${dateObj.getFullYear()}, ${hh}:${mm}`;
+  }
 
-  return new Intl.DateTimeFormat(localeMap[locale] || 'az-AZ', {
+  const localeMap: Record<string, string> = { en: 'en-US', ru: 'ru-RU' };
+  return new Intl.DateTimeFormat(localeMap[locale] || 'en-US', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
