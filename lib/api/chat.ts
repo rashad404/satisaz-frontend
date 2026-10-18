@@ -23,6 +23,8 @@ import type {
   VisitorDetails,
   VisitorFilters,
   ConversationNote,
+  AiDraft,
+  AiLesson,
 } from '../types/chat';
 
 // Tenant/Workspace APIs
@@ -371,6 +373,58 @@ export const notesApi = {
     const response = await apiClient.delete<{ status: string }>(
       `/tenants/${tenantId}/conversations/${conversationId}/notes/${noteId}`
     );
+    return response.data;
+  },
+};
+
+// AI (Aysel) draft review APIs
+export const aiReviewApi = {
+  getMode: async (tenantId: number) => {
+    const response = await apiClient.get<{ status: string; data: { review_mode: boolean; pending_count: number } }>(
+      `/tenants/${tenantId}/ai-review/mode`
+    );
+    return response.data;
+  },
+  setMode: async (tenantId: number, reviewMode: boolean) => {
+    const response = await apiClient.put<{ status: string; data: { review_mode: boolean } }>(
+      `/tenants/${tenantId}/ai-review/mode`,
+      { review_mode: reviewMode }
+    );
+    return response.data;
+  },
+  listDrafts: async (tenantId: number, status: 'open' | 'history' | 'all' = 'open', limit = 100) => {
+    const response = await apiClient.get<{ status: string; data: AiDraft[]; meta: { review_mode: boolean; pending_count: number } }>(
+      `/tenants/${tenantId}/ai-drafts`,
+      { params: { status, limit } }
+    );
+    return response.data;
+  },
+  approve: async (tenantId: number, draftId: number) => {
+    const response = await apiClient.post<{ status: string; data: AiDraft }>(`/tenants/${tenantId}/ai-drafts/${draftId}/approve`);
+    return response.data;
+  },
+  edit: async (tenantId: number, draftId: number, text: string) => {
+    const response = await apiClient.post<{ status: string; data: AiDraft }>(`/tenants/${tenantId}/ai-drafts/${draftId}/edit`, { text });
+    return response.data;
+  },
+  suggest: async (tenantId: number, draftId: number, text: string) => {
+    const response = await apiClient.post<{ status: string; data: AiDraft }>(`/tenants/${tenantId}/ai-drafts/${draftId}/suggest`, { text });
+    return response.data;
+  },
+  skip: async (tenantId: number, draftId: number) => {
+    const response = await apiClient.post<{ status: string; data: AiDraft }>(`/tenants/${tenantId}/ai-drafts/${draftId}/skip`);
+    return response.data;
+  },
+  takeover: async (tenantId: number, draftId: number) => {
+    const response = await apiClient.post<{ status: string; data: AiDraft }>(`/tenants/${tenantId}/ai-drafts/${draftId}/takeover`);
+    return response.data;
+  },
+  lessons: async (tenantId: number, status: 'proposed' | 'accepted' | 'rejected' | 'all' = 'all') => {
+    const response = await apiClient.get<{ status: string; data: AiLesson[] }>(`/tenants/${tenantId}/ai-lessons`, { params: { status } });
+    return response.data;
+  },
+  reviewLesson: async (tenantId: number, lessonId: number, decision: 'accept' | 'reject', text?: string) => {
+    const response = await apiClient.post<{ status: string; data: AiLesson }>(`/tenants/${tenantId}/ai-lessons/${lessonId}/review`, { decision, text });
     return response.data;
   },
 };

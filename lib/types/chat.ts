@@ -17,6 +17,7 @@ export interface Tenant {
 
 export interface TenantSettings {
   ai_timeout_seconds?: number;
+  ai_review_mode?: boolean;
   business_hours?: BusinessHours;
   timezone?: string;
 }
@@ -451,3 +452,50 @@ export interface NotificationSettings {
     transfer_request: boolean;
   };
 }
+
+
+// ===== AI (Aysel) draft review =====
+export type AiDraftStatus = 'pending' | 'regenerating' | 'approved' | 'edited' | 'skipped' | 'taken_over' | 'superseded' | 'auto_sent';
+
+export interface AiDraftTranscriptItem {
+  role: 'visitor' | 'agent';
+  content: string;
+  at?: string | null;
+}
+
+export interface AiDraft {
+  id: number;
+  conversation_id: number;
+  round: number;
+  status: AiDraftStatus;
+  draft: string;
+  final_text: string | null;
+  metadata: Record<string, unknown> | null;
+  transcript: AiDraftTranscriptItem[];
+  visitor_text: string | null;
+  suggestions: string[];
+  source: 'saytaz' | 'ureb' | string | null;
+  page_url: string | null;
+  last_visitor_at: string | null;
+  visitor: { id: number; name: string; email: string | null; phone: string | null; is_verified: boolean } | null;
+  conversation_status: string | null;
+  assigned_agent_id: number | null;
+  reviewed_by: number | null;
+  reviewed_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AiLesson {
+  id: number;
+  draft_id: number | null;
+  conversation_id: number | null;
+  type: 'rule' | 'fact';
+  text: string;
+  status: 'proposed' | 'accepted' | 'rejected';
+  reviewed_at: string | null;
+  created_at: string;
+}
+
+export interface AiDraftUpdatedEvent { draft: AiDraft; }
+export interface AiLessonUpdatedEvent { lesson: AiLesson; }

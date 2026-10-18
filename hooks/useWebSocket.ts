@@ -14,6 +14,8 @@ import type {
   AiTookOverEvent,
   HumanTookOverEvent,
   MessageReadEvent,
+  AiDraftUpdatedEvent,
+  AiLessonUpdatedEvent,
 } from '@/lib/types/chat';
 
 interface WebSocketConfig {
@@ -40,6 +42,8 @@ interface WebSocketHookOptions {
   onAiTookOver?: EventCallback<AiTookOverEvent>;
   onHumanTookOver?: EventCallback<HumanTookOverEvent>;
   onMessageRead?: EventCallback<MessageReadEvent>;
+  onAiDraft?: EventCallback<AiDraftUpdatedEvent>;
+  onAiLesson?: EventCallback<AiLessonUpdatedEvent>;
 }
 
 export function useWebSocket(options: WebSocketHookOptions) {
@@ -58,6 +62,8 @@ export function useWebSocket(options: WebSocketHookOptions) {
     onAiTookOver,
     onHumanTookOver,
     onMessageRead,
+    onAiDraft,
+    onAiLesson,
   } = options;
 
   const [isConnected, setIsConnected] = useState(false);
@@ -142,6 +148,8 @@ export function useWebSocket(options: WebSocketHookOptions) {
     const channel = echoRef.current.private(channelName);
 
     channel
+      .listen('.ai_draft.updated', (e: AiDraftUpdatedEvent) => { onAiDraft?.(e); })
+      .listen('.ai_lesson.updated', (e: AiLessonUpdatedEvent) => { onAiLesson?.(e); })
       .listen('.conversation.new', (e: NewConversationEvent) => {
         console.log('[WebSocket] Received conversation.new event:', e);
         onNewConversation?.(e);

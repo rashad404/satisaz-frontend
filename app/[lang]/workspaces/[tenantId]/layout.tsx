@@ -24,6 +24,7 @@ import {
   Eye,
   User,
   UserCheck,
+  Sparkles,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -124,6 +125,11 @@ export default function WorkspaceLayout({ children }: WorkspaceLayoutProps) {
       icon: Inbox,
       href: `${basePath}/inbox`,
       badge: undefined, // Could show unread count
+    },
+    {
+      label: 'Aysel',
+      icon: Sparkles,
+      href: `${basePath}/aysel`,
     },
     {
       label: 'Conversations',
@@ -238,10 +244,13 @@ function WorkspaceLayoutInner({
   children: React.ReactNode;
 }) {
   // Get online visitors count from ChatContext
-  const { onlineVisitorsCount } = useChat();
+  const { onlineVisitorsCount, pendingDraftsCount } = useChat();
 
   // Add badge to Visitors nav item
   const navItemsWithBadge = visibleNavItems.map(item => {
+    if (item.href === `${basePath}/aysel`) {
+      return { ...item, badge: pendingDraftsCount > 0 ? pendingDraftsCount : undefined, badgeColor: 'purple' };
+    }
     if (item.href === `${basePath}/visitors`) {
       return { ...item, badge: onlineVisitorsCount > 0 ? onlineVisitorsCount : undefined, badgeColor: 'green' };
     }

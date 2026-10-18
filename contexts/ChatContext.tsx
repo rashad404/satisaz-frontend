@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
 import { chatApi, visitorsApi } from '@/lib/api/chat';
+import { aiReviewApi } from '@/lib/api/chat';
 import authService from '@/lib/api/auth';
 import { useWebSocket } from '@/hooks/useWebSocket';
 import type {
@@ -23,6 +24,10 @@ import type {
   AiTookOverEvent,
   HumanTookOverEvent,
   NotificationSettings,
+  AiDraft,
+  AiLesson,
+  AiDraftUpdatedEvent,
+  AiLessonUpdatedEvent,
 } from '@/lib/types/chat';
 
 interface ChatContextValue {
@@ -52,6 +57,14 @@ interface ChatContextValue {
 
   // Visitors state
   onlineVisitorsCount: number;
+
+  // AI (Aysel) review
+  aiDrafts: AiDraft[];
+  pendingDraftsCount: number;
+  aiReviewMode: boolean;
+  refreshAiDrafts: () => Promise<void>;
+  setAiReviewMode: (on: boolean) => Promise<void>;
+  aiLessonEvent: AiLesson | null;
 
   // WebSocket state
   isConnected: boolean;
@@ -123,6 +136,38 @@ export function ChatProvider({ children, tenantId }: ChatProviderProps) {
 
   // Online visitors count
   const [onlineVisitorsCount, setOnlineVisitorsCount] = useState(0);
+  const [aiDrafts, setAiDrafts] = useState<AiDraft[]>([]);
+  const [aiReviewMode, setAiReviewModeState] = useState<boolean>(false);
+  const [aiLessonEvent, setAiLessonEvent] = useState<AiLesson | null>(null);
+
+  const refreshAiDrafts = useCallback(async () => {
+    if (!tenantId) return;
+    try {
+      const res = await aiReviewApi.listDrafts(tenantId, 'open');
+      setAiDrafts(res.data);
+      setAiReviewModeState(!!res.meta?.review_mode);
+    } catch (e) {
+      console.error('Failed to load AI drafts:', e);
+    }
+  }, [tenantId]);
+
+  const setAiReviewMode = useCallback(async (on: boolean) => {
+    const res = await aiReviewApi.setMode(tenantId, on);
+    setAiReviewModeState(!!res.data.review_mode);
+  }, [tenantId]);
+
+  const handleAiDraft = useCallback((e: AiDraftUpdatedEvent) => {
+    const d = e.draft;
+    setAiDrafts((prev) => {
+      const open = d.status === 'pending' || d.status === 'regenerating';
+      const rest = prev.filter((x) => x.id !== d.id);
+      return open ? [...rest, d].sort((a, b) => a.created_at.localeCompare(b.created_at)) : rest;
+    });
+  }, []);
+
+  const handleAiLesson = useCallback((e: AiLessonUpdatedEvent) => {
+    setAiLessonEvent(e.lesson);
+  }, []);
 
   // Sound mute state (persisted in localStorage)
   const [isMuted, setIsMuted] = useState<boolean>(() => {
@@ -385,7 +430,12 @@ export function ChatProvider({ children, tenantId }: ChatProviderProps) {
     onAgentStatusChanged: handleAgentStatusChanged,
     onAiTookOver: handleAiTookOver,
     onHumanTookOver: handleHumanTookOver,
+    onAiDraft: handleAiDraft,
+    onAiLesson: handleAiLesson,
   });
+
+  // Load AI drafts once per tenant
+  useEffect(() => { refreshAiDrafts(); }, [refreshAiDrafts]);
 
   // Load agents
   const loadAgents = useCallback(async () => {
@@ -824,6 +874,12 @@ export function ChatProvider({ children, tenantId }: ChatProviderProps) {
     onlineAgentsCount,
     typingUsers,
     onlineVisitorsCount,
+    aiDrafts,
+    pendingDraftsCount: aiDrafts.length,
+    aiReviewMode,
+    refreshAiDrafts,
+    setAiReviewMode,
+    aiLessonEvent,
     isConnected,
     isMuted,
     notificationSettings,
