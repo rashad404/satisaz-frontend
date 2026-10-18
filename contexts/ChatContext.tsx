@@ -81,7 +81,7 @@ interface ChatContextValue {
   loadConversations: () => Promise<void>;
   loadQueue: () => Promise<void>;
   selectConversation: (conversationId: number | null) => Promise<void>;
-  sendMessage: (content: string, files?: File[]) => Promise<void>;
+  sendMessage: (content: string, files?: File[], alsoEmail?: boolean) => Promise<void>;
   acceptConversation: (conversationId: number) => Promise<void>;
   takeoverConversation: (conversationId: number) => Promise<void>;
   closeConversation: (conversationId: number) => Promise<void>;
@@ -629,11 +629,11 @@ export function ChatProvider({ children, tenantId }: ChatProviderProps) {
   }, [tenantId, subscribeToConversation]);
 
   // Send message
-  const sendMessage = useCallback(async (content: string, files?: File[]) => {
+  const sendMessage = useCallback(async (content: string, files?: File[], alsoEmail?: boolean) => {
     if (!activeConversation) return;
 
     try {
-      const response = await chatApi.messages.send(tenantId, activeConversation.id, { content, files });
+      const response = await chatApi.messages.send(tenantId, activeConversation.id, { content, files, alsoEmail });
       // Message will be added via WebSocket event - add only if not already present
       setMessages((prev) => {
         if (prev.some((m) => m.id === response.data.id)) {

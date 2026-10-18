@@ -2,7 +2,7 @@
 
 import { useState, useRef, useCallback, KeyboardEvent, ChangeEvent } from 'react';
 import { useChat } from '@/contexts/ChatContext';
-import { Send, Paperclip, X, Image, FileText } from 'lucide-react';
+import { Send, Paperclip, X, Image, FileText, Mail } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export function MessageInput() {
@@ -10,6 +10,9 @@ export function MessageInput() {
   const [content, setContent] = useState('');
   const [files, setFiles] = useState<File[]>([]);
   const [isSending, setIsSending] = useState(false);
+  const [alsoEmail, setAlsoEmail] = useState(false);
+  const visitorEmail = (activeConversation as any)?.visitor?.email as string | undefined;
+  const visitorVerified = !!(activeConversation as any)?.visitor?.is_verified;
   const isSendingRef = useRef(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -62,7 +65,8 @@ export function MessageInput() {
     sendTypingIndicator(false);
 
     try {
-      await sendMessage(content.trim(), files.length > 0 ? files : undefined);
+      await sendMessage(content.trim(), files.length > 0 ? files : undefined, alsoEmail && !!visitorEmail);
+      setAlsoEmail(false);
       setContent('');
       setFiles([]);
 
@@ -76,7 +80,7 @@ export function MessageInput() {
       isSendingRef.current = false;
       setIsSending(false);
     }
-  }, [content, files, activeConversation, sendMessage, sendTypingIndicator]);
+  }, [content, files, activeConversation, sendMessage, sendTypingIndicator, alsoEmail, visitorEmail]);
 
   const handleKeyDown = useCallback((e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -146,6 +150,22 @@ export function MessageInput() {
         >
           <Paperclip className="h-5 w-5" />
         </button>
+        {visitorEmail && (
+          <button
+            type="button"
+            onClick={() => setAlsoEmail((v) => !v)}
+            className={cn(
+              'relative p-3 rounded-xl transition-colors flex-shrink-0',
+              alsoEmail
+                ? 'text-purple-600 bg-purple-100 dark:bg-purple-900/40'
+                : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
+            )}
+            title={`${alsoEmail ? 'E-poçtla da göndəriləcək' : 'E-poçtla da göndər'}: ${visitorEmail}${visitorVerified ? '' : ' (doğrulanmamış)'}`}
+          >
+            <Mail className="h-5 w-5" />
+            {!visitorVerified && <span className="absolute top-2 right-2 h-1.5 w-1.5 rounded-full bg-amber-500" />}
+          </button>
+        )}
         <input
           ref={fileInputRef}
           type="file"

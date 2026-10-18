@@ -246,6 +246,9 @@ function MessageBubble({ message, visitor, showAvatar }: MessageBubbleProps) {
         >
           {/* Text content */}
           <p className="whitespace-pre-wrap break-words" dangerouslySetInnerHTML={{ __html: renderMarkdown(message.content) }} />
+          {!!(message as any).metadata?.emailed_at && (
+            <span className="block text-right text-[10px] opacity-70 mt-0.5" title="E-poçtla da göndərildi">✉</span>
+          )}
 
           {/* File attachments */}
           {message.files && message.files.length > 0 && (

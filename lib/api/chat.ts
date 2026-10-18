@@ -248,6 +248,10 @@ export const messagesApi = {
       });
     }
 
+    if (data.alsoEmail) {
+      formData.append('also_email', '1');
+    }
+
     const response = await apiClient.post<{ status: string; data: ChatMessage }>(
       `/tenants/${tenantId}/conversations/${conversationId}/messages`,
       formData,

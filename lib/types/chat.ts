@@ -263,6 +263,7 @@ export interface ConversationFilters {
 export interface SendMessageData {
   content?: string;
   files?: File[];
+  alsoEmail?: boolean; // also e-mail this text to the visitor
 }
 
 export interface CreateTenantData {
