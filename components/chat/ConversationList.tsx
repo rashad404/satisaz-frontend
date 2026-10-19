@@ -2,9 +2,9 @@
 
 import { useCallback, useState } from 'react';
 import { useChat } from '@/contexts/ChatContext';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { MessageSquare, Bot, User, StickyNote, ShieldCheck } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, formatShortDate } from '@/lib/utils';
 import type { Conversation, ConversationStatus, InboxTab } from '@/lib/types/chat';
 
 interface ConversationListProps {
@@ -95,6 +95,7 @@ interface ConversationItemProps {
 }
 
 function ConversationItem({ conversation, isActive, onClick }: ConversationItemProps) {
+  const locale = useLocale();
   const t = useTranslations('ws.chat.list');
   const { visitor, last_message, unread_count, handler_type, status, updated_at, notes_count } = conversation;
 
@@ -120,7 +121,8 @@ function ConversationItem({ conversation, isActive, onClick }: ConversationItemP
     if (diffMins < 60) return t('minutes', { n: diffMins });
     if (diffHours < 24) return t('hours', { n: diffHours });
     if (diffDays < 7) return t('days', { n: diffDays });
-    return date.toLocaleDateString();
+    const short = formatShortDate(date, locale).split(' ');
+    return date.getFullYear() === now.getFullYear() ? short.slice(0, 2).join(' ') : short.join(' ');
   };
 
   return (
