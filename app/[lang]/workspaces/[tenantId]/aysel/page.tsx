@@ -24,6 +24,16 @@ function timeAgo(iso: string | null | undefined): string {
   return `${Math.round(h / 24)} gün əvvəl`;
 }
 
+function msgTime(iso: string | null | undefined): string {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  const months = ['yan', 'fev', 'mar', 'apr', 'may', 'iyn', 'iyl', 'avq', 'sen', 'okt', 'noy', 'dek'];
+  const hm = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+  const year = d.getFullYear() !== new Date().getFullYear() ? ` ${d.getFullYear()}` : '';
+  return `${d.getDate()} ${months[d.getMonth()]}${year}, ${hm}`;
+}
+
 const STATUS_LABEL: Record<string, string> = {
   pending: 'Gözləyir', regenerating: 'Yenidən yazılır', approved: 'Göndərildi', edited: 'Düzəldilib göndərildi',
   skipped: 'Keçildi', taken_over: 'Özüm cavabladım', superseded: 'Əvəz olundu', auto_sent: 'Avtomatik göndərildi',
@@ -233,11 +243,12 @@ function DraftCard({ draft, tenantId, lang, onError }: { draft: AiDraft; tenantI
       <div className="grid md:grid-cols-2 gap-0 md:divide-x divide-gray-100 dark:divide-gray-800">
         <div className="p-4 space-y-2 max-h-80 overflow-y-auto bg-gray-50/60 dark:bg-gray-950/40">
           {(draft.transcript?.length ? draft.transcript : [{ role: 'visitor', content: draft.visitor_text || '' }]).map((m, i) => (
-            <div key={i} className={cn('flex', m.role === 'visitor' ? 'justify-start' : 'justify-end')}>
+            <div key={i} className={cn('flex flex-col', m.role === 'visitor' ? 'items-start' : 'items-end')}>
               <div className={cn('max-w-[85%] rounded-2xl px-3 py-2 text-sm whitespace-pre-wrap',
                 m.role === 'visitor' ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700' : 'bg-purple-600 text-white')}>
                 {m.content}
               </div>
+              {(m as any).at && <span className="mt-0.5 px-1 text-[10px] text-gray-400">{msgTime((m as any).at)}</span>}
             </div>
           ))}
         </div>
