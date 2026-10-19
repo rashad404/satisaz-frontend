@@ -1590,7 +1590,16 @@
         "emailOff": "Also send by email",
         "unverified": "unverified",
         "placeholder": "Type a message...",
-        "hint": "Press Enter to send, Shift+Enter for new line"
+        "hint": "Press Enter to send, Shift+Enter for new line",
+        "aiGenerate": "Let Aysel draft a reply",
+        "aiRewrite": "Let Aysel rewrite the text",
+        "aiPlaceholder": "What should Aysel write? (optional)",
+        "aiRewritePlaceholder": "What to change? e.g. shorter, in Russian",
+        "aiGenerating": "Writing...",
+        "aiHint": "Enter to generate. Goes into the box, not sent.",
+        "aiGenerateButton": "Generate",
+        "aiRewriteButton": "Rewrite",
+        "aiError": "Aysel could not write a reply, please try again"
       },
       "queue": {
         "transferredBy": "Transferred to you by {name}",

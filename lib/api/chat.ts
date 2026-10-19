@@ -278,6 +278,13 @@ export const messagesApi = {
     return response.data;
   },
 
+  aiSuggest: async (tenantId: number, conversationId: number, data: { instruction?: string; current_text?: string }) => {
+    const response = await apiClient.post<{ status: string; data: { text: string; note?: unknown } }>(
+      `/tenants/${tenantId}/conversations/${conversationId}/ai-suggest`, data, { timeout: 70000 }
+    );
+    return response.data;
+  },
+
   sendTyping: async (tenantId: number, conversationId: number, typing: boolean) => {
     const response = await apiClient.post<{ status: string }>(
       `/tenants/${tenantId}/conversations/${conversationId}/typing`,

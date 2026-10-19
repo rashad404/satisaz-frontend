@@ -2,17 +2,44 @@
 
 import { useState, useRef, useCallback, KeyboardEvent, ChangeEvent } from 'react';
 import { useChat } from '@/contexts/ChatContext';
+import { chatApi } from '@/lib/api/chat';
 import { useTranslations } from 'next-intl';
-import { Send, Paperclip, X, Image, FileText, Mail } from 'lucide-react';
+import { Send, Paperclip, X, Image, FileText, Mail, Sparkles, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export function MessageInput() {
   const t = useTranslations('ws.chat.input');
-  const { sendMessage, sendTypingIndicator, activeConversation } = useChat();
+  const { sendMessage, sendTypingIndicator, activeConversation, tenant } = useChat();
   const [content, setContent] = useState('');
   const [files, setFiles] = useState<File[]>([]);
   const [isSending, setIsSending] = useState(false);
   const [alsoEmail, setAlsoEmail] = useState(false);
+  const [aiOpen, setAiOpen] = useState(false);
+  const [aiInstruction, setAiInstruction] = useState('');
+  const [aiBusy, setAiBusy] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
+
+  const generateWithAi = async () => {
+    if (!activeConversation || !tenant || aiBusy) return;
+    setAiBusy(true); setAiError(null);
+    try {
+      const res = await chatApi.messages.aiSuggest(tenant.id, activeConversation.id, {
+        instruction: aiInstruction.trim() || undefined,
+        current_text: content.trim() || undefined,
+      });
+      setContent(res.data.text);
+      setAiInstruction('');
+      setAiOpen(false);
+      setTimeout(() => {
+        const el = textareaRef.current;
+        if (el) { el.focus(); el.style.height = 'auto'; el.style.height = `${Math.min(el.scrollHeight, 150)}px`; }
+      }, 0);
+    } catch {
+      setAiError(t('aiError'));
+    } finally {
+      setAiBusy(false);
+    }
+  };
   const visitorEmail = (activeConversation as any)?.visitor?.email as string | undefined;
   const visitorVerified = !!(activeConversation as any)?.visitor?.is_verified;
   const isSendingRef = useRef(false);
@@ -152,6 +179,37 @@ export function MessageInput() {
         >
           <Paperclip className="h-5 w-5" />
         </button>
+        <div className="relative flex-shrink-0">
+          <button
+            type="button"
+            onClick={() => { setAiOpen((v) => !v); setAiError(null); }}
+            className={cn(
+              'p-3 rounded-xl transition-colors',
+              aiOpen ? 'text-purple-600 bg-purple-100 dark:bg-purple-900/40' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
+            )}
+            title={content.trim() ? t('aiRewrite') : t('aiGenerate')}
+          >
+            {aiBusy ? <Loader2 className="h-5 w-5 animate-spin" /> : <Sparkles className="h-5 w-5" />}
+          </button>
+          {aiOpen && (
+            <div className="absolute bottom-full left-0 mb-2 w-72 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-lg p-2 z-20">
+              <input
+                autoFocus
+                value={aiInstruction}
+                onChange={(e) => setAiInstruction(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); generateWithAi(); } if (e.key === 'Escape') setAiOpen(false); }}
+                placeholder={content.trim() ? t('aiRewritePlaceholder') : t('aiPlaceholder')}
+                disabled={aiBusy}
+                className="w-full rounded-lg bg-gray-100 dark:bg-gray-800 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+              />
+              <div className="flex items-center justify-between mt-1.5 px-1">
+                <span className="text-[11px] text-gray-400">{aiBusy ? t('aiGenerating') : t('aiHint')}</span>
+                <button onClick={generateWithAi} disabled={aiBusy} className="text-xs font-medium text-purple-600 disabled:opacity-50">{content.trim() ? t('aiRewriteButton') : t('aiGenerateButton')}</button>
+              </div>
+              {aiError && <p className="mt-1 px-1 text-[11px] text-red-600">{aiError}</p>}
+            </div>
+          )}
+        </div>
         {visitorEmail && (
           <button
             type="button"

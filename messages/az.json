@@ -1588,7 +1588,16 @@
         "emailOff": "E-poçtla da göndər",
         "unverified": "təsdiqlənməyib",
         "placeholder": "Mesaj yazın...",
-        "hint": "Enter ilə göndər, Shift+Enter ilə yeni sətir"
+        "hint": "Enter ilə göndər, Shift+Enter ilə yeni sətir",
+        "aiGenerate": "Aysel cavab yazsın",
+        "aiRewrite": "Aysel mətni yenidən yazsın",
+        "aiPlaceholder": "Aysel-ə nə yazsın? (boş qoya bilərsiniz)",
+        "aiRewritePlaceholder": "Nəyi dəyişsin? məs: qısa yaz, rusca yaz",
+        "aiGenerating": "Yazır...",
+        "aiHint": "Enter: yarat. Göndərilmir, qutuya düşür.",
+        "aiGenerateButton": "Yarat",
+        "aiRewriteButton": "Yenidən yaz",
+        "aiError": "Aysel cavab yaza bilmədi, yenidən cəhd edin"
       },
       "queue": {
         "transferredBy": "{name} söhbəti sizə ötürdü",

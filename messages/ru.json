@@ -1591,7 +1591,16 @@
         "emailOff": "Отправить и на почту",
         "unverified": "не подтверждён",
         "placeholder": "Введите сообщение...",
-        "hint": "Enter - отправить, Shift+Enter - новая строка"
+        "hint": "Enter - отправить, Shift+Enter - новая строка",
+        "aiGenerate": "Aysel напишет ответ",
+        "aiRewrite": "Aysel перепишет текст",
+        "aiPlaceholder": "Что написать? (можно оставить пустым)",
+        "aiRewritePlaceholder": "Что изменить? напр.: короче, по-азербайджански",
+        "aiGenerating": "Пишет...",
+        "aiHint": "Enter: создать. Попадёт в поле, не отправится.",
+        "aiGenerateButton": "Создать",
+        "aiRewriteButton": "Переписать",
+        "aiError": "Aysel не смогла написать ответ, попробуйте ещё раз"
       },
       "queue": {
         "transferredBy": "{name} передал(а) вам чат",
