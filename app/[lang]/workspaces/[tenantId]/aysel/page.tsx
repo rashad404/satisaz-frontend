@@ -254,6 +254,11 @@ function DraftCard({ draft, tenantId, lang, onError }: { draft: AiDraft; tenantI
           {draft.suggestions?.length > 0 && (
             <p className="text-xs text-gray-500">Təkliflər: {draft.suggestions.join(' | ')}</p>
           )}
+          {!!(draft.metadata as any)?.no_reply && (
+            <p className="text-xs rounded-lg bg-green-50 dark:bg-green-900/30 text-green-800 dark:text-green-200 px-3 py-2">
+              Cavab lazım deyil: {(draft.metadata as any).no_reply.reason}. "Keç" basın, istəsəniz qısa cavabı göndərin.
+            </p>
+          )}
           {!!(draft.metadata as any)?.escalation && (
             <p className="text-xs rounded-lg bg-amber-50 dark:bg-amber-900/30 text-amber-800 dark:text-amber-200 px-3 py-2">
               Aysel komandaya yönləndirmə təklif edir: {(draft.metadata as any).escalation.reason}
