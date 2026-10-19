@@ -25,6 +25,7 @@ import type {
   ConversationNote,
   AiDraft,
   AiLesson,
+  InboxTabCounts,
 } from '../types/chat';
 
 // Tenant/Workspace APIs
@@ -171,6 +172,11 @@ export const conversationsApi = {
         total: number;
       };
     }>(`/tenants/${tenantId}/conversations`, { params: filters });
+    return response.data;
+  },
+
+  counts: async (tenantId: number) => {
+    const response = await apiClient.get<{ status: string; data: InboxTabCounts }>(`/tenants/${tenantId}/conversations/counts`);
     return response.data;
   },
 

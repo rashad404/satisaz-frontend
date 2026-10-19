@@ -116,6 +116,7 @@ export type ContentType = 'text' | 'image' | 'file';
 
 export interface Conversation {
   id: number;
+  waiting_since?: string | null; // visitor's last message time when they are waiting for our reply
   tenant_id: number;
   visitor_id: number;
   contact_id?: number;
@@ -251,7 +252,21 @@ export interface KnowledgeBaseItem {
 }
 
 // API Request/Response Types
+export type InboxTab = 'needs_reply' | 'mine' | 'active' | 'notes' | 'closed' | 'all';
+
+export interface InboxTabCounts {
+  needs_reply: number;
+  mine: number;
+  mine_needs_reply: number;
+  active: number;
+  notes: number;
+  closed: number;
+  all: number;
+}
+
 export interface ConversationFilters {
+  tab?: InboxTab;
+  search?: string;
   status?: ConversationStatus | 'all';
   handler_type?: HandlerType | 'all';
   assigned_to_me?: boolean;

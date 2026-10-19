@@ -1,45 +1,35 @@
 "use client";
 
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { useChat } from '@/contexts/ChatContext';
 import { useTranslations } from 'next-intl';
 import { MessageSquare, Bot, User, StickyNote, ShieldCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import type { Conversation, ConversationStatus } from '@/lib/types/chat';
+import type { Conversation, ConversationStatus, InboxTab } from '@/lib/types/chat';
 
 interface ConversationListProps {
-  filter?: ConversationStatus | 'all';
-  searchQuery?: string;
-  assignedToMe?: boolean;
-  hasNotes?: boolean;
+  tab?: InboxTab;
 }
 
-export function ConversationList({ filter = 'all', searchQuery = '', assignedToMe = false, hasNotes = false }: ConversationListProps) {
+export function ConversationList({ tab = 'all' }: ConversationListProps) {
   const t = useTranslations();
-  const { conversations, activeConversation, selectConversation, isLoadingConversations, currentUserId } = useChat();
+  const { conversations, activeConversation, selectConversation, isLoadingConversations, currentUserId, hasMoreConversations, loadMoreConversations } = useChat();
+  const [loadingMore, setLoadingMore] = useState(false);
+  const hasNotes = tab === 'notes';
+  const searchQuery = '';
 
+  // The server returns the tab's rows; this only drops rows that live updates moved out of the tab.
   const filteredConversations = conversations.filter((conv) => {
-    // Filter by assigned to me
-    if (assignedToMe && conv.assigned_agent_id !== currentUserId) {
-      return false;
+    const open = conv.status !== 'closed';
+    switch (tab) {
+      case 'needs_reply': return open && conv.last_message?.sender_type !== 'agent'
+        && (conv.waiting_since != null || conv.last_message?.sender_type === 'visitor');
+      case 'mine': return open && conv.assigned_agent_id === currentUserId;
+      case 'active': return conv.status === 'active' || conv.status === 'waiting';
+      case 'notes': return (conv.notes_count ?? 0) > 0;
+      case 'closed': return conv.status === 'closed';
+      default: return true;
     }
-    // Filter by has notes
-    if (hasNotes && (conv.notes_count ?? 0) === 0) {
-      return false;
-    }
-    // Filter by status
-    if (filter !== 'all' && conv.status !== filter) {
-      return false;
-    }
-    // Filter by search query
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      const visitorName = conv.visitor?.name?.toLowerCase() || '';
-      const visitorEmail = conv.visitor?.email?.toLowerCase() || '';
-      const lastMessage = conv.last_message?.content?.toLowerCase() || '';
-      return visitorName.includes(query) || visitorEmail.includes(query) || lastMessage.includes(query);
-    }
-    return true;
   });
 
   const handleSelectConversation = useCallback((conversationId: number) => {
@@ -85,6 +75,15 @@ export function ConversationList({ filter = 'all', searchQuery = '', assignedToM
           onClick={() => handleSelectConversation(conversation.id)}
         />
       ))}
+      {hasMoreConversations && (
+        <button
+          onClick={async () => { setLoadingMore(true); try { await loadMoreConversations(); } finally { setLoadingMore(false); } }}
+          disabled={loadingMore}
+          className="m-3 rounded-lg border border-gray-200 dark:border-gray-700 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50"
+        >
+          {loadingMore ? '...' : 'Daha çox'}
+        </button>
+      )}
     </div>
   );
 }
@@ -156,9 +155,15 @@ function ConversationItem({ conversation, isActive, onClick }: ConversationItemP
             <span className="truncate">{visitor?.name || visitor?.email || 'Anonymous Visitor'}</span>
             {visitor?.is_verified && <span className="ml-2 inline-flex items-center gap-0.5 rounded-full bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 px-1.5 py-0.5 text-[10px] font-medium" title="Logged in on the website"><ShieldCheck className="h-3 w-3" /> Logged in</span>}
           </span>
-          <span className="text-xs text-gray-500 dark:text-gray-400 flex-shrink-0">
-            {formatTime(updated_at)}
-          </span>
+          {conversation.waiting_since && status !== 'closed' ? (
+            <span className="text-xs font-medium text-red-600 dark:text-red-400 flex-shrink-0" title="Müştəri cavab gözləyir">
+              {formatTime(conversation.waiting_since)}
+            </span>
+          ) : (
+            <span className="text-xs text-gray-500 dark:text-gray-400 flex-shrink-0">
+              {formatTime(updated_at)}
+            </span>
+          )}
         </div>
 
         <div className="flex items-center gap-1.5 mt-1">

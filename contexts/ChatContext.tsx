@@ -26,6 +26,8 @@ import type {
   NotificationSettings,
   AiDraft,
   AiLesson,
+  InboxTab,
+  InboxTabCounts,
   AiDraftUpdatedEvent,
   AiLessonUpdatedEvent,
 } from '@/lib/types/chat';
@@ -79,6 +81,12 @@ interface ChatContextValue {
   loadTenant: (tenantId?: number) => Promise<void>;
   loadAgents: () => Promise<void>;
   loadConversations: () => Promise<void>;
+  conversationTab: InboxTab;
+  setConversationTab: (tab: InboxTab) => void;
+  setConversationSearch: (q: string) => void;
+  tabCounts: InboxTabCounts | null;
+  hasMoreConversations: boolean;
+  loadMoreConversations: () => Promise<void>;
   loadQueue: () => Promise<void>;
   selectConversation: (conversationId: number | null) => Promise<void>;
   sendMessage: (content: string, files?: File[], alsoEmail?: boolean) => Promise<void>;
@@ -525,31 +533,70 @@ export function ChatProvider({ children, tenantId }: ChatProviderProps) {
   }, [tenantId]);
 
   // Load conversations
+  // Server-side inbox tabs: the list holds the current tab only, paged 50 at a time.
+  const [conversationTab, setConversationTabState] = useState<InboxTab>('needs_reply');
+  const [conversationSearch, setConversationSearchState] = useState('');
+  const [tabCounts, setTabCounts] = useState<InboxTabCounts | null>(null);
+  const [conversationsPage, setConversationsPage] = useState(1);
+  const [conversationsLastPage, setConversationsLastPage] = useState(1);
+  const tabRef = useRef<InboxTab>('needs_reply');
+  const searchRef = useRef('');
+
+  const loadTabCounts = useCallback(async () => {
+    if (!tenantId) return;
+    try { const r = await chatApi.conversations.counts(tenantId); setTabCounts(r.data); } catch (e) { console.error('Failed to load tab counts:', e); }
+  }, [tenantId]);
+
   const loadConversations = useCallback(async () => {
     if (!tenantId) return;
 
     setIsLoadingConversations(true);
     try {
-      // Recent conversations, plus every open one and every one assigned to me, so the
-      // Active and Mine tabs are not limited to the 50 most recently updated chats.
-      const [recent, active, mine] = await Promise.all([
-        chatApi.conversations.list(tenantId, { status: 'all', per_page: 50 }),
-        chatApi.conversations.list(tenantId, { status: 'active', per_page: 100 }),
-        chatApi.conversations.list(tenantId, { status: 'active', assigned_to_me: 1 as unknown as boolean, per_page: 100 }),
-      ]);
-      const byId = new Map<number, Conversation>();
-      for (const list of [recent, active, mine]) {
-        for (const c of list.data.data) byId.set(c.id, c);
-      }
-      setConversations(
-        Array.from(byId.values()).sort((a, b) => (b.updated_at || '').localeCompare(a.updated_at || ''))
-      );
+      const response = await chatApi.conversations.list(tenantId, {
+        tab: tabRef.current, search: searchRef.current || undefined, per_page: 50, page: 1,
+      });
+      setConversations(response.data.data);
+      setConversationsPage(response.data.current_page);
+      setConversationsLastPage(response.data.last_page);
     } catch (error) {
       console.error('Failed to load conversations:', error);
     } finally {
       setIsLoadingConversations(false);
     }
-  }, [tenantId]);
+    loadTabCounts();
+  }, [tenantId, loadTabCounts]);
+
+  const loadMoreConversations = useCallback(async () => {
+    if (!tenantId || conversationsPage >= conversationsLastPage) return;
+    try {
+      const response = await chatApi.conversations.list(tenantId, {
+        tab: tabRef.current, search: searchRef.current || undefined, per_page: 50, page: conversationsPage + 1,
+      });
+      setConversations((prev) => {
+        const seen = new Set(prev.map((c) => c.id));
+        return [...prev, ...response.data.data.filter((c) => !seen.has(c.id))];
+      });
+      setConversationsPage(response.data.current_page);
+      setConversationsLastPage(response.data.last_page);
+    } catch (error) {
+      console.error('Failed to load more conversations:', error);
+    }
+  }, [tenantId, conversationsPage, conversationsLastPage]);
+
+  const setConversationTab = useCallback((tab: InboxTab) => {
+    if (tabRef.current === tab) return;
+    tabRef.current = tab;
+    setConversationTabState(tab);
+    loadConversations();
+  }, [loadConversations]);
+
+  const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const setConversationSearch = useCallback((q: string) => {
+    searchRef.current = q;
+    setConversationSearchState(q);
+    if (searchTimer.current) clearTimeout(searchTimer.current);
+    searchTimer.current = setTimeout(() => loadConversations(), 300);
+  }, [loadConversations]);
 
   // Load queue
   const loadQueue = useCallback(async () => {
@@ -899,6 +946,12 @@ export function ChatProvider({ children, tenantId }: ChatProviderProps) {
     loadTenant,
     loadAgents,
     loadConversations,
+    conversationTab,
+    setConversationTab,
+    setConversationSearch,
+    tabCounts,
+    hasMoreConversations: conversationsPage < conversationsLastPage,
+    loadMoreConversations,
     loadQueue,
     selectConversation,
     sendMessage,

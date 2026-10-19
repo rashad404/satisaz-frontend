@@ -5,11 +5,12 @@ import { useChat } from '@/contexts/ChatContext';
 import { useTranslations } from 'next-intl';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { ConversationList, ChatWindow, QueueCard } from '@/components/chat';
-import { Search, Inbox, Clock, MessageSquare, User, Volume2, VolumeX, StickyNote } from 'lucide-react';
+import { Search, Inbox, Clock, MessageSquare, User, Volume2, VolumeX, StickyNote, Reply } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import type { ConversationStatus } from '@/lib/types/chat';
+import type { InboxTab } from '@/lib/types/chat';
 
-type TabType = 'queue' | 'mine' | 'active' | 'notes' | 'all';
+type TabType = 'queue' | InboxTab;
+const TAB_IDS: TabType[] = ['queue', 'needs_reply', 'mine', 'active', 'notes', 'all'];
 
 export default function InboxPage() {
   const t = useTranslations();
@@ -27,24 +28,30 @@ export default function InboxPage() {
     loadConversations,
     selectConversation,
     toggleMute,
+    setConversationTab,
+    setConversationSearch,
+    tabCounts,
   } = useChat();
 
   const [activeTab, setActiveTab] = useState<TabType>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('satis_inbox_tab');
-      if (saved && ['queue', 'mine', 'active', 'notes', 'all'].includes(saved)) {
+      if (saved && TAB_IDS.includes(saved as TabType)) {
         return saved as TabType;
       }
     }
-    return 'queue';
+    return 'needs_reply';
   });
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<ConversationStatus | 'all'>('all');
-
-  // Persist active tab
+  // Persist active tab and load it from the server
   useEffect(() => {
     localStorage.setItem('satis_inbox_tab', activeTab);
-  }, [activeTab]);
+    if (activeTab !== 'queue') setConversationTab(activeTab);
+  }, [activeTab, setConversationTab]);
+
+  useEffect(() => {
+    setConversationSearch(searchQuery);
+  }, [searchQuery, setConversationSearch]);
 
   // Track if we've processed the URL param (to prevent re-processing on activeConversation changes)
   const [processedUrlParam, setProcessedUrlParam] = useState<string | null>(null);
@@ -79,54 +86,18 @@ export default function InboxPage() {
     return () => clearInterval(interval);
   }, [loadQueue]);
 
-  const myConversations = conversations.filter((c) => c.assigned_agent_id === currentUserId);
-  const conversationsWithNotes = conversations.filter((c) => (c.notes_count ?? 0) > 0);
-
+  const c = tabCounts;
   const tabs = [
-    {
-      id: 'queue' as const,
-      label: 'Queue',
-      icon: Clock,
-      count: queuedConversations.length,
-      countColor: queuedConversations.length > 0 ? 'bg-yellow-500' : 'bg-gray-400',
-    },
-    {
-      id: 'mine' as const,
-      label: 'Mine',
-      icon: User,
-      count: myConversations.filter((c) => c.status !== 'closed').length,
-      countColor: 'bg-purple-500',
-    },
-    {
-      id: 'active' as const,
-      label: 'Active',
-      icon: MessageSquare,
-      count: conversations.filter((c) => c.status === 'active').length,
-      countColor: 'bg-green-500',
-    },
-    {
-      id: 'notes' as const,
-      label: 'Notes',
-      icon: StickyNote,
-      count: conversationsWithNotes.length,
-      countColor: 'bg-amber-500',
-    },
-    {
-      id: 'all' as const,
-      label: 'All',
-      icon: Inbox,
-      count: conversations.length,
-      countColor: 'bg-gray-400',
-    },
+    { id: 'queue' as const, label: 'Queue: yeni, heç kim qəbul etməyib', icon: Clock, count: queuedConversations.length,
+      countColor: queuedConversations.length > 0 ? 'bg-yellow-500' : 'bg-gray-400' },
+    { id: 'needs_reply' as const, label: 'Cavab gözləyir: son mesaj müştəridəndir', icon: Reply, count: c?.needs_reply ?? 0,
+      countColor: (c?.needs_reply ?? 0) > 0 ? 'bg-red-500' : 'bg-gray-400' },
+    { id: 'mine' as const, label: `Mine: mənə təyin olunub${c?.mine_needs_reply ? `, ${c.mine_needs_reply} cavab gözləyir` : ''}`, icon: User, count: c?.mine ?? 0,
+      countColor: 'bg-purple-500' },
+    { id: 'active' as const, label: 'Active: açıq söhbətlər', icon: MessageSquare, count: c?.active ?? 0, countColor: 'bg-green-500' },
+    { id: 'notes' as const, label: 'Notes: qeydi olanlar', icon: StickyNote, count: c?.notes ?? 0, countColor: 'bg-amber-500' },
+    { id: 'all' as const, label: 'All: hamısı, bağlılar da', icon: Inbox, count: c?.all ?? 0, countColor: 'bg-gray-400' },
   ];
-
-  const getFilteredStatus = (): ConversationStatus | 'all' => {
-    if (activeTab === 'queue') return 'queued';
-    if (activeTab === 'active') return 'active';
-    if (activeTab === 'mine') return 'all';
-    if (activeTab === 'notes') return 'all';
-    return statusFilter;
-  };
 
   const handleBack = () => {
     selectConversation(null);
@@ -233,12 +204,7 @@ export default function InboxPage() {
         {/* Active/All conversations view */}
         {activeTab !== 'queue' && (
           <div className="flex-1 overflow-hidden">
-            <ConversationList
-              filter={getFilteredStatus()}
-              searchQuery={searchQuery}
-              assignedToMe={activeTab === 'mine'}
-              hasNotes={activeTab === 'notes'}
-            />
+            <ConversationList tab={activeTab as InboxTab} />
           </div>
         )}
       </div>
