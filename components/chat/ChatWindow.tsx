@@ -2,9 +2,9 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useChat } from '@/contexts/ChatContext';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { Bot, User, MessageSquare, Clock, CheckCheck, Check } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, formatShortDate, formatDate } from '@/lib/utils';
 import type { ChatMessage, SenderType, Visitor } from '@/lib/types/chat';
 import { MessageInput } from './MessageInput';
 import { ConversationHeader } from './ConversationHeader';
@@ -29,6 +29,7 @@ interface ChatWindowProps {
 
 export function ChatWindow({ onBack }: ChatWindowProps) {
   const t = useTranslations('ws.chat.window');
+  const locale = useLocale();
   const { activeConversation, messages, isLoadingMessages, typingUsers, markMessagesAsRead } = useChat();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -95,7 +96,7 @@ export function ChatWindow({ onBack }: ChatWindowProps) {
               <div className="flex items-center justify-center gap-2 py-4">
                 <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
                 <span className="text-xs text-gray-500 dark:text-gray-400">
-                  {t('startedAt', { date: new Date(activeConversation.created_at).toLocaleString() })}
+                  {t('startedAt', { date: formatDate(activeConversation.created_at, locale) })}
                 </span>
                 <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
               </div>
@@ -153,6 +154,7 @@ interface MessageBubbleProps {
 
 function MessageBubble({ message, visitor, showAvatar }: MessageBubbleProps) {
   const t = useTranslations('ws.chat.window');
+  const locale = useLocale();
   const isAgent = message.sender_type === 'agent' || message.sender_type === 'ai';
   const isSystem = message.sender_type === 'system';
 
@@ -167,7 +169,14 @@ function MessageBubble({ message, visitor, showAvatar }: MessageBubbleProps) {
   }
 
   const formatTime = (dateString: string) => {
-    return new Date(dateString).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const d = new Date(dateString);
+    const hm = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+    const now = new Date();
+    if (d.toDateString() === now.toDateString()) return hm;
+    // not today: prefix the date (e.g. "18 okt, 15:44"; year added when not this year)
+    const short = formatShortDate(d, locale).split(' ');
+    const dayMonth = short.slice(0, 2).join(' ');
+    return `${dayMonth}${d.getFullYear() !== now.getFullYear() ? ' ' + d.getFullYear() : ''}, ${hm}`;
   };
 
   const getSenderIcon = (senderType: SenderType) => {
