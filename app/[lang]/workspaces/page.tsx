@@ -16,7 +16,7 @@ import {
 import { cn } from '@/lib/utils';
 
 export default function WorkspacesPage() {
-  const t = useTranslations();
+  const t = useTranslations('ws.workspaces');
   const params = useParams();
   const router = useRouter();
   const lang = params.lang as string;
@@ -83,7 +83,7 @@ export default function WorkspacesPage() {
               <Link
                 href={`/${lang}`}
                 className="w-10 h-10 rounded-xl bg-purple-600 hover:bg-purple-700 flex items-center justify-center transition-colors"
-                title="Back to Home"
+                title={t('backToHome')}
               >
                 <MessageSquare className="h-6 w-6 text-white" />
               </Link>
@@ -94,12 +94,12 @@ export default function WorkspacesPage() {
                     className="text-sm text-gray-500 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 flex items-center gap-1"
                   >
                     <Home className="h-3.5 w-3.5" />
-                    Home
+                    {t('home')}
                   </Link>
                   <span className="text-gray-300 dark:text-gray-600">/</span>
-                  <span className="text-sm text-gray-700 dark:text-gray-300">Workspaces</span>
+                  <span className="text-sm text-gray-700 dark:text-gray-300">{t('title')}</span>
                 </div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Workspaces</h1>
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('title')}</h1>
               </div>
             </div>
 
@@ -108,7 +108,7 @@ export default function WorkspacesPage() {
               className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors"
             >
               <Plus className="h-4 w-4" />
-              New Workspace
+              {t('newWorkspace')}
             </button>
           </div>
         </div>
@@ -122,17 +122,17 @@ export default function WorkspacesPage() {
               <MessageSquare className="h-8 w-8 text-purple-600 dark:text-purple-400" />
             </div>
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-              No workspaces yet
+              {t('emptyTitle')}
             </h2>
             <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-md mx-auto">
-              Create your first workspace to start providing live chat support on your website.
+              {t('emptyDescription')}
             </p>
             <button
               onClick={() => setShowCreateModal(true)}
               className="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors"
             >
               <Plus className="h-5 w-5" />
-              Create Workspace
+              {t('createWorkspace')}
             </button>
           </div>
         ) : (
@@ -149,7 +149,7 @@ export default function WorkspacesPage() {
               <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-3">
                 <Plus className="h-6 w-6 text-gray-400" />
               </div>
-              <span className="text-gray-500 dark:text-gray-400 font-medium">Add Workspace</span>
+              <span className="text-gray-500 dark:text-gray-400 font-medium">{t('addWorkspace')}</span>
             </button>
           </div>
         )}
@@ -177,6 +177,7 @@ interface WorkspaceCardProps {
 }
 
 function WorkspaceCard({ workspace, lang }: WorkspaceCardProps) {
+  const t = useTranslations('ws.workspaces');
   return (
     <Link
       href={`/${lang}/workspaces/${workspace.id}`}
@@ -194,7 +195,7 @@ function WorkspaceCard({ workspace, lang }: WorkspaceCardProps) {
               : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'
           )}
         >
-          {workspace.is_active ? 'Active' : 'Inactive'}
+          {workspace.is_active ? t('active') : t('inactive')}
         </span>
       </div>
 
@@ -219,6 +220,7 @@ interface CreateWorkspaceModalProps {
 }
 
 function CreateWorkspaceModal({ lang, onClose, onCreated }: CreateWorkspaceModalProps) {
+  const t = useTranslations('ws.workspaces');
   const [name, setName] = useState('');
   const [slug, setSlug] = useState('');
   const [isCreating, setIsCreating] = useState(false);
@@ -236,7 +238,7 @@ function CreateWorkspaceModal({ lang, onClose, onCreated }: CreateWorkspaceModal
 
   const handleCreate = async () => {
     if (!name.trim() || !slug.trim()) {
-      setError('Please fill in all fields');
+      setError(t('fillAllFields'));
       return;
     }
 
@@ -250,7 +252,7 @@ function CreateWorkspaceModal({ lang, onClose, onCreated }: CreateWorkspaceModal
       });
       onCreated(response.data);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to create workspace');
+      setError(err.response?.data?.message || t('createFailed'));
     } finally {
       setIsCreating(false);
     }
@@ -262,33 +264,33 @@ function CreateWorkspaceModal({ lang, onClose, onCreated }: CreateWorkspaceModal
       <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full p-6">
           <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-            Create Workspace
+            {t('createWorkspace')}
           </h2>
 
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Workspace Name
+                {t('nameLabel')}
               </label>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => handleNameChange(e.target.value)}
-                placeholder="My Company Support"
+                placeholder={t('namePlaceholder')}
                 className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
               />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Slug (URL identifier)
+                {t('slugLabel')}
               </label>
               <div className="flex items-center">
                 <input
                   type="text"
                   value={slug}
                   onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
-                  placeholder="my-company"
+                  placeholder={t('slugPlaceholder')}
                   className="flex-1 px-4 py-2 rounded-l-lg border border-r-0 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
                 />
                 <span className="px-3 py-2 bg-gray-100 dark:bg-gray-600 border border-gray-300 dark:border-gray-600 rounded-r-lg text-gray-500 dark:text-gray-400 text-sm">
@@ -307,7 +309,7 @@ function CreateWorkspaceModal({ lang, onClose, onCreated }: CreateWorkspaceModal
               onClick={onClose}
               className="px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
             >
-              Cancel
+              {t('cancel')}
             </button>
             <button
               onClick={handleCreate}
@@ -315,7 +317,7 @@ function CreateWorkspaceModal({ lang, onClose, onCreated }: CreateWorkspaceModal
               className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
               {isCreating && <Loader2 className="h-4 w-4 animate-spin" />}
-              Create Workspace
+              {t('createWorkspace')}
             </button>
           </div>
         </div>

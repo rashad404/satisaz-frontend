@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import { useChat } from '@/contexts/ChatContext';
 import { agentsApi } from '@/lib/api/chat';
 import { cn } from '@/lib/utils';
+import { useTranslations } from 'next-intl';
 import {
   Users,
   UserPlus,
@@ -20,6 +21,7 @@ import {
 import type { Agent } from '@/lib/types/chat';
 
 export default function TeamPage() {
+  const t = useTranslations('ws.team');
   const params = useParams();
   const { agents, loadAgents } = useChat();
   const tenantId = Number(params.tenantId);
@@ -53,12 +55,12 @@ export default function TeamPage() {
 
     try {
       await agentsApi.invite(tenantId, { email: inviteEmail, role: inviteRole });
-      setSuccess(`Invitation sent to ${inviteEmail}`);
+      setSuccess(t('inviteSent', { email: inviteEmail }));
       setInviteEmail('');
       setShowInviteModal(false);
       await loadAgents();
     } catch (err: any) {
-      const message = err?.response?.data?.message || err?.message || 'Failed to send invitation';
+      const message = err?.response?.data?.message || err?.message || t('inviteFailed');
       setError(message);
     } finally {
       setIsInviting(false);
@@ -70,22 +72,22 @@ export default function TeamPage() {
       await agentsApi.update(tenantId, agent.id, { role: newRole });
       await loadAgents();
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Failed to update role';
+      const message = err instanceof Error ? err.message : t('roleUpdateFailed');
       setError(message);
     }
   };
 
   const handleRemove = async (agent: Agent) => {
-    if (!confirm(`Are you sure you want to remove ${agent.name} from this workspace?`)) {
+    if (!confirm(t('removeConfirm', { name: agent.name }))) {
       return;
     }
 
     try {
       await agentsApi.remove(tenantId, agent.id);
-      setSuccess(`${agent.name} has been removed from the workspace`);
+      setSuccess(t('removed', { name: agent.name }));
       await loadAgents();
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Failed to remove agent';
+      const message = err instanceof Error ? err.message : t('removeFailed');
       setError(message);
     }
   };
@@ -104,11 +106,11 @@ export default function TeamPage() {
   const getStatusLabel = (status?: string) => {
     switch (status) {
       case 'online':
-        return 'Online';
+        return t('statusOnline');
       case 'away':
-        return 'Away';
+        return t('statusAway');
       default:
-        return 'Offline';
+        return t('statusOffline');
     }
   };
 
@@ -130,9 +132,9 @@ export default function TeamPage() {
               <Users className="h-6 w-6 text-purple-600 dark:text-purple-400" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Team</h1>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('title')}</h1>
               <p className="text-gray-500 dark:text-gray-400">
-                {agents.length} member{agents.length !== 1 ? 's' : ''}
+                {t('memberCount', { n: agents.length })}
               </p>
             </div>
           </div>
@@ -142,7 +144,7 @@ export default function TeamPage() {
             className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors"
           >
             <UserPlus className="h-5 w-5" />
-            Invite Agent
+            {t('inviteAgent')}
           </button>
         </div>
 
@@ -170,16 +172,16 @@ export default function TeamPage() {
             <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Agent
+                  {t('colAgent')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Status
+                  {t('colStatus')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Role
+                  {t('colRole')}
                 </th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Actions
+                  {t('colActions')}
                 </th>
               </tr>
             </thead>
@@ -215,7 +217,7 @@ export default function TeamPage() {
                             {agent.name}
                           </span>
                           {agent.is_owner && (
-                            <span title="Owner">
+                            <span title={t('owner')}>
                               <Crown className="h-4 w-4 text-yellow-500" />
                             </span>
                           )}
@@ -235,7 +237,7 @@ export default function TeamPage() {
                     {agent.is_owner ? (
                       <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300">
                         <Crown className="h-3 w-3" />
-                        Owner
+                        {t('owner')}
                       </span>
                     ) : (
                       <select
@@ -243,8 +245,8 @@ export default function TeamPage() {
                         onChange={(e) => handleRoleChange(agent, e.target.value as 'admin' | 'agent')}
                         className="text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-2 py-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                       >
-                        <option value="agent">Agent</option>
-                        <option value="admin">Admin</option>
+                        <option value="agent">{t('roleAgent')}</option>
+                        <option value="admin">{t('roleAdmin')}</option>
                       </select>
                     )}
                   </td>
@@ -253,7 +255,7 @@ export default function TeamPage() {
                       <button
                         onClick={() => handleRemove(agent)}
                         className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 p-1"
-                        title="Remove from workspace"
+                        title={t('removeTitle')}
                       >
                         <Trash2 className="h-5 w-5" />
                       </button>
@@ -267,23 +269,23 @@ export default function TeamPage() {
 
         {/* Role Legend */}
         <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
-          <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Role Permissions</h3>
+          <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">{t('rolePermissions')}</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="flex items-start gap-3">
               <Shield className="h-5 w-5 text-gray-500 mt-0.5" />
               <div>
-                <span className="font-medium text-gray-700 dark:text-gray-300">Agent</span>
+                <span className="font-medium text-gray-700 dark:text-gray-300">{t('roleAgent')}</span>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Can handle conversations and view basic workspace information.
+                  {t('roleAgentHint')}
                 </p>
               </div>
             </div>
             <div className="flex items-start gap-3">
               <ShieldCheck className="h-5 w-5 text-purple-600 mt-0.5" />
               <div>
-                <span className="font-medium text-gray-700 dark:text-gray-300">Admin</span>
+                <span className="font-medium text-gray-700 dark:text-gray-300">{t('roleAdmin')}</span>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Full access including settings, team management, and AI configuration.
+                  {t('roleAdminHint')}
                 </p>
               </div>
             </div>
@@ -297,7 +299,7 @@ export default function TeamPage() {
           <div className="absolute inset-0 bg-black/50" onClick={() => setShowInviteModal(false)} />
           <div className="relative bg-white dark:bg-gray-900 rounded-xl shadow-xl w-full max-w-md p-6 m-4">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white">Invite Team Member</h2>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">{t('inviteTitle')}</h2>
               <button
                 onClick={() => setShowInviteModal(false)}
                 className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
@@ -309,7 +311,7 @@ export default function TeamPage() {
             <form onSubmit={handleInvite} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Email Address
+                  {t('emailLabel')}
                 </label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -317,7 +319,7 @@ export default function TeamPage() {
                     type="email"
                     value={inviteEmail}
                     onChange={(e) => setInviteEmail(e.target.value)}
-                    placeholder="colleague@company.com"
+                    placeholder={t('emailPlaceholder')}
                     required
                     className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   />
@@ -326,15 +328,15 @@ export default function TeamPage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Role
+                  {t('colRole')}
                 </label>
                 <select
                   value={inviteRole}
                   onChange={(e) => setInviteRole(e.target.value as 'admin' | 'agent')}
                   className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 >
-                  <option value="agent">Agent</option>
-                  <option value="admin">Admin</option>
+                  <option value="agent">{t('roleAgent')}</option>
+                  <option value="admin">{t('roleAdmin')}</option>
                 </select>
               </div>
 
@@ -344,7 +346,7 @@ export default function TeamPage() {
                   onClick={() => setShowInviteModal(false)}
                   className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
                 >
-                  Cancel
+                  {t('cancel')}
                 </button>
                 <button
                   type="submit"
@@ -359,12 +361,12 @@ export default function TeamPage() {
                   {isInviting ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      Sending...
+                      {t('sending')}
                     </>
                   ) : (
                     <>
                       <UserPlus className="h-4 w-4" />
-                      Send Invitation
+                      {t('sendInvitation')}
                     </>
                   )}
                 </button>

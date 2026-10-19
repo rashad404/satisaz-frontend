@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useChat } from '@/contexts/ChatContext';
 import { agentsApi } from '@/lib/api/chat';
 import { cn } from '@/lib/utils';
@@ -38,6 +39,7 @@ const DEFAULT_SETTINGS: NotificationSettings = {
 };
 
 export default function NotificationsPage() {
+  const t = useTranslations('ws.notifications');
   const params = useParams();
   const { tenant, loadNotificationSettings } = useChat();
   const tenantId = Number(params.tenantId);
@@ -66,7 +68,7 @@ export default function NotificationsPage() {
       });
     } catch (err) {
       console.error('Failed to load notification settings:', err);
-      setError('Bildiriş ayarlarını yükləmək mümkün olmadı');
+      setError(t('loadFailed'));
     } finally {
       setIsLoading(false);
     }
@@ -92,10 +94,10 @@ export default function NotificationsPage() {
       await agentsApi.updateNotificationSettings(tenantId, settings);
       // Reload notification settings in ChatContext so sounds respect the new settings
       await loadNotificationSettings();
-      setSuccess('Bildiriş ayarları yadda saxlanıldı');
+      setSuccess(t('saved'));
     } catch (err) {
       console.error('Failed to save notification settings:', err);
-      setError('Bildiriş ayarlarını yadda saxlamaq mümkün olmadı');
+      setError(t('saveFailed'));
     } finally {
       setIsSaving(false);
     }
@@ -118,8 +120,8 @@ export default function NotificationsPage() {
             <Bell className="h-4 w-4 text-purple-600 dark:text-purple-400" />
           </div>
           <div>
-            <h1 className="text-base font-medium text-gray-900 dark:text-white">Bildiriş Ayarları</h1>
-            <p className="text-xs text-gray-500 dark:text-gray-400">Bildiriş kanallarınızı idarə edin</p>
+            <h1 className="text-base font-medium text-gray-900 dark:text-white">{t('title')}</h1>
+            <p className="text-xs text-gray-500 dark:text-gray-400">{t('subtitle')}</p>
           </div>
         </div>
 
@@ -139,7 +141,7 @@ export default function NotificationsPage() {
         <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4">
           <div className="flex items-center gap-2 mb-3">
             <Volume2 className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-            <h2 className="text-sm font-medium text-gray-900 dark:text-white">Səs Bildirişləri</h2>
+            <h2 className="text-sm font-medium text-gray-900 dark:text-white">{t('sound.title')}</h2>
           </div>
 
           <div className="space-y-2">
@@ -149,8 +151,8 @@ export default function NotificationsPage() {
                   <MessageSquarePlus className="h-4 w-4" />
                 </div>
                 <div>
-                  <span className="text-sm font-medium text-gray-900 dark:text-white">Yeni söhbətlər</span>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Yeni söhbət növbəyə daxil olanda səs çalsın</p>
+                  <span className="text-sm font-medium text-gray-900 dark:text-white">{t('newConversations')}</span>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{t('sound.newConversationDesc')}</p>
                 </div>
               </div>
               <ToggleSwitch
@@ -165,8 +167,8 @@ export default function NotificationsPage() {
                   <MessageCircle className="h-4 w-4" />
                 </div>
                 <div>
-                  <span className="text-sm font-medium text-gray-900 dark:text-white">Yeni mesajlar</span>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Ziyarətçidən mesaj gələndə səs çalsın</p>
+                  <span className="text-sm font-medium text-gray-900 dark:text-white">{t('sound.newMessages')}</span>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{t('sound.newMessagesDesc')}</p>
                 </div>
               </div>
               <ToggleSwitch
@@ -181,8 +183,8 @@ export default function NotificationsPage() {
                   <Eye className="h-4 w-4" />
                 </div>
                 <div>
-                  <span className="text-sm font-medium text-gray-900 dark:text-white">Online ziyarətçilər</span>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Ziyarətçi online olanda səs çalsın (yeni və ya qayıdan)</p>
+                  <span className="text-sm font-medium text-gray-900 dark:text-white">{t('sound.onlineVisitors')}</span>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{t('sound.onlineVisitorsDesc')}</p>
                 </div>
               </div>
               <ToggleSwitch
@@ -197,7 +199,7 @@ export default function NotificationsPage() {
         <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4">
           <div className="flex items-center gap-2 mb-3">
             <Mail className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-            <h2 className="text-sm font-medium text-gray-900 dark:text-white">Email Bildirişləri</h2>
+            <h2 className="text-sm font-medium text-gray-900 dark:text-white">{t('email.title')}</h2>
           </div>
 
           <div className="space-y-2">
@@ -207,8 +209,8 @@ export default function NotificationsPage() {
                   <MessageSquarePlus className="h-4 w-4" />
                 </div>
                 <div>
-                  <span className="text-sm font-medium text-gray-900 dark:text-white">Yeni söhbətlər</span>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Yeni söhbət növbəyə daxil olanda email alın</p>
+                  <span className="text-sm font-medium text-gray-900 dark:text-white">{t('newConversations')}</span>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{t('email.newConversationDesc')}</p>
                 </div>
               </div>
               <ToggleSwitch
@@ -223,8 +225,8 @@ export default function NotificationsPage() {
                   <ArrowRightLeft className="h-4 w-4" />
                 </div>
                 <div>
-                  <span className="text-sm font-medium text-gray-900 dark:text-white">Transfer sorğuları</span>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Sizə söhbət transfer ediləndə email alın</p>
+                  <span className="text-sm font-medium text-gray-900 dark:text-white">{t('transferRequests')}</span>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{t('email.transferDesc')}</p>
                 </div>
               </div>
               <ToggleSwitch
@@ -239,8 +241,8 @@ export default function NotificationsPage() {
                   <UserPlus className="h-4 w-4" />
                 </div>
                 <div>
-                  <span className="text-sm font-medium text-gray-900 dark:text-white">Workspace dəvətləri</span>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Workspace-ə dəvət olunanda email alın</p>
+                  <span className="text-sm font-medium text-gray-900 dark:text-white">{t('email.workspaceInvites')}</span>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{t('email.workspaceInvitesDesc')}</p>
                 </div>
               </div>
               <ToggleSwitch
@@ -255,8 +257,8 @@ export default function NotificationsPage() {
         <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4">
           <div className="flex items-center gap-2 mb-3">
             <Smartphone className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-            <h2 className="text-sm font-medium text-gray-900 dark:text-white">SMS Bildirişləri</h2>
-            <span className="px-1.5 py-0.5 text-[10px] font-medium bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-400 rounded">Tezliklə</span>
+            <h2 className="text-sm font-medium text-gray-900 dark:text-white">{t('sms.title')}</h2>
+            <span className="px-1.5 py-0.5 text-[10px] font-medium bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-400 rounded">{t('sms.comingSoon')}</span>
           </div>
 
           <div className="space-y-2">
@@ -266,8 +268,8 @@ export default function NotificationsPage() {
                   <MessageSquarePlus className="h-4 w-4" />
                 </div>
                 <div>
-                  <span className="text-sm font-medium text-gray-900 dark:text-white">Yeni söhbətlər</span>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Yeni söhbət növbəyə daxil olanda SMS alın</p>
+                  <span className="text-sm font-medium text-gray-900 dark:text-white">{t('newConversations')}</span>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{t('sms.newConversationDesc')}</p>
                 </div>
               </div>
               <ToggleSwitch
@@ -283,8 +285,8 @@ export default function NotificationsPage() {
                   <ArrowRightLeft className="h-4 w-4" />
                 </div>
                 <div>
-                  <span className="text-sm font-medium text-gray-900 dark:text-white">Transfer sorğuları</span>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Sizə söhbət transfer ediləndə SMS alın</p>
+                  <span className="text-sm font-medium text-gray-900 dark:text-white">{t('transferRequests')}</span>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{t('sms.transferDesc')}</p>
                 </div>
               </div>
               <ToggleSwitch
@@ -299,7 +301,7 @@ export default function NotificationsPage() {
         {/* Info Box */}
         <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800 p-3">
           <p className="text-xs text-blue-700 dark:text-blue-400">
-            Email və SMS bildirişləri Satis.az tərəfindən Alert.az platforması vasitəsilə göndərilir.
+            {t('info')}
           </p>
         </div>
 
@@ -320,7 +322,7 @@ export default function NotificationsPage() {
             ) : (
               <Save className="h-4 w-4" />
             )}
-            {isSaving ? 'Saxlanılır...' : 'Yadda Saxla'}
+            {isSaving ? t('saving') : t('save')}
           </button>
         </div>
       </div>

@@ -2,10 +2,11 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
+import { useTranslations, useLocale } from 'next-intl';
 import { contactsApi } from '@/lib/api/chat';
 import { ContactDetail } from './components/ContactDetail';
 import { ContactForm } from './components/ContactForm';
-import { cn } from '@/lib/utils';
+import { cn, formatShortDate } from '@/lib/utils';
 import { PageGuide } from '@/components/ui/PageGuide';
 import {
   Users,
@@ -26,16 +27,19 @@ import {
 } from 'lucide-react';
 import type { ChatContact, ContactStage, ContactFilters } from '@/lib/types/chat';
 
-const stageBadge: Record<ContactStage, { label: string; className: string }> = {
-  potential: { label: 'Potential', className: 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300' },
-  qualified: { label: 'Qualified', className: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/50 dark:text-yellow-300' },
-  customer: { label: 'Customer', className: 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300' },
-  lost: { label: 'Lost', className: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400' },
+const stageBadge: Record<ContactStage, { className: string }> = {
+  potential: { className: 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300' },
+  qualified: { className: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/50 dark:text-yellow-300' },
+  customer: { className: 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300' },
+  lost: { className: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400' },
 };
 
 const stages: (ContactStage | 'all')[] = ['all', 'potential', 'qualified', 'customer', 'lost'];
 
 export default function ContactsPage() {
+  const t = useTranslations('ws.contacts');
+  const locale = useLocale();
+  const ts = useTranslations('ws.contacts.stages');
   const params = useParams();
   const searchParams = useSearchParams();
   const tenantId = Number(params.tenantId);
@@ -113,9 +117,9 @@ export default function ContactsPage() {
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffDays = Math.floor(diffMs / 86400000);
-    if (diffDays < 1) return 'Today';
-    if (diffDays < 7) return `${diffDays}d ago`;
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    if (diffDays < 1) return t('today');
+    if (diffDays < 7) return t('daysAgo', { n: diffDays });
+    return formatShortDate(date, locale);
   };
 
   return (
@@ -130,42 +134,42 @@ export default function ContactsPage() {
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <Users className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-              <h1 className="text-base font-medium text-gray-900 dark:text-white">Contacts</h1>
+              <h1 className="text-base font-medium text-gray-900 dark:text-white">{t('title')}</h1>
               <span className="text-sm text-gray-500 dark:text-gray-400">({pagination.total})</span>
               <PageGuide
                 storageKey="contacts"
-                title="Kontaktlar - İstifadə Qaydası"
-                description="Bu səhifə bütün müştərilərinizi bir yerdə idarə etmək üçündür. Söhbətdən gələn, əllə əlavə edilən və ya import olunan müştəriləri burada izləyin. Mərhələlərlə satış prosesini, teqlərlə qruplaşdırmanı və qeydlərlə ətraflı məlumatı asanlıqla idarə edin."
+                title={t('guide.title')}
+                description={t('guide.description')}
                 steps={[
                   {
                     icon: <MessageSquare className="h-4.5 w-4.5" />,
-                    title: 'Söhbətdən kontakt yaradın',
-                    description: 'Inbox səhifəsində müştəri ilə danışıq zamanı yuxarıdakı "Save Contact" düyməsinə basın. Müştərinin adı, emaili və telefonu avtomatik doldurulacaq.',
+                    title: t('guide.steps.fromChat.title'),
+                    description: t('guide.steps.fromChat.description'),
                   },
                   {
                     icon: <Plus className="h-4.5 w-4.5" />,
-                    title: 'Əllə kontakt əlavə edin',
-                    description: '"Add" düyməsinə basaraq yeni kontakt yarada bilərsiniz. Ad, email, telefon, mərhələ və teqlər əlavə edin.',
+                    title: t('guide.steps.manual.title'),
+                    description: t('guide.steps.manual.description'),
                   },
                   {
                     icon: <SlidersHorizontal className="h-4.5 w-4.5" />,
-                    title: 'Mərhələləri idarə edin',
-                    description: 'Hər kontaktın 4 mərhələsi var: Potential (maraqlanır), Qualified (ciddi müştəri), Customer (satış olub), Lost (itirilmiş). Kontaktın detallarına daxil olub mərhələni dəyişə bilərsiniz.',
+                    title: t('guide.steps.stages.title'),
+                    description: t('guide.steps.stages.description'),
                   },
                   {
                     icon: <Tag className="h-4.5 w-4.5" />,
-                    title: 'Teqlərlə qruplaşdırın',
-                    description: 'Kontaktlara teqlər əlavə edin (məs: "hosting", "domain", "VIP"). Sonra teqlərə görə filterləyin.',
+                    title: t('guide.steps.tags.title'),
+                    description: t('guide.steps.tags.description'),
                   },
                   {
                     icon: <UserCheck className="h-4.5 w-4.5" />,
-                    title: 'Avtomatik bağlantı',
-                    description: 'Kontakt yaradıldıqdan sonra, həmin müştəridən gələn yeni söhbətlər avtomatik olaraq bu kontakta bağlanacaq.',
+                    title: t('guide.steps.autoLink.title'),
+                    description: t('guide.steps.autoLink.description'),
                   },
                   {
                     icon: <Sparkles className="h-4.5 w-4.5" />,
-                    title: 'Məsləhət',
-                    description: 'Hər potensial müştəri ilə söhbət edəndə onu kontakt kimi saxlayın. Beləliklə, heç bir müştəri itirilməz.',
+                    title: t('guide.steps.tip.title'),
+                    description: t('guide.steps.tip.description'),
                   },
                 ]}
               />
@@ -175,7 +179,7 @@ export default function ContactsPage() {
               className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors"
             >
               <Plus className="h-4 w-4" />
-              Add
+              {t('add')}
             </button>
           </div>
 
@@ -186,7 +190,7 @@ export default function ContactsPage() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search by name, email, phone..."
+              placeholder={t('searchPlaceholder')}
               className="w-full pl-8 pr-3 py-1.5 text-sm border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-purple-500 focus:border-transparent"
             />
           </div>
@@ -206,7 +210,7 @@ export default function ContactsPage() {
                     : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
                 )}
               >
-                {s === 'all' ? 'All' : stageBadge[s].label}
+                {s === 'all' ? t('all') : ts(s)}
               </button>
             ))}
           </div>
@@ -243,11 +247,11 @@ export default function ContactsPage() {
           ) : contacts.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
               <Users className="h-12 w-12 text-gray-400 mb-3" />
-              <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-1">No contacts found</h3>
+              <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-1">{t('emptyTitle')}</h3>
               <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
                 {searchQuery || activeStage !== 'all' || activeTag
-                  ? 'Try adjusting your filters'
-                  : 'Save contacts from conversations or add them manually'}
+                  ? t('emptyFiltered')
+                  : t('emptyDescription')}
               </p>
               {!searchQuery && activeStage === 'all' && !activeTag && (
                 <button
@@ -255,7 +259,7 @@ export default function ContactsPage() {
                   className="flex items-center gap-2 px-4 py-2 text-sm bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium"
                 >
                   <Plus className="h-4 w-4" />
-                  Add your first contact
+                  {t('addFirst')}
                 </button>
               )}
             </div>
@@ -280,10 +284,10 @@ export default function ContactsPage() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-0.5">
                           <span className="font-medium text-sm text-gray-900 dark:text-white truncate">
-                            {contact.name || contact.email || 'Unnamed'}
+                            {contact.name || contact.email || t('unnamed')}
                           </span>
                           <span className={cn('px-1.5 py-0.5 text-[10px] font-medium rounded', badge.className)}>
-                            {badge.label}
+                            {ts(contact.stage)}
                           </span>
                         </div>
 
@@ -340,7 +344,7 @@ export default function ContactsPage() {
                 disabled={pagination.currentPage === 1}
                 className="px-3 py-1 text-sm rounded-md bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 disabled:opacity-50"
               >
-                Previous
+                {t('previous')}
               </button>
               <span className="text-sm text-gray-500">
                 {pagination.currentPage} / {pagination.lastPage}
@@ -350,7 +354,7 @@ export default function ContactsPage() {
                 disabled={pagination.currentPage === pagination.lastPage}
                 className="px-3 py-1 text-sm rounded-md bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 disabled:opacity-50"
               >
-                Next
+                {t('next')}
               </button>
             </div>
           )}

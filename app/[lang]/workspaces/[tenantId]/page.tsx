@@ -17,7 +17,7 @@ import {
 import { cn } from '@/lib/utils';
 
 export default function WorkspaceDashboard() {
-  const t = useTranslations();
+  const t = useTranslations('ws.dashboard');
   const params = useParams();
   const tenantId = params.tenantId;
   const lang = params.lang as string;
@@ -41,7 +41,7 @@ export default function WorkspaceDashboard() {
 
   const stats = [
     {
-      label: 'Queue',
+      label: t('stats.queue'),
       value: queuedConversations.length,
       icon: Clock,
       color: 'bg-yellow-100 dark:bg-yellow-900/50 text-yellow-600 dark:text-yellow-400',
@@ -49,14 +49,14 @@ export default function WorkspaceDashboard() {
       href: `/${lang}/workspaces/${tenantId}/inbox`,
     },
     {
-      label: 'Active Chats',
+      label: t('stats.activeChats'),
       value: conversations.filter((c) => c.status === 'active').length,
       icon: MessageSquare,
       color: 'bg-green-100 dark:bg-green-900/50 text-green-600 dark:text-green-400',
       href: `/${lang}/workspaces/${tenantId}/inbox`,
     },
     {
-      label: 'Agents Online',
+      label: t('stats.agentsOnline'),
       value: onlineAgentsCount,
       total: agents.length,
       icon: Users,
@@ -64,7 +64,7 @@ export default function WorkspaceDashboard() {
       href: `/${lang}/workspaces/${tenantId}/team`,
     },
     {
-      label: 'AI Handled',
+      label: t('stats.aiHandled'),
       value: conversations.filter((c) => c.handler_type === 'ai').length,
       icon: Bot,
       color: 'bg-purple-100 dark:bg-purple-900/50 text-purple-600 dark:text-purple-400',
@@ -80,10 +80,10 @@ export default function WorkspaceDashboard() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-          {tenant?.name || 'Workspace'} Dashboard
+          {t('title', { name: tenant?.name || t('workspaceFallback') })}
         </h1>
         <p className="text-gray-500 dark:text-gray-400 mt-1">
-          Welcome back! Here's what's happening with your chat support.
+          {t('subtitle')}
         </p>
       </div>
 
@@ -105,7 +105,7 @@ export default function WorkspaceDashboard() {
                 {stat.trend === 'up' && (
                   <span className="flex items-center text-red-500 text-sm">
                     <ArrowUpRight className="h-4 w-4" />
-                    High
+                    {t('high')}
                   </span>
                 )}
               </div>
@@ -137,20 +137,20 @@ export default function WorkspaceDashboard() {
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-              Recent Conversations
+              {t('recentConversations')}
             </h2>
             <Link
               href={`/${lang}/workspaces/${tenantId}/conversations`}
               className="text-sm text-purple-600 hover:text-purple-700 dark:text-purple-400"
             >
-              View all
+              {t('viewAll')}
             </Link>
           </div>
 
           {recentConversations.length === 0 ? (
             <div className="text-center py-8 text-gray-500 dark:text-gray-400">
               <MessageSquare className="h-8 w-8 mx-auto mb-2 opacity-50" />
-              <p className="text-sm">No conversations yet</p>
+              <p className="text-sm">{t('noConversations')}</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -165,10 +165,10 @@ export default function WorkspaceDashboard() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-gray-900 dark:text-white truncate">
-                      {conv.visitor?.name || conv.visitor?.email || 'Anonymous'}
+                      {conv.visitor?.name || conv.visitor?.email || t('anonymous')}
                     </p>
                     <p className="text-sm text-gray-500 truncate">
-                      {conv.last_message?.content || 'No messages'}
+                      {conv.last_message?.content || t('noMessages')}
                     </p>
                   </div>
                   <div className="flex flex-col items-end">
@@ -180,12 +180,12 @@ export default function WorkspaceDashboard() {
                         conv.status === 'closed' && 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'
                       )}
                     >
-                      {conv.status}
+                      {t.has(`status.${conv.status}`) ? t(`status.${conv.status}`) : conv.status}
                     </span>
                     {conv.handler_type === 'ai' && (
                       <span className="text-xs text-purple-500 mt-1 flex items-center gap-1">
                         <Bot className="h-3 w-3" />
-                        AI
+                        {t('ai')}
                       </span>
                     )}
                   </div>
@@ -204,17 +204,17 @@ export default function WorkspaceDashboard() {
               </div>
               <div className="flex-1">
                 <h3 className="font-semibold text-yellow-800 dark:text-yellow-200">
-                  {queuedConversations.length} conversation{queuedConversations.length !== 1 ? 's' : ''} waiting
+                  {t('queueWaiting', { n: queuedConversations.length })}
                 </h3>
                 <p className="text-sm text-yellow-700 dark:text-yellow-300 mt-1">
-                  There are visitors waiting in the queue. Accept conversations to provide support.
+                  {t('queueDescription')}
                 </p>
                 <Link
                   href={`/${lang}/workspaces/${tenantId}/inbox`}
                   className="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg font-medium transition-colors"
                 >
                   <Inbox className="h-4 w-4" />
-                  Go to Inbox
+                  {t('goToInbox')}
                 </Link>
               </div>
             </div>
@@ -225,28 +225,28 @@ export default function WorkspaceDashboard() {
         {conversations.length === 0 && (
           <div className="bg-purple-50 dark:bg-purple-900/20 rounded-xl border border-purple-200 dark:border-purple-800 p-6">
             <h3 className="font-semibold text-purple-800 dark:text-purple-200 mb-2">
-              Getting Started
+              {t('gettingStarted.title')}
             </h3>
             <p className="text-sm text-purple-700 dark:text-purple-300 mb-4">
-              Set up your workspace to start receiving chat conversations:
+              {t('gettingStarted.description')}
             </p>
             <ol className="space-y-2 text-sm text-purple-700 dark:text-purple-300">
               <li className="flex items-center gap-2">
                 <span className="w-6 h-6 rounded-full bg-purple-200 dark:bg-purple-800 flex items-center justify-center text-xs font-bold">1</span>
                 <Link href={`/${lang}/workspaces/${tenantId}/ai`} className="hover:underline">
-                  Configure AI settings
+                  {t('gettingStarted.step1')}
                 </Link>
               </li>
               <li className="flex items-center gap-2">
                 <span className="w-6 h-6 rounded-full bg-purple-200 dark:bg-purple-800 flex items-center justify-center text-xs font-bold">2</span>
                 <Link href={`/${lang}/workspaces/${tenantId}/knowledge-base`} className="hover:underline">
-                  Add knowledge base items
+                  {t('gettingStarted.step2')}
                 </Link>
               </li>
               <li className="flex items-center gap-2">
                 <span className="w-6 h-6 rounded-full bg-purple-200 dark:bg-purple-800 flex items-center justify-center text-xs font-bold">3</span>
                 <Link href={`/${lang}/workspaces/${tenantId}/widget`} className="hover:underline">
-                  Install the chat widget on your website
+                  {t('gettingStarted.step3')}
                 </Link>
               </li>
             </ol>

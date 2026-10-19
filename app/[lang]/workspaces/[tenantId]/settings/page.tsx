@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useChat } from '@/contexts/ChatContext';
 import { tenantsApi } from '@/lib/api/chat';
 import { cn } from '@/lib/utils';
+import { useTranslations } from 'next-intl';
 import {
   Settings,
   Save,
@@ -17,18 +18,19 @@ import {
 import type { TenantSettings, BusinessHours } from '@/lib/types/chat';
 
 const TIMEZONES = [
-  { value: 'Asia/Baku', label: 'Baku (GMT+4)' },
-  { value: 'Europe/Moscow', label: 'Moscow (GMT+3)' },
-  { value: 'Europe/Istanbul', label: 'Istanbul (GMT+3)' },
-  { value: 'Europe/London', label: 'London (GMT+0)' },
-  { value: 'America/New_York', label: 'New York (GMT-5)' },
-  { value: 'America/Los_Angeles', label: 'Los Angeles (GMT-8)' },
-  { value: 'Asia/Dubai', label: 'Dubai (GMT+4)' },
+  { value: 'Asia/Baku', label: 'tzBaku' },
+  { value: 'Europe/Moscow', label: 'tzMoscow' },
+  { value: 'Europe/Istanbul', label: 'tzIstanbul' },
+  { value: 'Europe/London', label: 'tzLondon' },
+  { value: 'America/New_York', label: 'tzNewYork' },
+  { value: 'America/Los_Angeles', label: 'tzLosAngeles' },
+  { value: 'Asia/Dubai', label: 'tzDubai' },
 ];
 
 const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 
 export default function SettingsPage() {
+  const t = useTranslations('ws.settings');
   const params = useParams();
   const router = useRouter();
   const { tenant, loadTenant } = useChat();
@@ -88,9 +90,9 @@ export default function SettingsPage() {
 
       await tenantsApi.update(tenantId, { name, settings });
       await loadTenant();
-      setSuccess('Settings saved successfully');
+      setSuccess(t('saved'));
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Failed to save settings';
+      const message = err instanceof Error ? err.message : t('saveFailed');
       setError(message);
     } finally {
       setIsSaving(false);
@@ -105,7 +107,7 @@ export default function SettingsPage() {
       await tenantsApi.delete(tenantId);
       router.push(`/${lang}/workspaces`);
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Failed to delete workspace';
+      const message = err instanceof Error ? err.message : t('deleteFailed');
       setError(message);
       setIsDeleting(false);
     }
@@ -142,8 +144,8 @@ export default function SettingsPage() {
             <Settings className="h-6 w-6 text-purple-600 dark:text-purple-400" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Settings</h1>
-            <p className="text-gray-500 dark:text-gray-400">Manage your workspace settings</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('title')}</h1>
+            <p className="text-gray-500 dark:text-gray-400">{t('subtitle')}</p>
           </div>
         </div>
 
@@ -161,12 +163,12 @@ export default function SettingsPage() {
 
         {/* General Settings */}
         <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">General</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('general')}</h2>
 
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Workspace Name
+                {t('workspaceName')}
               </label>
               <input
                 type="text"
@@ -178,7 +180,7 @@ export default function SettingsPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Workspace Slug
+                {t('workspaceSlug')}
               </label>
               <input
                 type="text"
@@ -187,14 +189,14 @@ export default function SettingsPage() {
                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 cursor-not-allowed"
               />
               <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                Used in widget URLs. Cannot be changed.
+                {t('slugHint')}
               </p>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 <Globe className="inline h-4 w-4 mr-1" />
-                Timezone
+                {t('timezone')}
               </label>
               <select
                 value={timezone}
@@ -203,7 +205,7 @@ export default function SettingsPage() {
               >
                 {TIMEZONES.map((tz) => (
                   <option key={tz.value} value={tz.value}>
-                    {tz.label}
+                    {t(tz.label)}
                   </option>
                 ))}
               </select>
@@ -213,12 +215,12 @@ export default function SettingsPage() {
 
         {/* AI Settings */}
         <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">AI Settings</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('aiSettings')}</h2>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               <Clock className="inline h-4 w-4 mr-1" />
-              AI Takeover Timeout (seconds)
+              {t('aiTimeout')}
             </label>
             <input
               type="number"
@@ -229,7 +231,7 @@ export default function SettingsPage() {
               className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
             />
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              If no human agent accepts a conversation within this time, AI will take over automatically.
+              {t('aiTimeoutHint')}
             </p>
           </div>
         </div>
@@ -237,7 +239,7 @@ export default function SettingsPage() {
         {/* Business Hours */}
         <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Business Hours</h2>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{t('businessHours')}</h2>
             <label className="flex items-center gap-2 cursor-pointer">
               <input
                 type="checkbox"
@@ -245,7 +247,7 @@ export default function SettingsPage() {
                 onChange={(e) => setBusinessHoursEnabled(e.target.checked)}
                 className="w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
               />
-              <span className="text-sm text-gray-700 dark:text-gray-300">Enable</span>
+              <span className="text-sm text-gray-700 dark:text-gray-300">{t('enable')}</span>
             </label>
           </div>
 
@@ -260,8 +262,8 @@ export default function SettingsPage() {
                       onChange={() => toggleDayEnabled(day)}
                       className="w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
                     />
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300 capitalize">
-                      {day}
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      {t(`days.${day}`)}
                     </span>
                   </label>
 
@@ -273,7 +275,7 @@ export default function SettingsPage() {
                         onChange={(e) => updateDayHours(day, 'start', e.target.value)}
                         className="px-3 py-1.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                       />
-                      <span className="text-gray-500">to</span>
+                      <span className="text-gray-500">{t('to')}</span>
                       <input
                         type="time"
                         value={businessHours[day]?.end || '18:00'}
@@ -284,7 +286,7 @@ export default function SettingsPage() {
                   )}
 
                   {!businessHours[day] && (
-                    <span className="text-sm text-gray-500 dark:text-gray-400">Closed</span>
+                    <span className="text-sm text-gray-500 dark:text-gray-400">{t('closed')}</span>
                   )}
                 </div>
               ))}
@@ -309,15 +311,15 @@ export default function SettingsPage() {
             ) : (
               <Save className="h-5 w-5" />
             )}
-            {isSaving ? 'Saving...' : 'Save Changes'}
+            {isSaving ? t('saving') : t('saveChanges')}
           </button>
         </div>
 
         {/* Danger Zone */}
         <div className="bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-200 dark:border-red-800 p-6">
-          <h2 className="text-lg font-semibold text-red-700 dark:text-red-400 mb-2">Danger Zone</h2>
+          <h2 className="text-lg font-semibold text-red-700 dark:text-red-400 mb-2">{t('dangerZone')}</h2>
           <p className="text-sm text-red-600 dark:text-red-400 mb-4">
-            Once you delete a workspace, there is no going back. All conversations, messages, and settings will be permanently deleted.
+            {t('dangerZoneHint')}
           </p>
 
           {!showDeleteConfirm ? (
@@ -326,26 +328,26 @@ export default function SettingsPage() {
               className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors"
             >
               <Trash2 className="h-4 w-4" />
-              Delete Workspace
+              {t('deleteWorkspace')}
             </button>
           ) : (
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
                 <AlertTriangle className="h-5 w-5" />
-                <span className="font-medium">Are you sure?</span>
+                <span className="font-medium">{t('confirmTitle')}</span>
               </div>
               <button
                 onClick={handleDelete}
                 disabled={isDeleting}
                 className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50"
               >
-                {isDeleting ? 'Deleting...' : 'Yes, Delete'}
+                {isDeleting ? t('deleting') : t('confirmDelete')}
               </button>
               <button
                 onClick={() => setShowDeleteConfirm(false)}
                 className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
               >
-                Cancel
+                {t('cancel')}
               </button>
             </div>
           )}

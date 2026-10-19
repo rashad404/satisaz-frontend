@@ -32,7 +32,7 @@ interface ConversationHeaderProps {
 }
 
 export function ConversationHeader({ onBack, showNotes, onToggleNotes }: ConversationHeaderProps) {
-  const t = useTranslations();
+  const t = useTranslations('ws.chat.header');
   const params = useParams();
   const lang = params.lang as string;
   const tenantId = Number(params.tenantId);
@@ -95,13 +95,13 @@ export function ConversationHeader({ onBack, showNotes, onToggleNotes }: Convers
   const getStatusBadge = () => {
     switch (status) {
       case 'active':
-        return <span className="px-2 py-0.5 text-xs font-medium bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-400 rounded-full">Active</span>;
+        return <span className="px-2 py-0.5 text-xs font-medium bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-400 rounded-full">{t('status.active')}</span>;
       case 'queued':
-        return <span className="px-2 py-0.5 text-xs font-medium bg-yellow-100 dark:bg-yellow-900/50 text-yellow-700 dark:text-yellow-400 rounded-full">In Queue</span>;
+        return <span className="px-2 py-0.5 text-xs font-medium bg-yellow-100 dark:bg-yellow-900/50 text-yellow-700 dark:text-yellow-400 rounded-full">{t('status.queued')}</span>;
       case 'waiting':
-        return <span className="px-2 py-0.5 text-xs font-medium bg-orange-100 dark:bg-orange-900/50 text-orange-700 dark:text-orange-400 rounded-full">Waiting</span>;
+        return <span className="px-2 py-0.5 text-xs font-medium bg-orange-100 dark:bg-orange-900/50 text-orange-700 dark:text-orange-400 rounded-full">{t('status.waiting')}</span>;
       case 'closed':
-        return <span className="px-2 py-0.5 text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-full">Closed</span>;
+        return <span className="px-2 py-0.5 text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-full">{t('status.closed')}</span>;
       default:
         return null;
     }
@@ -143,7 +143,7 @@ export function ConversationHeader({ onBack, showNotes, onToggleNotes }: Convers
         {visitor?.metadata?.avatar ? (
           <img
             src={visitor.metadata.avatar}
-            alt={visitor.name || 'Visitor'}
+            alt={visitor.name || t('visitor')}
             className="w-10 h-10 rounded-full flex-shrink-0 object-cover"
           />
         ) : (
@@ -154,8 +154,8 @@ export function ConversationHeader({ onBack, showNotes, onToggleNotes }: Convers
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
             <h3 className="font-medium text-gray-900 dark:text-white truncate max-w-[120px] sm:max-w-none">
-              <span className="truncate">{visitor?.name || visitor?.email || 'Anonymous'}</span>
-              {visitor?.is_verified && <span className="ml-2 inline-flex items-center gap-0.5 rounded-full bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 px-1.5 py-0.5 text-[10px] font-medium" title="Logged in on the website"><ShieldCheck className="h-3 w-3" /> Logged in</span>}
+              <span className="truncate">{visitor?.name || visitor?.email || t('anonymous')}</span>
+              {visitor?.is_verified && <span className="ml-2 inline-flex items-center gap-0.5 rounded-full bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 px-1.5 py-0.5 text-[10px] font-medium" title={t('loggedInHint')}><ShieldCheck className="h-3 w-3" /> {t('loggedIn')}</span>}
             </h3>
             <div className="flex items-center gap-1.5">
               {getStatusBadge()}
@@ -172,7 +172,7 @@ export function ConversationHeader({ onBack, showNotes, onToggleNotes }: Convers
                   setTimeout(() => setCopiedId(false), 1500);
                 }}
                 className="flex items-center gap-1 hover:text-purple-600 dark:hover:text-purple-400 transition-colors cursor-pointer"
-                title={`Copy chat ID #${activeConversation.id}`}
+                title={t('copyId', { id: activeConversation.id })}
               >
                 {copiedId ? <Check className="h-3 w-3 text-green-500" /> : <Hash className="h-3 w-3 flex-shrink-0" />}
                 <span className={copiedId ? 'text-green-500' : ''}>{activeConversation.id}</span>
@@ -225,7 +225,7 @@ export function ConversationHeader({ onBack, showNotes, onToggleNotes }: Convers
                 ? "text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-900/50"
                 : "text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
             )}
-            title="Notes"
+            title={t('notes')}
           >
             <StickyNote className="h-5 w-5" />
           </button>
@@ -236,19 +236,19 @@ export function ConversationHeader({ onBack, showNotes, onToggleNotes }: Convers
           <button
             onClick={() => setShowContactForm(true)}
             className="inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 text-sm font-medium text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-900/50 hover:bg-green-200 dark:hover:bg-green-900 active:bg-green-300 rounded-lg transition-colors"
-            title="Save as Contact"
+            title={t('saveAsContact')}
           >
             <UserCheck className="h-4 w-4" />
-            <span className="hidden sm:inline">Save Contact</span>
+            <span className="hidden sm:inline">{t('saveContact')}</span>
           </button>
         ) : (activeConversation.contact_id || contactSaved) ? (
           <Link
             href={`/${lang}/workspaces/${tenantId}/contacts?id=${activeConversation.contact_id}`}
             className="inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 text-sm font-medium text-blue-700 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/50 hover:bg-blue-200 dark:hover:bg-blue-900 rounded-lg transition-colors"
-            title="Show Contact"
+            title={t('showContact')}
           >
             <UserCheck className="h-4 w-4" />
-            <span className="hidden sm:inline">Show Contact</span>
+            <span className="hidden sm:inline">{t('showContact')}</span>
           </Link>
         ) : null}
 
@@ -260,7 +260,7 @@ export function ConversationHeader({ onBack, showNotes, onToggleNotes }: Convers
             className="inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 text-sm font-medium text-purple-700 dark:text-purple-400 bg-purple-100 dark:bg-purple-900/50 hover:bg-purple-200 dark:hover:bg-purple-900 active:bg-purple-300 rounded-lg transition-colors disabled:opacity-50"
           >
             <UserPlus className="h-4 w-4" />
-            <span className="hidden sm:inline">Take Over</span>
+            <span className="hidden sm:inline">{t('takeOver')}</span>
           </button>
         )}
 
@@ -286,14 +286,14 @@ export function ConversationHeader({ onBack, showNotes, onToggleNotes }: Convers
                     className="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 active:bg-gray-200 dark:active:bg-gray-600"
                   >
                     <UserPlus className="h-5 w-5" />
-                    Transfer to Agent
+                    {t('transferToAgent')}
                   </button>
                   <button
                     onClick={handleClose}
                     className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/50 active:bg-red-100"
                   >
                     <XCircle className="h-5 w-5" />
-                    Close Conversation
+                    {t('closeConversation')}
                   </button>
                 </div>
               </>
@@ -323,8 +323,8 @@ export function ConversationHeader({ onBack, showNotes, onToggleNotes }: Convers
           <div className="fixed inset-0 bg-black/50 z-40" onClick={() => setShowTransferModal(false)} />
           <div className="fixed inset-4 sm:inset-auto sm:left-1/2 sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 flex items-center justify-center z-50">
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full sm:max-w-md max-h-full overflow-auto p-5 sm:p-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Transfer Conversation</h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Select an agent to transfer this conversation to:</p>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">{t('transferTitle')}</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">{t('transferHint')}</p>
 
               <div className="space-y-2 max-h-60 overflow-y-auto">
                 {agents
@@ -349,7 +349,7 @@ export function ConversationHeader({ onBack, showNotes, onToggleNotes }: Convers
 
                 {agents.filter((a) => a.status === 'online' && a.id !== assigned_agent?.id).length === 0 && (
                   <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-6">
-                    No other agents are online
+                    {t('noAgentsOnline')}
                   </p>
                 )}
               </div>
@@ -359,7 +359,7 @@ export function ConversationHeader({ onBack, showNotes, onToggleNotes }: Convers
                   onClick={() => setShowTransferModal(false)}
                   className="px-5 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 active:bg-gray-200 dark:active:bg-gray-600 rounded-xl transition-colors"
                 >
-                  Cancel
+                  {t('cancel')}
                 </button>
               </div>
             </div>

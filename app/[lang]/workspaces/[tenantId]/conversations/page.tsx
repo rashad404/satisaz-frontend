@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { conversationsApi } from '@/lib/api/chat';
 import { cn, formatDate } from '@/lib/utils';
+import { useTranslations } from 'next-intl';
 import {
   MessageSquare,
   Search,
@@ -20,15 +21,16 @@ import {
 } from 'lucide-react';
 import type { Conversation, ConversationStatus, HandlerType } from '@/lib/types/chat';
 
-const STATUS_OPTIONS: { value: ConversationStatus | 'all'; label: string; icon: typeof Clock; color: string }[] = [
-  { value: 'all', label: 'All', icon: MessageSquare, color: 'text-gray-500' },
-  { value: 'queued', label: 'Queued', icon: Clock, color: 'text-yellow-500' },
-  { value: 'active', label: 'Active', icon: MessageSquare, color: 'text-green-500' },
-  { value: 'waiting', label: 'Waiting', icon: Clock, color: 'text-blue-500' },
-  { value: 'closed', label: 'Closed', icon: CheckCircle, color: 'text-gray-400' },
+const STATUS_OPTIONS: { value: ConversationStatus | 'all'; icon: typeof Clock; color: string }[] = [
+  { value: 'all', icon: MessageSquare, color: 'text-gray-500' },
+  { value: 'queued', icon: Clock, color: 'text-yellow-500' },
+  { value: 'active', icon: MessageSquare, color: 'text-green-500' },
+  { value: 'waiting', icon: Clock, color: 'text-blue-500' },
+  { value: 'closed', icon: CheckCircle, color: 'text-gray-400' },
 ];
 
 export default function ConversationsPage() {
+  const t = useTranslations('ws.conversations');
   const params = useParams();
   const router = useRouter();
   const tenantId = Number(params.tenantId);
@@ -85,7 +87,7 @@ export default function ConversationsPage() {
         )}
       >
         <Icon className="h-3 w-3" />
-        {config.label}
+        {t(`status.${config.value}`)}
       </span>
     );
   };
@@ -95,7 +97,7 @@ export default function ConversationsPage() {
       return (
         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-400">
           <User className="h-3 w-3" />
-          Human
+          {t('handler.human')}
         </span>
       );
     }
@@ -103,14 +105,14 @@ export default function ConversationsPage() {
       return (
         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-cyan-100 text-cyan-700 dark:bg-cyan-900/50 dark:text-cyan-400">
           <Bot className="h-3 w-3" />
-          AI
+          {t('handler.ai')}
         </span>
       );
     }
     return (
       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400">
         <Clock className="h-3 w-3" />
-        Unassigned
+        {t('handler.unassigned')}
       </span>
     );
   };
@@ -134,8 +136,8 @@ export default function ConversationsPage() {
             <MessageSquare className="h-6 w-6 text-purple-600 dark:text-purple-400" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Conversations</h1>
-            <p className="text-gray-500 dark:text-gray-400">{total} total conversations</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('title')}</h1>
+            <p className="text-gray-500 dark:text-gray-400">{t('totalCount', { n: total })}</p>
           </div>
         </div>
 
@@ -147,7 +149,7 @@ export default function ConversationsPage() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search by visitor name or email..."
+              placeholder={t('searchPlaceholder')}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
             />
           </div>
@@ -168,7 +170,7 @@ export default function ConversationsPage() {
                 )}
               >
                 <status.icon className="h-4 w-4" />
-                {status.label}
+                {t(`status.${status.value}`)}
               </button>
             ))}
           </div>
@@ -182,11 +184,11 @@ export default function ConversationsPage() {
         ) : filteredConversations.length === 0 ? (
           <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-12 text-center">
             <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No conversations found</h3>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">{t('emptyTitle')}</h3>
             <p className="text-gray-500 dark:text-gray-400">
               {searchQuery || statusFilter !== 'all'
-                ? 'Try adjusting your filters'
-                : 'Conversations will appear here when visitors start chatting'}
+                ? t('emptyFiltered')
+                : t('emptyDefault')}
             </p>
           </div>
         ) : (
@@ -195,22 +197,22 @@ export default function ConversationsPage() {
               <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Visitor
+                    {t('columns.visitor')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Status
+                    {t('columns.status')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Handler
+                    {t('columns.handler')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Last Message
+                    {t('columns.lastMessage')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Started
+                    {t('columns.started')}
                   </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Actions
+                    {t('columns.actions')}
                   </th>
                 </tr>
               </thead>
@@ -228,10 +230,10 @@ export default function ConversationsPage() {
                         </div>
                         <div>
                           <div className="font-medium text-gray-900 dark:text-white">
-                            {conv.visitor?.name || 'Anonymous'}
+                            {conv.visitor?.name || t('anonymous')}
                           </div>
                           <div className="text-sm text-gray-500 dark:text-gray-400">
-                            {conv.visitor?.email || `Visitor #${conv.visitor_id}`}
+                            {conv.visitor?.email || t('visitorNumber', { id: conv.visitor_id })}
                           </div>
                         </div>
                       </div>
@@ -254,7 +256,7 @@ export default function ConversationsPage() {
                             </p>
                           </>
                         ) : (
-                          <span className="text-sm text-gray-400">No messages</span>
+                          <span className="text-sm text-gray-400">{t('noMessages')}</span>
                         )}
                       </div>
                     </td>
@@ -270,7 +272,7 @@ export default function ConversationsPage() {
                         className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/50 rounded-lg transition-colors"
                       >
                         <Eye className="h-4 w-4" />
-                        View
+                        {t('view')}
                       </button>
                     </td>
                   </tr>
@@ -284,7 +286,7 @@ export default function ConversationsPage() {
         {totalPages > 1 && (
           <div className="flex items-center justify-between">
             <div className="text-sm text-gray-500 dark:text-gray-400">
-              Page {currentPage} of {totalPages}
+              {t('pageOf', { page: currentPage, total: totalPages })}
             </div>
             <div className="flex gap-2">
               <button
@@ -298,7 +300,7 @@ export default function ConversationsPage() {
                 )}
               >
                 <ChevronLeft className="h-4 w-4" />
-                Previous
+                {t('prev')}
               </button>
               <button
                 onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
@@ -310,7 +312,7 @@ export default function ConversationsPage() {
                     : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
                 )}
               >
-                Next
+                {t('next')}
                 <ChevronRight className="h-4 w-4" />
               </button>
             </div>

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useChat } from '@/contexts/ChatContext';
+import { useTranslations } from 'next-intl';
 import { User, Clock, MessageSquare, CheckCircle, XCircle, ArrowRightLeft, ShieldCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Conversation } from '@/lib/types/chat';
@@ -11,6 +12,7 @@ interface QueueCardProps {
 }
 
 export function QueueCard({ conversation }: QueueCardProps) {
+  const t = useTranslations('ws.chat.queue');
   const { acceptConversation, declineConversation, currentUserId } = useChat();
   const [isAccepting, setIsAccepting] = useState(false);
   const [isDeclining, setIsDeclining] = useState(false);
@@ -65,13 +67,13 @@ export function QueueCard({ conversation }: QueueCardProps) {
   };
 
   const formatWaitTime = (seconds: number) => {
-    if (seconds < 60) return `${seconds}s`;
+    if (seconds < 60) return t('seconds', { s: seconds });
     const minutes = Math.floor(seconds / 60);
-    if (minutes < 60) return `${minutes}m ${seconds % 60}s`;
+    if (minutes < 60) return t('minutesSeconds', { m: minutes, s: seconds % 60 });
     const hours = Math.floor(minutes / 60);
-    if (hours < 48) return `${hours}h ${minutes % 60}m`;
+    if (hours < 48) return t('hoursMinutes', { h: hours, m: minutes % 60 });
     const days = Math.floor(hours / 24);
-    return `${days}d ${hours % 24}h`;
+    return t('daysHours', { d: days, h: hours % 24 });
   };
 
   const getUrgencyColor = (seconds: number) => {
@@ -93,7 +95,7 @@ export function QueueCard({ conversation }: QueueCardProps) {
           <ArrowRightLeft className="h-4 w-4 flex-shrink-0" />
           <div className="min-w-0 flex-1">
             <p className="text-sm font-medium truncate">
-              Transferred to you by {transferred_from_agent_name}
+              {t('transferredBy', { name: transferred_from_agent_name ?? '' })}
             </p>
             {transfer_reason && (
               <p className="text-xs opacity-80 truncate">{transfer_reason}</p>
@@ -107,7 +109,7 @@ export function QueueCard({ conversation }: QueueCardProps) {
         {visitor?.metadata?.avatar ? (
           <img
             src={visitor.metadata.avatar as string}
-            alt={visitor.name || 'Visitor'}
+            alt={visitor.name || t('visitor')}
             className="w-12 h-12 rounded-full object-cover flex-shrink-0"
           />
         ) : (
@@ -117,8 +119,8 @@ export function QueueCard({ conversation }: QueueCardProps) {
         )}
         <div className="min-w-0 flex-1">
           <h4 className="font-medium text-gray-900 dark:text-white text-base truncate flex items-center gap-2">
-            <span className="truncate">{visitor?.name || visitor?.email || 'Anonymous Visitor'}</span>
-            {visitor?.is_verified && <span className="inline-flex items-center gap-0.5 rounded-full bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 px-1.5 py-0.5 text-[10px] font-medium" title="Logged in on the website"><ShieldCheck className="h-3 w-3" /> Logged in</span>}
+            <span className="truncate">{visitor?.name || visitor?.email || t('anonymousVisitor')}</span>
+            {visitor?.is_verified && <span className="inline-flex items-center gap-0.5 rounded-full bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 px-1.5 py-0.5 text-[10px] font-medium" title={t('loggedInHint')}><ShieldCheck className="h-3 w-3" /> {t('loggedIn')}</span>}
           </h4>
           {visitor?.email && (
             <p className="text-sm text-gray-500 dark:text-gray-400 truncate">{visitor.email}</p>
@@ -128,7 +130,7 @@ export function QueueCard({ conversation }: QueueCardProps) {
           <div className={cn('flex items-center gap-1.5 mt-1.5', getUrgencyColor(waitTime))}>
             <Clock className="h-4 w-4" />
             <span className="text-sm font-medium">
-              Waiting: {formatWaitTime(waitTime)}
+              {t('waiting', { time: formatWaitTime(waitTime) })}
             </span>
           </div>
         </div>
@@ -149,7 +151,7 @@ export function QueueCard({ conversation }: QueueCardProps) {
       {/* Metadata - hidden on mobile for cleaner UI */}
       {metadata?.page_url && (
         <p className="hidden sm:block text-xs text-gray-400 mb-3 truncate">
-          Page: {(() => {
+          {t('page')}: {(() => {
             try {
               const url = new URL(metadata.page_url as string);
               return url.host + url.pathname;
@@ -178,7 +180,7 @@ export function QueueCard({ conversation }: QueueCardProps) {
             ) : (
               <CheckCircle className="h-5 w-5" />
             )}
-            Accept
+            {t('accept')}
           </button>
           {/* Decline button */}
           <button
@@ -196,7 +198,7 @@ export function QueueCard({ conversation }: QueueCardProps) {
             ) : (
               <XCircle className="h-5 w-5" />
             )}
-            Decline
+            {t('decline')}
           </button>
         </div>
       ) : (
@@ -215,7 +217,7 @@ export function QueueCard({ conversation }: QueueCardProps) {
           ) : (
             <CheckCircle className="h-5 w-5" />
           )}
-          Accept Conversation
+          {t('acceptConversation')}
         </button>
       )}
     </div>

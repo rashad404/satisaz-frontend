@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useChat } from '@/contexts/ChatContext';
+import { useTranslations } from 'next-intl';
 import { notesApi } from '@/lib/api/chat';
 import { StickyNote, Trash2, Send, X, Loader2, ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -12,6 +13,7 @@ interface NotesPanelProps {
 }
 
 export function NotesPanel({ onClose }: NotesPanelProps) {
+  const t = useTranslations('ws.chat.notes');
   const { activeConversation, tenant, currentUserId } = useChat();
   const [notes, setNotes] = useState<ConversationNote[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -79,10 +81,10 @@ export function NotesPanel({ onClose }: NotesPanelProps) {
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
 
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
+    if (diffMins < 1) return t('justNow');
+    if (diffMins < 60) return t('minutesAgo', { n: diffMins });
+    if (diffHours < 24) return t('hoursAgo', { n: diffHours });
+    if (diffDays < 7) return t('daysAgo', { n: diffDays });
     return date.toLocaleDateString();
   };
 
@@ -102,7 +104,7 @@ export function NotesPanel({ onClose }: NotesPanelProps) {
           </button>
           <StickyNote className="h-5 w-5 text-amber-500" />
           <h3 className="font-medium text-gray-900 dark:text-white">
-            Notes
+            {t('title')}
             {notes.length > 0 && (
               <span className="ml-1.5 text-xs text-gray-500 dark:text-gray-400">
                 ({notes.length})
@@ -128,8 +130,8 @@ export function NotesPanel({ onClose }: NotesPanelProps) {
         ) : notes.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 text-gray-500 dark:text-gray-400">
             <StickyNote className="h-10 w-10 mb-2 opacity-50" />
-            <p className="text-sm">No notes yet</p>
-            <p className="text-xs mt-1">Add a note to keep track of important info</p>
+            <p className="text-sm">{t('empty')}</p>
+            <p className="text-xs mt-1">{t('emptyHint')}</p>
           </div>
         ) : (
           notes.map((note) => (
@@ -146,7 +148,7 @@ export function NotesPanel({ onClose }: NotesPanelProps) {
                   </div>
                   <div className="min-w-0">
                     <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                      {note.agent?.name || 'Unknown'}
+                      {note.agent?.name || t('unknown')}
                     </p>
                     <p className="text-xs text-gray-500 dark:text-gray-400">
                       {formatTime(note.created_at)}
@@ -181,7 +183,7 @@ export function NotesPanel({ onClose }: NotesPanelProps) {
           <textarea
             value={newNote}
             onChange={(e) => setNewNote(e.target.value)}
-            placeholder="Add a note..."
+            placeholder={t('placeholder')}
             rows={2}
             className={cn(
               "flex-1 resize-none rounded-lg border border-gray-300 dark:border-gray-600",

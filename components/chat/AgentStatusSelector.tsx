@@ -2,20 +2,22 @@
 
 import { useState } from 'react';
 import { useChat } from '@/contexts/ChatContext';
+import { useTranslations } from 'next-intl';
 import { Circle, ChevronDown, Monitor } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { AgentStatusMode } from '@/lib/types/chat';
 
 export function AgentStatusSelector() {
+  const t = useTranslations('ws.chat.status');
   const { myStatus, statusMode, updateStatusMode, onlineAgentsCount } = useChat();
   const [isOpen, setIsOpen] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
 
   const modeOptions: { value: AgentStatusMode; label: string; description: string; color: string; icon?: 'monitor' }[] = [
-    { value: 'auto', label: 'Auto', description: 'Online when page open', color: 'bg-blue-500', icon: 'monitor' },
-    { value: 'online', label: 'Online', description: 'Always online', color: 'bg-green-500' },
-    { value: 'away', label: 'Away', description: 'Always away', color: 'bg-yellow-500' },
-    { value: 'offline', label: 'Offline', description: 'Always offline', color: 'bg-gray-400' },
+    { value: 'auto', label: t('auto'), description: t('autoHint'), color: 'bg-blue-500', icon: 'monitor' },
+    { value: 'online', label: t('online'), description: t('onlineHint'), color: 'bg-green-500' },
+    { value: 'away', label: t('away'), description: t('awayHint'), color: 'bg-yellow-500' },
+    { value: 'offline', label: t('offline'), description: t('offlineHint'), color: 'bg-gray-400' },
   ];
 
   // Show the actual status dot color based on real backend status
@@ -90,7 +92,7 @@ export function AgentStatusSelector() {
 
             <div className="border-t border-gray-200 dark:border-gray-700 mt-1 pt-1 px-3 py-2">
               <p className="text-xs text-gray-500 dark:text-gray-400">
-                {onlineAgentsCount} agent{onlineAgentsCount !== 1 ? 's' : ''} online
+                {t('onlineCount', { n: onlineAgentsCount })}
               </p>
             </div>
           </div>

@@ -2,10 +2,12 @@
 
 import { useState, useRef, useCallback, KeyboardEvent, ChangeEvent } from 'react';
 import { useChat } from '@/contexts/ChatContext';
+import { useTranslations } from 'next-intl';
 import { Send, Paperclip, X, Image, FileText, Mail } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export function MessageInput() {
+  const t = useTranslations('ws.chat.input');
   const { sendMessage, sendTypingIndicator, activeConversation } = useChat();
   const [content, setContent] = useState('');
   const [files, setFiles] = useState<File[]>([]);
@@ -146,7 +148,7 @@ export function MessageInput() {
         <button
           onClick={() => fileInputRef.current?.click()}
           className="p-3 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 active:bg-gray-200 dark:active:bg-gray-700 rounded-xl transition-colors flex-shrink-0"
-          title="Attach files"
+          title={t('attachFiles')}
         >
           <Paperclip className="h-5 w-5" />
         </button>
@@ -160,7 +162,7 @@ export function MessageInput() {
                 ? 'text-purple-600 bg-purple-100 dark:bg-purple-900/40'
                 : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
             )}
-            title={`${alsoEmail ? 'E-poçtla da göndəriləcək' : 'E-poçtla da göndər'}: ${visitorEmail}${visitorVerified ? '' : ' (doğrulanmamış)'}`}
+            title={`${alsoEmail ? t('emailOn') : t('emailOff')}: ${visitorEmail}${visitorVerified ? '' : ` (${t('unverified')})`}`}
           >
             <Mail className="h-5 w-5" />
             {!visitorVerified && <span className="absolute top-2 right-2 h-1.5 w-1.5 rounded-full bg-amber-500" />}
@@ -182,7 +184,7 @@ export function MessageInput() {
             value={content}
             onChange={handleContentChange}
             onKeyDown={handleKeyDown}
-            placeholder="Type a message..."
+            placeholder={t('placeholder')}
             rows={1}
             className={cn(
               'w-full px-4 py-3 bg-gray-100 dark:bg-gray-800 rounded-2xl resize-none',
@@ -214,7 +216,7 @@ export function MessageInput() {
 
       {/* Helper text - only on desktop */}
       <p className="hidden sm:block text-xs text-gray-400 mt-2">
-        Press Enter to send, Shift+Enter for new line
+        {t('hint')}
       </p>
     </div>
   );

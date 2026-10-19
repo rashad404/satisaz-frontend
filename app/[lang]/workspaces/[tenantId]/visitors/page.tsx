@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { visitorsApi } from '@/lib/api/chat';
 import { useChat } from '@/contexts/ChatContext';
 import { cn } from '@/lib/utils';
+import { useTranslations, useLocale } from 'next-intl';
 import {
   Eye,
   Search,
@@ -22,6 +23,8 @@ import {
 import type { VisitorListItem, VisitorDetails } from '@/lib/types/chat';
 
 export default function VisitorsPage() {
+  const t = useTranslations('ws.visitors');
+  const locale = useLocale();
   const params = useParams();
   const router = useRouter();
   const tenantId = Number(params.tenantId);
@@ -139,17 +142,17 @@ export default function VisitorsPage() {
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
 
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
-    return date.toLocaleDateString();
+    if (diffMins < 1) return t('time.justNow');
+    if (diffMins < 60) return t('time.minutesAgo', { n: diffMins });
+    if (diffHours < 24) return t('time.hoursAgo', { n: diffHours });
+    if (diffDays < 7) return t('time.daysAgo', { n: diffDays });
+    return date.toLocaleDateString(locale);
   };
 
   const getDisplayName = (visitor: VisitorListItem) => {
     if (visitor.name) return visitor.name;
     if (visitor.email) return visitor.email.split('@')[0];
-    return `Visitor #${visitor.id}`;
+    return t('visitorNumber', { id: visitor.id });
   };
 
   return (
@@ -164,7 +167,7 @@ export default function VisitorsPage() {
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <Eye className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-              <h1 className="text-base font-medium text-gray-900 dark:text-white">Visitors</h1>
+              <h1 className="text-base font-medium text-gray-900 dark:text-white">{t('title')}</h1>
               <span className="text-sm text-gray-500 dark:text-gray-400">
                 ({pagination.total})
               </span>
@@ -178,7 +181,7 @@ export default function VisitorsPage() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search by name, email, phone..."
+              placeholder={t('searchPlaceholder')}
               className="w-full pl-8 pr-3 py-1.5 text-sm border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-purple-500 focus:border-transparent"
             />
           </div>
@@ -195,7 +198,7 @@ export default function VisitorsPage() {
               )}
             >
               <Users className="h-4 w-4" />
-              Hamısı ({totalCount})
+              {t('tabAll', { n: totalCount })}
             </button>
             <button
               onClick={() => setActiveTab('online')}
@@ -207,7 +210,7 @@ export default function VisitorsPage() {
               )}
             >
               <span className="w-2 h-2 rounded-full bg-green-500" />
-              Online ({onlineVisitorsCount})
+              {t('tabOnline', { n: onlineVisitorsCount })}
             </button>
           </div>
 
@@ -223,7 +226,7 @@ export default function VisitorsPage() {
               )}
             >
               <User className="h-3 w-3" />
-              Identified
+              {t('identified')}
             </button>
           </div>
         </div>
@@ -237,11 +240,11 @@ export default function VisitorsPage() {
           ) : visitors.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
               <Users className="h-12 w-12 text-gray-400 mb-3" />
-              <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-1">No visitors found</h3>
+              <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-1">{t('emptyTitle')}</h3>
               <p className="text-sm text-gray-500 dark:text-gray-400">
                 {searchQuery || onlineOnly || identifiedOnly
-                  ? 'Try adjusting your filters'
-                  : 'Visitors will appear here when they visit your site'}
+                  ? t('emptyFiltered')
+                  : t('emptyDefault')}
               </p>
             </div>
           ) : (
@@ -325,7 +328,7 @@ export default function VisitorsPage() {
                 disabled={pagination.currentPage === 1}
                 className="px-3 py-1 text-sm rounded-md bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 disabled:opacity-50"
               >
-                Previous
+                {t('prev')}
               </button>
               <span className="text-sm text-gray-500">
                 {pagination.currentPage} / {pagination.lastPage}
@@ -335,7 +338,7 @@ export default function VisitorsPage() {
                 disabled={pagination.currentPage === pagination.lastPage}
                 className="px-3 py-1 text-sm rounded-md bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 disabled:opacity-50"
               >
-                Next
+                {t('next')}
               </button>
             </div>
           )}
@@ -347,7 +350,7 @@ export default function VisitorsPage() {
         <div className="w-full lg:w-96 flex flex-col bg-white dark:bg-gray-900">
           {/* Header */}
           <div className="p-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
-            <h2 className="font-medium text-gray-900 dark:text-white">Visitor Details</h2>
+            <h2 className="font-medium text-gray-900 dark:text-white">{t('detailsTitle')}</h2>
             <button
               onClick={() => setSelectedVisitor(null)}
               className="p-1 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 lg:hidden"
@@ -387,16 +390,16 @@ export default function VisitorsPage() {
                   <div className="flex items-center gap-2 mt-0.5">
                     {selectedVisitor.is_identified ? (
                       <span className="px-1.5 py-0.5 text-[10px] font-medium bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 rounded">
-                        Identified
+                        {t('identifiedBadge')}
                       </span>
                     ) : (
                       <span className="px-1.5 py-0.5 text-[10px] font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded">
-                        Guest
+                        {t('guest')}
                       </span>
                     )}
                     {selectedVisitor.is_online && (
                       <span className="px-1.5 py-0.5 text-[10px] font-medium bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300 rounded">
-                        Online
+                        {t('online')}
                       </span>
                     )}
                   </div>
@@ -410,17 +413,17 @@ export default function VisitorsPage() {
                 className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-300 dark:disabled:bg-gray-700 text-white disabled:text-gray-500 rounded-lg font-medium transition-colors"
               >
                 <Send className="h-4 w-4" />
-                Start Chat
+                {t('startChat')}
               </button>
               {!selectedVisitor.is_online && (
                 <p className="text-xs text-center text-gray-500">
-                  Visitor must be online to start a chat
+                  {t('mustBeOnline')}
                 </p>
               )}
 
               {/* Contact Info */}
               <div className="space-y-2">
-                <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Contact</h4>
+                <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{t('contact')}</h4>
                 {selectedVisitor.email && (
                   <p className="text-sm text-gray-900 dark:text-white">{selectedVisitor.email}</p>
                 )}
@@ -428,20 +431,20 @@ export default function VisitorsPage() {
                   <p className="text-sm text-gray-900 dark:text-white">{selectedVisitor.phone}</p>
                 )}
                 {!selectedVisitor.email && !selectedVisitor.phone && (
-                  <p className="text-sm text-gray-500 italic">No contact info</p>
+                  <p className="text-sm text-gray-500 italic">{t('noContact')}</p>
                 )}
               </div>
 
               {/* Stats */}
               <div className="grid grid-cols-2 gap-3">
                 <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
-                  <p className="text-xs text-gray-500 mb-1">Page Views</p>
+                  <p className="text-xs text-gray-500 mb-1">{t('pageViews')}</p>
                   <p className="text-lg font-semibold text-gray-900 dark:text-white">
                     {selectedVisitor.page_view_count}
                   </p>
                 </div>
                 <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
-                  <p className="text-xs text-gray-500 mb-1">Conversations</p>
+                  <p className="text-xs text-gray-500 mb-1">{t('conversations')}</p>
                   <p className="text-lg font-semibold text-gray-900 dark:text-white">
                     {selectedVisitor.conversations?.length || 0}
                   </p>
@@ -452,13 +455,13 @@ export default function VisitorsPage() {
               {selectedVisitor.page_views && selectedVisitor.page_views.length > 0 && (
                 <div>
                   <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-2">
-                    Recent Pages
+                    {t('recentPages')}
                   </h4>
                   <div className="space-y-2">
                     {selectedVisitor.page_views.slice(0, 5).map((pv) => (
                       <div key={pv.id} className="text-sm">
                         <p className="text-gray-900 dark:text-white truncate">
-                          {pv.page_title || 'Untitled'}
+                          {pv.page_title || t('untitled')}
                         </p>
                         <p className="text-xs text-gray-500 truncate">{pv.page_url}</p>
                         <p className="text-xs text-gray-400">{formatTime(pv.viewed_at)}</p>
@@ -472,7 +475,7 @@ export default function VisitorsPage() {
               {selectedVisitor.conversations && selectedVisitor.conversations.length > 0 && (
                 <div>
                   <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-2">
-                    Conversation History
+                    {t('conversationHistory')}
                   </h4>
                   <div className="space-y-2">
                     {selectedVisitor.conversations.map((conv) => (
@@ -489,9 +492,9 @@ export default function VisitorsPage() {
                             conv.status === 'queued' && 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/50 dark:text-yellow-300',
                             conv.status === 'waiting' && 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300'
                           )}>
-                            {conv.status}
+                            {['queued', 'active', 'waiting', 'closed'].includes(conv.status) ? t(`convStatus.${conv.status}`) : conv.status}
                           </span>
-                          <span className="text-xs text-gray-500">{conv.messages_count} msgs</span>
+                          <span className="text-xs text-gray-500">{t('messagesCount', { n: conv.messages_count })}</span>
                         </div>
                         <p className="text-xs text-gray-500">{formatTime(conv.created_at)}</p>
                       </button>
@@ -511,7 +514,7 @@ export default function VisitorsPage() {
           <div className="relative bg-white dark:bg-gray-900 rounded-xl shadow-xl w-full max-w-md p-6 m-4">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-medium text-gray-900 dark:text-white">
-                Start Chat with {getDisplayName(selectedVisitor)}
+                {t('modalTitle', { name: getDisplayName(selectedVisitor) })}
               </h2>
               <button
                 onClick={() => setShowStartChat(false)}
@@ -522,13 +525,13 @@ export default function VisitorsPage() {
             </div>
 
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-              This will start a new conversation with the visitor. They will see a chat notification on their screen.
+              {t('modalText')}
             </p>
 
             <textarea
               value={chatMessage}
               onChange={(e) => setChatMessage(e.target.value)}
-              placeholder="Type your message..."
+              placeholder={t('messagePlaceholder')}
               rows={4}
               className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none mb-4"
               autoFocus
@@ -542,7 +545,7 @@ export default function VisitorsPage() {
                 className="w-4 h-4 text-purple-600 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 rounded focus:ring-purple-500"
               />
               <span className="text-sm text-gray-700 dark:text-gray-300">
-                Open chat widget automatically
+                {t('openWidget')}
               </span>
             </label>
 
@@ -551,7 +554,7 @@ export default function VisitorsPage() {
                 onClick={() => setShowStartChat(false)}
                 className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
               >
-                Cancel
+                {t('cancel')}
               </button>
               <button
                 onClick={handleStartChat}
@@ -561,12 +564,12 @@ export default function VisitorsPage() {
                 {startingChat ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    Starting...
+                    {t('starting')}
                   </>
                 ) : (
                   <>
                     <Send className="h-4 w-4" />
-                    Start Chat
+                    {t('startChat')}
                   </>
                 )}
               </button>

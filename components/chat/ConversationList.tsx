@@ -12,7 +12,7 @@ interface ConversationListProps {
 }
 
 export function ConversationList({ tab = 'all' }: ConversationListProps) {
-  const t = useTranslations();
+  const t = useTranslations('ws.chat.list');
   const { conversations, activeConversation, selectConversation, isLoadingConversations, currentUserId, hasMoreConversations, loadMoreConversations } = useChat();
   const [loadingMore, setLoadingMore] = useState(false);
   const hasNotes = tab === 'notes';
@@ -50,14 +50,14 @@ export function ConversationList({ tab = 'all' }: ConversationListProps) {
         {hasNotes ? (
           <>
             <StickyNote className="h-16 w-16 mb-3 opacity-50" />
-            <p className="text-base font-medium text-center">No conversations with notes</p>
-            <p className="text-sm mt-1 text-center">Add notes to conversations to see them here</p>
+            <p className="text-base font-medium text-center">{t('emptyNotesTitle')}</p>
+            <p className="text-sm mt-1 text-center">{t('emptyNotesHint')}</p>
           </>
         ) : (
           <>
             <MessageSquare className="h-16 w-16 mb-3 opacity-50" />
             <p className="text-base font-medium text-center">
-              {searchQuery ? 'No conversations match your search' : 'No conversations yet'}
+              {searchQuery ? t('noSearchResults') : t('empty')}
             </p>
           </>
         )}
@@ -81,7 +81,7 @@ export function ConversationList({ tab = 'all' }: ConversationListProps) {
           disabled={loadingMore}
           className="m-3 rounded-lg border border-gray-200 dark:border-gray-700 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50"
         >
-          {loadingMore ? '...' : 'Daha çox'}
+          {loadingMore ? '...' : t('loadMore')}
         </button>
       )}
     </div>
@@ -95,14 +95,15 @@ interface ConversationItemProps {
 }
 
 function ConversationItem({ conversation, isActive, onClick }: ConversationItemProps) {
+  const t = useTranslations('ws.chat.list');
   const { visitor, last_message, unread_count, handler_type, status, updated_at, notes_count } = conversation;
 
   const getStatusLabel = (status: ConversationStatus) => {
     switch (status) {
-      case 'active': return { text: 'Active', color: 'text-green-600 dark:text-green-400' };
-      case 'queued': return { text: 'Queue', color: 'text-yellow-600 dark:text-yellow-400' };
-      case 'waiting': return { text: 'Waiting', color: 'text-orange-600 dark:text-orange-400' };
-      case 'closed': return { text: 'Closed', color: 'text-gray-500 dark:text-gray-400' };
+      case 'active': return { text: t('status.active'), color: 'text-green-600 dark:text-green-400' };
+      case 'queued': return { text: t('status.queued'), color: 'text-yellow-600 dark:text-yellow-400' };
+      case 'waiting': return { text: t('status.waiting'), color: 'text-orange-600 dark:text-orange-400' };
+      case 'closed': return { text: t('status.closed'), color: 'text-gray-500 dark:text-gray-400' };
       default: return { text: status, color: 'text-gray-500 dark:text-gray-400' };
     }
   };
@@ -115,10 +116,10 @@ function ConversationItem({ conversation, isActive, onClick }: ConversationItemP
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
 
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins}m`;
-    if (diffHours < 24) return `${diffHours}h`;
-    if (diffDays < 7) return `${diffDays}d`;
+    if (diffMins < 1) return t('justNow');
+    if (diffMins < 60) return t('minutes', { n: diffMins });
+    if (diffHours < 24) return t('hours', { n: diffHours });
+    if (diffDays < 7) return t('days', { n: diffDays });
     return date.toLocaleDateString();
   };
 
@@ -137,7 +138,7 @@ function ConversationItem({ conversation, isActive, onClick }: ConversationItemP
         {visitor?.metadata?.avatar ? (
           <img
             src={visitor.metadata.avatar as string}
-            alt={visitor.name || 'Visitor'}
+            alt={visitor.name || t('visitor')}
             className="w-12 h-12 rounded-full object-cover"
           />
         ) : (
@@ -152,11 +153,11 @@ function ConversationItem({ conversation, isActive, onClick }: ConversationItemP
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between gap-2">
           <span className="font-medium text-gray-900 dark:text-white truncate text-base">
-            <span className="truncate">{visitor?.name || visitor?.email || 'Anonymous Visitor'}</span>
-            {visitor?.is_verified && <span className="ml-2 inline-flex items-center gap-0.5 rounded-full bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 px-1.5 py-0.5 text-[10px] font-medium" title="Logged in on the website"><ShieldCheck className="h-3 w-3" /> Logged in</span>}
+            <span className="truncate">{visitor?.name || visitor?.email || t('anonymousVisitor')}</span>
+            {visitor?.is_verified && <span className="ml-2 inline-flex items-center gap-0.5 rounded-full bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 px-1.5 py-0.5 text-[10px] font-medium" title={t('loggedInHint')}><ShieldCheck className="h-3 w-3" /> {t('loggedIn')}</span>}
           </span>
           {conversation.waiting_since && status !== 'closed' ? (
-            <span className="text-xs font-medium text-red-600 dark:text-red-400 flex-shrink-0" title="Müştəri cavab gözləyir">
+            <span className="text-xs font-medium text-red-600 dark:text-red-400 flex-shrink-0" title={t('waitingForReply')}>
               {formatTime(conversation.waiting_since)}
             </span>
           ) : (
@@ -176,12 +177,12 @@ function ConversationItem({ conversation, isActive, onClick }: ConversationItemP
           <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
             {last_message ? (
               <>
-                {last_message.sender_type === 'agent' && <span className="text-gray-400">You: </span>}
+                {last_message.sender_type === 'agent' && <span className="text-gray-400">{t('you')}: </span>}
                 {last_message.sender_type === 'ai' && <span className="text-purple-400">AI: </span>}
                 {last_message.content}
               </>
             ) : (
-              <span className="italic">No messages yet</span>
+              <span className="italic">{t('noMessages')}</span>
             )}
           </p>
         </div>

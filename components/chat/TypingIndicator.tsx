@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 
 interface TypingIndicatorProps {
@@ -7,7 +8,9 @@ interface TypingIndicatorProps {
   className?: string;
 }
 
-export function TypingIndicator({ name = 'Someone', className }: TypingIndicatorProps) {
+export function TypingIndicator({ name: nameProp, className }: TypingIndicatorProps) {
+  const t = useTranslations('ws.chat.typing');
+  const name = nameProp ?? t('someone');
   return (
     <div className={cn('flex items-center gap-3', className)}>
       {/* Avatar placeholder */}
@@ -28,7 +31,7 @@ export function TypingIndicator({ name = 'Someone', className }: TypingIndicator
 
       {/* Name label */}
       <span className="text-xs text-gray-500 dark:text-gray-400">
-        {name} is typing...
+        {t('isTyping', { name })}
       </span>
     </div>
   );

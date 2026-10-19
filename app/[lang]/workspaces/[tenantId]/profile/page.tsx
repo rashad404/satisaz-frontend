@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useChat } from '@/contexts/ChatContext';
 import { agentsApi } from '@/lib/api/chat';
 import { cn } from '@/lib/utils';
@@ -17,6 +18,7 @@ import {
 import type { Agent } from '@/lib/types/chat';
 
 export default function ProfilePage() {
+  const t = useTranslations('ws.profile');
   const params = useParams();
   const { tenant } = useChat();
   const tenantId = Number(params.tenantId);
@@ -45,7 +47,7 @@ export default function ProfilePage() {
       setAvatarPreview(response.data.display_avatar || null);
     } catch (err) {
       console.error('Failed to load profile:', err);
-      setError('Profili yükləmək mümkün olmadı');
+      setError(t('loadFailed'));
     } finally {
       setIsLoading(false);
     }
@@ -57,13 +59,13 @@ export default function ProfilePage() {
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
-      setError('Yalnız şəkil faylları qəbul edilir');
+      setError(t('imagesOnly'));
       return;
     }
 
     // Validate file size (5MB max)
     if (file.size > 5 * 1024 * 1024) {
-      setError('Fayl ölçüsü 5MB-dan böyük ola bilməz');
+      setError(t('fileTooLarge', { size: 5 }));
       return;
     }
 
@@ -101,10 +103,10 @@ export default function ProfilePage() {
       setDisplayName(response.data.display_name || '');
       setAvatarFile(null);
       setAvatarPreview(response.data.display_avatar || null);
-      setSuccess('Profil yadda saxlanıldı');
+      setSuccess(t('saved'));
     } catch (err) {
       console.error('Failed to save profile:', err);
-      setError('Profili yadda saxlamaq mümkün olmadı');
+      setError(t('saveFailed'));
     } finally {
       setIsSaving(false);
     }
@@ -127,10 +129,10 @@ export default function ProfilePage() {
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
-      setSuccess('Profil sıfırlandı');
+      setSuccess(t('resetDone'));
     } catch (err) {
       console.error('Failed to clear overrides:', err);
-      setError('Profili sıfırlamaq mümkün olmadı');
+      setError(t('resetFailed'));
     } finally {
       setIsSaving(false);
     }
@@ -157,8 +159,8 @@ export default function ProfilePage() {
             <User className="h-4 w-4 text-purple-600 dark:text-purple-400" />
           </div>
           <div>
-            <h1 className="text-base font-medium text-gray-900 dark:text-white">Profil Ayarları</h1>
-            <p className="text-xs text-gray-500 dark:text-gray-400">Bu workspace üçün görünən ad və avatar</p>
+            <h1 className="text-base font-medium text-gray-900 dark:text-white">{t('title')}</h1>
+            <p className="text-xs text-gray-500 dark:text-gray-400">{t('subtitle')}</p>
           </div>
         </div>
 
@@ -176,7 +178,7 @@ export default function ProfilePage() {
 
         {/* Preview */}
         <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4">
-          <h2 className="text-sm font-medium text-gray-900 dark:text-white mb-3">Önizləmə</h2>
+          <h2 className="text-sm font-medium text-gray-900 dark:text-white mb-3">{t('preview')}</h2>
           <div className="flex items-center gap-3">
             {previewAvatar ? (
               <img
@@ -201,14 +203,14 @@ export default function ProfilePage() {
           </div>
           {hasOverrides && (
             <div className="mt-2 text-xs text-purple-600 dark:text-purple-400">
-              Xüsusi görünüş istifadə edilir
+              {t('customInUse')}
             </div>
           )}
         </div>
 
         {/* Real Values Info */}
         <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-800 p-4">
-          <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Kimlik.az-dan gələn məlumatlar</h3>
+          <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">{t('fromKimlik')}</h3>
           <div className="flex items-center gap-3">
             {profile?.real_avatar ? (
               <img
@@ -229,16 +231,16 @@ export default function ProfilePage() {
 
         {/* Display Settings */}
         <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4">
-          <h2 className="text-sm font-medium text-gray-900 dark:text-white mb-3">Xüsusi Görünüş</h2>
+          <h2 className="text-sm font-medium text-gray-900 dark:text-white mb-3">{t('customAppearance')}</h2>
           <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
-            Bu workspace-də fərqli ad və ya avatar istifadə edin. Boş buraxsanız, Kimlik.az məlumatları göstəriləcək.
+            {t('customDescription')}
           </p>
 
           <div className="space-y-4">
             {/* Avatar Upload */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Avatar
+                {t('avatar')}
               </label>
               <div className="flex items-center gap-4">
                 {/* Current/Preview Avatar */}
@@ -246,7 +248,7 @@ export default function ProfilePage() {
                   {avatarPreview ? (
                     <img
                       src={avatarPreview}
-                      alt="Avatar preview"
+                      alt={t('avatarPreviewAlt')}
                       className="w-16 h-16 rounded-full object-cover"
                     />
                   ) : (
@@ -258,7 +260,7 @@ export default function ProfilePage() {
                     <button
                       onClick={handleRemoveAvatar}
                       className="absolute -top-1 -right-1 p-1 bg-red-500 rounded-full text-white hover:bg-red-600 transition-colors"
-                      title="Avatarı sil"
+                      title={t('removeAvatar')}
                     >
                       <X className="h-3 w-3" />
                     </button>
@@ -280,10 +282,10 @@ export default function ProfilePage() {
                     className="flex items-center gap-2 px-3 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors"
                   >
                     <Upload className="h-4 w-4" />
-                    Şəkil yüklə
+                    {t('uploadImage')}
                   </label>
                   <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                    JPG, PNG, GIF, WEBP (max 5MB)
+                    {t('fileHint', { size: 5 })}
                   </p>
                 </div>
               </div>
@@ -292,7 +294,7 @@ export default function ProfilePage() {
             {/* Display Name */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Görünən Ad
+                {t('displayName')}
               </label>
               <input
                 type="text"
@@ -301,7 +303,7 @@ export default function ProfilePage() {
                   setDisplayName(e.target.value);
                   setSuccess(null);
                 }}
-                placeholder={profile?.real_name || 'Ad daxil edin'}
+                placeholder={profile?.real_name || t('displayNamePlaceholder')}
                 className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               />
             </div>
@@ -317,7 +319,7 @@ export default function ProfilePage() {
               className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors disabled:opacity-50"
             >
               <RefreshCw className="h-4 w-4" />
-              Sıfırla
+              {t('reset')}
             </button>
           )}
           <div className={cn(!hasOverrides && 'ml-auto')}>
@@ -336,7 +338,7 @@ export default function ProfilePage() {
               ) : (
                 <Save className="h-4 w-4" />
               )}
-              {isSaving ? 'Saxlanılır...' : 'Yadda Saxla'}
+              {isSaving ? t('saving') : t('save')}
             </button>
           </div>
         </div>
@@ -344,7 +346,7 @@ export default function ProfilePage() {
         {/* Info Box */}
         <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800 p-3">
           <p className="text-xs text-blue-700 dark:text-blue-400">
-            Bu ayarlar yalnız bu workspace-ə aiddir. Ziyarətçilər sizin xüsusi görünüşünüzü görəcəklər.
+            {t('info')}
           </p>
         </div>
       </div>

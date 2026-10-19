@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import { useChat } from '@/contexts/ChatContext';
 import { tenantsApi } from '@/lib/api/chat';
 import { cn } from '@/lib/utils';
+import { useTranslations } from 'next-intl';
 import {
   Code,
   Copy,
@@ -21,8 +22,8 @@ import {
 import type { WidgetSettings } from '@/lib/types/chat';
 
 const POSITION_OPTIONS = [
-  { value: 'bottom-left', label: 'Bottom Left' },
-  { value: 'bottom-right', label: 'Bottom Right' },
+  { value: 'bottom-left', label: 'positionBottomLeft' },
+  { value: 'bottom-right', label: 'positionBottomRight' },
 ];
 
 const LANGUAGE_OPTIONS = [
@@ -43,6 +44,7 @@ const COLOR_PRESETS = [
 ];
 
 export default function WidgetCodePage() {
+  const t = useTranslations('ws.widget');
   const params = useParams();
   const { tenant, loadTenant } = useChat();
   const tenantId = Number(params.tenantId);
@@ -123,9 +125,9 @@ export default function WidgetCodePage() {
     try {
       await tenantsApi.update(tenantId, { widget_settings: widgetSettings });
       await loadTenant();
-      setSuccess('Widget settings saved successfully');
+      setSuccess(t('saved'));
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Failed to save settings';
+      const message = err instanceof Error ? err.message : t('saveFailed');
       setError(message);
     } finally {
       setIsSaving(false);
@@ -149,8 +151,8 @@ export default function WidgetCodePage() {
             <Code className="h-6 w-6 text-purple-600 dark:text-purple-400" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Widget Code</h1>
-            <p className="text-gray-500 dark:text-gray-400">Install and customize your chat widget</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('title')}</h1>
+            <p className="text-gray-500 dark:text-gray-400">{t('subtitle')}</p>
           </div>
         </div>
 
@@ -172,7 +174,7 @@ export default function WidgetCodePage() {
             {/* Embed Code */}
             <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Embed Code</h2>
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{t('embedCode')}</h2>
                 <button
                   onClick={handleCopy}
                   className={cn(
@@ -185,12 +187,12 @@ export default function WidgetCodePage() {
                   {copied ? (
                     <>
                       <Check className="h-4 w-4" />
-                      Copied!
+                      {t('copied')}
                     </>
                   ) : (
                     <>
                       <Copy className="h-4 w-4" />
-                      Copy
+                      {t('copy')}
                     </>
                   )}
                 </button>
@@ -203,7 +205,10 @@ export default function WidgetCodePage() {
               </pre>
 
               <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">
-                Paste this code snippet just before the closing <code className="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded">&lt;/body&gt;</code> tag on your website.
+                {t.rich('embedHint', {
+                  tag: '</body>',
+                  code: (chunks) => <code className="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded">{chunks}</code>,
+                })}
               </p>
             </div>
 
@@ -211,14 +216,14 @@ export default function WidgetCodePage() {
             <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6">
               <div className="flex items-center gap-2 mb-4">
                 <Palette className="h-5 w-5 text-purple-600" />
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Appearance</h2>
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{t('appearance')}</h2>
               </div>
 
               <div className="space-y-4">
                 {/* Primary Color */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Primary Color
+                    {t('primaryColor')}
                   </label>
                   <div className="flex flex-wrap gap-2">
                     {COLOR_PRESETS.map((color) => (
@@ -248,7 +253,7 @@ export default function WidgetCodePage() {
                 {/* Position */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Position
+                    {t('position')}
                   </label>
                   <div className="flex gap-2">
                     {POSITION_OPTIONS.map((option) => (
@@ -262,7 +267,7 @@ export default function WidgetCodePage() {
                             : 'border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
                         )}
                       >
-                        {option.label}
+                        {t(option.label)}
                       </button>
                     ))}
                   </div>
@@ -274,12 +279,12 @@ export default function WidgetCodePage() {
             <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6">
               <div className="flex items-center gap-2 mb-4">
                 <Globe className="h-5 w-5 text-purple-600" />
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Language</h2>
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{t('language')}</h2>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Widget Language
+                  {t('widgetLanguage')}
                 </label>
                 <div className="flex gap-2">
                   {LANGUAGE_OPTIONS.map((option) => (
@@ -298,7 +303,7 @@ export default function WidgetCodePage() {
                   ))}
                 </div>
                 <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                  This sets the language for UI text in the widget (buttons, placeholders, etc.)
+                  {t('widgetLanguageHint')}
                 </p>
               </div>
             </div>
@@ -307,32 +312,32 @@ export default function WidgetCodePage() {
             <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6">
               <div className="flex items-center gap-2 mb-4">
                 <MessageCircle className="h-5 w-5 text-purple-600" />
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Messages</h2>
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{t('messages')}</h2>
               </div>
 
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Greeting Message
+                    {t('greetingMessage')}
                   </label>
                   <input
                     type="text"
                     value={widgetSettings.greeting_message || ''}
                     onChange={(e) => setWidgetSettings({ ...widgetSettings, greeting_message: e.target.value })}
-                    placeholder="Hi! How can we help you today?"
+                    placeholder={t('greetingPlaceholder')}
                     className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Offline Message
+                    {t('offlineMessage')}
                   </label>
                   <input
                     type="text"
                     value={widgetSettings.offline_message || ''}
                     onChange={(e) => setWidgetSettings({ ...widgetSettings, offline_message: e.target.value })}
-                    placeholder="We are currently offline. Leave a message!"
+                    placeholder={t('offlinePlaceholder')}
                     className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   />
                 </div>
@@ -343,7 +348,7 @@ export default function WidgetCodePage() {
             <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6">
               <div className="flex items-center gap-2 mb-4">
                 <Settings2 className="h-5 w-5 text-purple-600" />
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Display Options</h2>
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{t('displayOptions')}</h2>
               </div>
 
               <div className="space-y-3">
@@ -354,7 +359,7 @@ export default function WidgetCodePage() {
                     onChange={(e) => setWidgetSettings({ ...widgetSettings, show_agent_avatar: e.target.checked })}
                     className="w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
                   />
-                  <span className="text-gray-700 dark:text-gray-300">Show agent avatars</span>
+                  <span className="text-gray-700 dark:text-gray-300">{t('showAgentAvatars')}</span>
                 </label>
 
                 <label className="flex items-center gap-3 cursor-pointer">
@@ -364,7 +369,7 @@ export default function WidgetCodePage() {
                     onChange={(e) => setWidgetSettings({ ...widgetSettings, show_agent_name: e.target.checked })}
                     className="w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
                   />
-                  <span className="text-gray-700 dark:text-gray-300">Show agent names</span>
+                  <span className="text-gray-700 dark:text-gray-300">{t('showAgentNames')}</span>
                 </label>
               </div>
             </div>
@@ -373,11 +378,10 @@ export default function WidgetCodePage() {
             <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6">
               <div className="flex items-center gap-2 mb-1">
                 <Settings2 className="h-5 w-5 text-purple-600" />
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Visitor notifications</h2>
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{t('visitorNotifications')}</h2>
               </div>
               <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                When an agent replies and the visitor is no longer on the site, tell them via Alert.az. At most one notice per conversation per hour.
-                Only visitors logged in through Kimlik.az receive the reply text itself; others get a notice to open the chat.
+                {t('visitorNotificationsHint')}
               </p>
               <div className="space-y-3">
                 <label className="flex items-center gap-3 cursor-pointer">
@@ -387,7 +391,7 @@ export default function WidgetCodePage() {
                     onChange={(e) => setWidgetSettings({ ...widgetSettings, visitor_notifications: { ...(widgetSettings.visitor_notifications || {}), email: e.target.checked } })}
                     className="w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
                   />
-                  <span className="text-gray-700 dark:text-gray-300">E-mail the visitor when we reply (needs their e-mail)</span>
+                  <span className="text-gray-700 dark:text-gray-300">{t('notifyEmail')}</span>
                 </label>
                 <label className="flex items-center gap-3 cursor-pointer">
                   <input
@@ -396,7 +400,7 @@ export default function WidgetCodePage() {
                     onChange={(e) => setWidgetSettings({ ...widgetSettings, visitor_notifications: { ...(widgetSettings.visitor_notifications || {}), sms: e.target.checked } })}
                     className="w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
                   />
-                  <span className="text-gray-700 dark:text-gray-300">SMS the visitor when we reply (needs their phone, costs per message)</span>
+                  <span className="text-gray-700 dark:text-gray-300">{t('notifySms')}</span>
                 </label>
               </div>
             </div>
@@ -415,10 +419,10 @@ export default function WidgetCodePage() {
               {isSaving ? (
                 <>
                   <Loader2 className="h-5 w-5 animate-spin" />
-                  Saving...
+                  {t('saving')}
                 </>
               ) : (
-                'Save Settings'
+                t('saveSettings')
               )}
             </button>
           </div>
@@ -428,7 +432,7 @@ export default function WidgetCodePage() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Eye className="h-5 w-5 text-purple-600" />
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Preview</h2>
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{t('preview')}</h2>
               </div>
 
               <div className="flex gap-1 p-1 bg-gray-100 dark:bg-gray-800 rounded-lg">
@@ -475,7 +479,7 @@ export default function WidgetCodePage() {
                   </div>
                   <div className="flex-1 mx-8">
                     <div className="h-5 bg-white dark:bg-gray-600 rounded-full px-3 flex items-center">
-                      <span className="text-xs text-gray-400">yourwebsite.com</span>
+                      <span className="text-xs text-gray-400">{t('previewDomain')}</span>
                     </div>
                   </div>
                 </div>
@@ -505,7 +509,7 @@ export default function WidgetCodePage() {
                       className="px-4 py-3 text-white"
                       style={{ backgroundColor: widgetSettings.primary_color }}
                     >
-                      <span className="font-medium">Chat with us</span>
+                      <span className="font-medium">{t('previewHeader')}</span>
                     </div>
 
                     {/* Messages */}
@@ -519,7 +523,7 @@ export default function WidgetCodePage() {
                         )}
                         <div>
                           {widgetSettings.show_agent_name && (
-                            <span className="text-xs text-gray-500 block mb-0.5">Support</span>
+                            <span className="text-xs text-gray-500 block mb-0.5">{t('previewAgentName')}</span>
                           )}
                           <div
                             className="px-3 py-1.5 rounded-lg text-white text-sm"
@@ -553,19 +557,22 @@ export default function WidgetCodePage() {
 
             {/* Installation Instructions */}
             <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-6">
-              <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Installation Instructions</h3>
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-4">{t('installTitle')}</h3>
               <ol className="space-y-3 text-sm text-gray-600 dark:text-gray-400">
                 <li className="flex gap-2">
                   <span className="flex-shrink-0 w-6 h-6 rounded-full bg-purple-100 dark:bg-purple-900/50 text-purple-600 dark:text-purple-400 flex items-center justify-center text-xs font-medium">1</span>
-                  <span>Copy the embed code above</span>
+                  <span>{t('installStep1')}</span>
                 </li>
                 <li className="flex gap-2">
                   <span className="flex-shrink-0 w-6 h-6 rounded-full bg-purple-100 dark:bg-purple-900/50 text-purple-600 dark:text-purple-400 flex items-center justify-center text-xs font-medium">2</span>
-                  <span>Paste it before the closing <code className="bg-gray-200 dark:bg-gray-700 px-1 rounded">&lt;/body&gt;</code> tag on your website</span>
+                  <span>{t.rich('installStep2', {
+                    tag: '</body>',
+                    code: (chunks) => <code className="bg-gray-200 dark:bg-gray-700 px-1 rounded">{chunks}</code>,
+                  })}</span>
                 </li>
                 <li className="flex gap-2">
                   <span className="flex-shrink-0 w-6 h-6 rounded-full bg-purple-100 dark:bg-purple-900/50 text-purple-600 dark:text-purple-400 flex items-center justify-center text-xs font-medium">3</span>
-                  <span>The chat widget will appear automatically on your site</span>
+                  <span>{t('installStep3')}</span>
                 </li>
               </ol>
             </div>

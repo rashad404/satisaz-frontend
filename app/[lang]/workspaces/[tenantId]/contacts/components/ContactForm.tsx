@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { X, Loader2, UserPlus } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { contactsApi } from '@/lib/api/chat';
 import { TagInput } from './TagInput';
 import type { ChatContact, ContactStage, CreateContactData, CreateContactFromConversationData } from '@/lib/types/chat';
@@ -22,6 +23,8 @@ interface ContactFormProps {
 }
 
 export function ContactForm({ tenantId, onClose, onSaved, conversationId, prefill, contact }: ContactFormProps) {
+  const t = useTranslations('ws.contacts.form');
+  const ts = useTranslations('ws.contacts.stages');
   const isEdit = !!contact;
 
   const [name, setName] = useState(contact?.name || prefill?.name || '');
@@ -88,9 +91,9 @@ export function ContactForm({ tenantId, onClose, onSaved, conversationId, prefil
     } catch (err: unknown) {
       const error = err as { response?: { status: number; data?: { message?: string } } };
       if (error.response?.status === 409) {
-        setError('A contact already exists for this visitor');
+        setError(t('alreadyExists'));
       } else {
-        setError(error.response?.data?.message || 'Failed to save contact');
+        setError(error.response?.data?.message || t('saveFailed'));
       }
     } finally {
       setSaving(false);
@@ -98,10 +101,10 @@ export function ContactForm({ tenantId, onClose, onSaved, conversationId, prefil
   };
 
   const stages: { value: ContactStage; label: string; color: string }[] = [
-    { value: 'potential', label: 'Potential', color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300' },
-    { value: 'qualified', label: 'Qualified', color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/50 dark:text-yellow-300' },
-    { value: 'customer', label: 'Customer', color: 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300' },
-    { value: 'lost', label: 'Lost', color: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400' },
+    { value: 'potential', label: ts('potential'), color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300' },
+    { value: 'qualified', label: ts('qualified'), color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/50 dark:text-yellow-300' },
+    { value: 'customer', label: ts('customer'), color: 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300' },
+    { value: 'lost', label: ts('lost'), color: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400' },
   ];
 
   return (
@@ -111,7 +114,7 @@ export function ContactForm({ tenantId, onClose, onSaved, conversationId, prefil
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-medium text-gray-900 dark:text-white flex items-center gap-2">
             <UserPlus className="h-5 w-5" />
-            {isEdit ? 'Edit Contact' : conversationId ? 'Save as Contact' : 'New Contact'}
+            {isEdit ? t('editTitle') : conversationId ? t('saveAsTitle') : t('newTitle')}
           </h2>
           <button onClick={onClose} className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
             <X className="h-5 w-5" />
@@ -126,29 +129,29 @@ export function ContactForm({ tenantId, onClose, onSaved, conversationId, prefil
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Name</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('name')}</label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
               className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              placeholder="Contact name"
+              placeholder={t('namePlaceholder')}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('email')}</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              placeholder="email@example.com"
+              placeholder={t('emailPlaceholder')}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Phone</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('phone')}</label>
             <input
               type="text"
               value={phone}
@@ -159,7 +162,7 @@ export function ContactForm({ tenantId, onClose, onSaved, conversationId, prefil
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Stage</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('stage')}</label>
             <div className="flex gap-2">
               {stages.map((s) => (
                 <button
@@ -179,18 +182,18 @@ export function ContactForm({ tenantId, onClose, onSaved, conversationId, prefil
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tags</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('tags')}</label>
             <TagInput tags={tags} onChange={setTags} suggestions={tagSuggestions} />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Notes</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('notes')}</label>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={3}
               className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
-              placeholder="Add notes..."
+              placeholder={t('notesPlaceholder')}
             />
           </div>
 
@@ -200,7 +203,7 @@ export function ContactForm({ tenantId, onClose, onSaved, conversationId, prefil
               onClick={onClose}
               className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
             >
-              Cancel
+              {t('cancel')}
             </button>
             <button
               type="submit"
@@ -210,10 +213,10 @@ export function ContactForm({ tenantId, onClose, onSaved, conversationId, prefil
               {saving ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  Saving...
+                  {t('saving')}
                 </>
               ) : (
-                isEdit ? 'Update' : 'Save Contact'
+                isEdit ? t('update') : t('save')
               )}
             </button>
           </div>

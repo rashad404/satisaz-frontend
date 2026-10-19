@@ -13,7 +13,7 @@ type TabType = 'queue' | InboxTab;
 const TAB_IDS: TabType[] = ['queue', 'needs_reply', 'mine', 'active', 'notes', 'all'];
 
 export default function InboxPage() {
-  const t = useTranslations();
+  const t = useTranslations('ws.inbox');
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
@@ -88,15 +88,15 @@ export default function InboxPage() {
 
   const c = tabCounts;
   const tabs = [
-    { id: 'queue' as const, label: 'Queue: yeni, heç kim qəbul etməyib', icon: Clock, count: queuedConversations.length,
+    { id: 'queue' as const, label: t('tabs.queue'), icon: Clock, count: queuedConversations.length,
       countColor: queuedConversations.length > 0 ? 'bg-yellow-500' : 'bg-gray-400' },
-    { id: 'needs_reply' as const, label: 'Cavab gözləyir: son mesaj müştəridəndir', icon: Reply, count: c?.needs_reply ?? 0,
+    { id: 'needs_reply' as const, label: t('tabs.needsReply'), icon: Reply, count: c?.needs_reply ?? 0,
       countColor: (c?.needs_reply ?? 0) > 0 ? 'bg-red-500' : 'bg-gray-400' },
-    { id: 'mine' as const, label: `Mine: mənə təyin olunub${c?.mine_needs_reply ? `, ${c.mine_needs_reply} cavab gözləyir` : ''}`, icon: User, count: c?.mine ?? 0,
+    { id: 'mine' as const, label: c?.mine_needs_reply ? t('tabs.mineWithReplies', { n: c.mine_needs_reply }) : t('tabs.mine'), icon: User, count: c?.mine ?? 0,
       countColor: 'bg-purple-500' },
-    { id: 'active' as const, label: 'Active: açıq söhbətlər', icon: MessageSquare, count: c?.active ?? 0, countColor: 'bg-green-500' },
-    { id: 'notes' as const, label: 'Notes: qeydi olanlar', icon: StickyNote, count: c?.notes ?? 0, countColor: 'bg-amber-500' },
-    { id: 'all' as const, label: 'All: hamısı, bağlılar da', icon: Inbox, count: c?.all ?? 0, countColor: 'bg-gray-400' },
+    { id: 'active' as const, label: t('tabs.active'), icon: MessageSquare, count: c?.active ?? 0, countColor: 'bg-green-500' },
+    { id: 'notes' as const, label: t('tabs.notes'), icon: StickyNote, count: c?.notes ?? 0, countColor: 'bg-amber-500' },
+    { id: 'all' as const, label: t('tabs.all'), icon: Inbox, count: c?.all ?? 0, countColor: 'bg-gray-400' },
   ];
 
   const handleBack = () => {
@@ -119,7 +119,7 @@ export default function InboxPage() {
         {/* Header */}
         <div className="p-4 border-b border-gray-200 dark:border-gray-800">
           <div className="flex items-center justify-between mb-4">
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white">Inbox</h1>
+            <h1 className="text-xl font-bold text-gray-900 dark:text-white">{t('title')}</h1>
             <div className="flex items-center gap-2">
               <button
                 onClick={toggleMute}
@@ -129,7 +129,7 @@ export default function InboxPage() {
                     ? 'text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20'
                     : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800'
                 )}
-                title={isMuted ? 'Unmute notifications' : 'Mute notifications'}
+                title={isMuted ? t('unmute') : t('mute')}
               >
                 {isMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
               </button>
@@ -138,7 +138,7 @@ export default function InboxPage() {
                   'w-2.5 h-2.5 rounded-full',
                   isConnected ? 'bg-green-500' : 'bg-red-500'
                 )}
-                title={isConnected ? 'Connected' : 'Disconnected'}
+                title={isConnected ? t('connected') : t('disconnected')}
               />
             </div>
           </div>
@@ -148,7 +148,7 @@ export default function InboxPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
             <input
               type="text"
-              placeholder="Search conversations..."
+              placeholder={t('searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-11 pr-4 py-3 bg-gray-100 dark:bg-gray-800 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-purple-500"
@@ -190,8 +190,8 @@ export default function InboxPage() {
             {queuedConversations.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-gray-500 dark:text-gray-400 p-4">
                 <Clock className="h-16 w-16 mb-3 opacity-50" />
-                <p className="text-base font-medium">No conversations in queue</p>
-                <p className="text-sm mt-1 text-center">New conversations will appear here</p>
+                <p className="text-base font-medium">{t('queueEmptyTitle')}</p>
+                <p className="text-sm mt-1 text-center">{t('queueEmptyHint')}</p>
               </div>
             ) : (
               queuedConversations.map((conv) => (

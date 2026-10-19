@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { aiConfigApi } from '@/lib/api/chat';
 import { cn } from '@/lib/utils';
+import { useTranslations } from 'next-intl';
 import {
   Bot,
   Save,
@@ -32,6 +33,7 @@ const DEFAULT_SYSTEM_PROMPT = `You are a helpful customer support assistant for 
 - Keep responses concise but thorough`;
 
 export default function AiConfigurationPage() {
+  const t = useTranslations('ws.ai');
   const params = useParams();
   const tenantId = Number(params.tenantId);
 
@@ -106,10 +108,10 @@ export default function AiConfigurationPage() {
       }
 
       await aiConfigApi.update(tenantId, data);
-      setSuccess('AI configuration saved successfully');
+      setSuccess(t('saved'));
       setApiKey(''); // Clear API key after save
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Failed to save AI configuration';
+      const message = err instanceof Error ? err.message : t('saveFailed');
       setError(message);
     } finally {
       setIsSaving(false);
@@ -127,7 +129,7 @@ export default function AiConfigurationPage() {
       const response = await aiConfigApi.test(tenantId, testMessage);
       setTestResponse(response.data);
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Test failed';
+      const message = err instanceof Error ? err.message : t('testFailed');
       setTestError(message);
     } finally {
       setIsTesting(false);
@@ -154,15 +156,15 @@ export default function AiConfigurationPage() {
               <Bot className="h-6 w-6 text-purple-600 dark:text-purple-400" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">AI Configuration</h1>
-              <p className="text-gray-500 dark:text-gray-400">Configure AI-powered chat responses</p>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('title')}</h1>
+              <p className="text-gray-500 dark:text-gray-400">{t('subtitle')}</p>
             </div>
           </div>
 
           {/* Enable/Disable Toggle */}
           <label className="flex items-center gap-3 cursor-pointer">
             <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              {isActive ? 'Enabled' : 'Disabled'}
+              {isActive ? t('enabled') : t('disabled')}
             </span>
             <div
               className={cn(
@@ -199,7 +201,7 @@ export default function AiConfigurationPage() {
         <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6">
           <div className="flex items-center gap-2 mb-4">
             <Zap className="h-5 w-5 text-purple-600" />
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Provider</h2>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{t('provider')}</h2>
           </div>
 
           <div className="grid grid-cols-3 gap-3">
@@ -233,19 +235,19 @@ export default function AiConfigurationPage() {
         <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6 space-y-4">
           <div className="flex items-center gap-2 mb-4">
             <Settings2 className="h-5 w-5 text-purple-600" />
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Credentials</h2>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{t('credentials')}</h2>
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              API Key
+              {t('apiKey')}
             </label>
             <div className="relative">
               <input
                 type={showApiKey ? 'text' : 'password'}
                 value={apiKey}
                 onChange={(e) => setApiKey(e.target.value)}
-                placeholder="Enter new API key (leave blank to keep existing)"
+                placeholder={t('apiKeyPlaceholder')}
                 className="w-full px-4 py-2 pr-12 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               />
               <button
@@ -260,7 +262,7 @@ export default function AiConfigurationPage() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Model
+              {t('model')}
             </label>
             <select
               value={model}
@@ -280,7 +282,7 @@ export default function AiConfigurationPage() {
         <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6">
           <div className="flex items-center gap-2 mb-4">
             <MessageSquare className="h-5 w-5 text-purple-600" />
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">System Prompt</h2>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{t('systemPrompt')}</h2>
           </div>
 
           <textarea
@@ -288,21 +290,21 @@ export default function AiConfigurationPage() {
             onChange={(e) => setSystemPrompt(e.target.value)}
             rows={8}
             className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
-            placeholder="Enter the system prompt that defines AI behavior..."
+            placeholder={t('systemPromptPlaceholder')}
           />
           <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-            This prompt sets the context and behavior for the AI. Include information about your business, tone, and guidelines.
+            {t('systemPromptHint')}
           </p>
         </div>
 
         {/* Advanced Settings */}
         <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6 space-y-6">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Advanced Settings</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{t('advanced')}</h2>
 
           <div>
             <div className="flex items-center justify-between mb-2">
               <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Temperature
+                {t('temperature')}
               </label>
               <span className="text-sm text-gray-500 dark:text-gray-400">{temperature}</span>
             </div>
@@ -316,15 +318,15 @@ export default function AiConfigurationPage() {
               className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-purple-600"
             />
             <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
-              <span>Focused (0)</span>
-              <span>Balanced (1)</span>
-              <span>Creative (2)</span>
+              <span>{t('tempFocused')}</span>
+              <span>{t('tempBalanced')}</span>
+              <span>{t('tempCreative')}</span>
             </div>
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Max Tokens
+              {t('maxTokens')}
             </label>
             <input
               type="number"
@@ -335,7 +337,7 @@ export default function AiConfigurationPage() {
               className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
             />
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              Maximum length of AI responses. Higher values allow longer responses but cost more.
+              {t('maxTokensHint')}
             </p>
           </div>
         </div>
@@ -344,20 +346,20 @@ export default function AiConfigurationPage() {
         <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6">
           <div className="flex items-center gap-2 mb-4">
             <TestTube className="h-5 w-5 text-purple-600" />
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Test AI</h2>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{t('testTitle')}</h2>
           </div>
 
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Test Message
+                {t('testMessage')}
               </label>
               <div className="flex gap-2">
                 <input
                   type="text"
                   value={testMessage}
                   onChange={(e) => setTestMessage(e.target.value)}
-                  placeholder="Enter a test message..."
+                  placeholder={t('testPlaceholder')}
                   className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   onKeyDown={(e) => e.key === 'Enter' && handleTest()}
                 />
@@ -374,10 +376,10 @@ export default function AiConfigurationPage() {
                   {isTesting ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      Testing...
+                      {t('testing')}
                     </>
                   ) : (
-                    'Test'
+                    t('test')
                   )}
                 </button>
               </div>
@@ -392,9 +394,9 @@ export default function AiConfigurationPage() {
             {testResponse && (
               <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">AI Response</span>
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('aiResponse')}</span>
                   <span className="text-xs text-gray-500 dark:text-gray-400">
-                    {testResponse.model} | {testResponse.tokens_used} tokens
+                    {testResponse.model} | {t('tokensUsed', { n: testResponse.tokens_used })}
                   </span>
                 </div>
                 <p className="text-gray-900 dark:text-white whitespace-pre-wrap">{testResponse.response}</p>
@@ -420,7 +422,7 @@ export default function AiConfigurationPage() {
             ) : (
               <Save className="h-5 w-5" />
             )}
-            {isSaving ? 'Saving...' : 'Save Configuration'}
+            {isSaving ? t('saving') : t('saveConfig')}
           </button>
         </div>
       </div>

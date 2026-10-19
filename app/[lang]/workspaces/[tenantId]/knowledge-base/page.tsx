@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { knowledgeBaseApi } from '@/lib/api/chat';
 import { cn } from '@/lib/utils';
+import { useTranslations } from 'next-intl';
 import {
   BookOpen,
   Plus,
@@ -23,12 +24,13 @@ import {
 import type { KnowledgeBaseItem, CreateKnowledgeBaseItemData } from '@/lib/types/chat';
 
 const CONTENT_TYPES = [
-  { value: 'faq', label: 'FAQ', icon: HelpCircle, description: 'Question and answer pairs' },
-  { value: 'document', label: 'Document', icon: FileText, description: 'General documentation' },
-  { value: 'url', label: 'URL', icon: Link, description: 'External reference link' },
+  { value: 'faq', icon: HelpCircle },
+  { value: 'document', icon: FileText },
+  { value: 'url', icon: Link },
 ];
 
 export default function KnowledgeBasePage() {
+  const t = useTranslations('ws.kb');
   const params = useParams();
   const tenantId = Number(params.tenantId);
 
@@ -137,15 +139,15 @@ export default function KnowledgeBasePage() {
     try {
       if (editingItem) {
         await knowledgeBaseApi.update(tenantId, editingItem.id, formData);
-        setSuccess('Item updated successfully');
+        setSuccess(t('updated'));
       } else {
         await knowledgeBaseApi.create(tenantId, formData);
-        setSuccess('Item created successfully');
+        setSuccess(t('created'));
       }
       setShowModal(false);
       await loadItems();
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Failed to save item';
+      const message = err instanceof Error ? err.message : t('saveFailed');
       setError(message);
     } finally {
       setIsSaving(false);
@@ -153,16 +155,16 @@ export default function KnowledgeBasePage() {
   };
 
   const handleDelete = async (item: KnowledgeBaseItem) => {
-    if (!confirm(`Are you sure you want to delete "${item.title}"?`)) {
+    if (!confirm(t('confirmDelete', { title: item.title }))) {
       return;
     }
 
     try {
       await knowledgeBaseApi.delete(tenantId, item.id);
-      setSuccess('Item deleted successfully');
+      setSuccess(t('deleted'));
       await loadItems();
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Failed to delete item';
+      const message = err instanceof Error ? err.message : t('deleteFailed');
       setError(message);
     }
   };
@@ -172,13 +174,13 @@ export default function KnowledgeBasePage() {
       await knowledgeBaseApi.update(tenantId, item.id, { is_active: !item.is_active });
       await loadItems();
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Failed to update item';
+      const message = err instanceof Error ? err.message : t('updateFailed');
       setError(message);
     }
   };
 
   const getTypeIcon = (type: string) => {
-    const config = CONTENT_TYPES.find((t) => t.value === type);
+    const config = CONTENT_TYPES.find((ct) => ct.value === type);
     return config?.icon || FileText;
   };
 
@@ -201,7 +203,7 @@ export default function KnowledgeBasePage() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <BookOpen className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-            <h1 className="text-base font-medium text-gray-900 dark:text-white">Knowledge Base</h1>
+            <h1 className="text-base font-medium text-gray-900 dark:text-white">{t('title')}</h1>
             <span className="text-sm text-gray-500 dark:text-gray-400">
               ({items.length})
             </span>
@@ -213,7 +215,7 @@ export default function KnowledgeBasePage() {
               className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-sm rounded-md transition-colors"
             >
               <Plus className="h-4 w-4" />
-              Add
+              {t('add')}
             </button>
           )}
         </div>
@@ -250,7 +252,7 @@ export default function KnowledgeBasePage() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search..."
+              placeholder={t('searchPlaceholder')}
               className="w-full pl-8 pr-3 py-1.5 text-sm border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-purple-500 focus:border-transparent"
             />
           </div>
@@ -265,7 +267,7 @@ export default function KnowledgeBasePage() {
                   : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
               )}
             >
-              All
+              {t('all')}
             </button>
             {CONTENT_TYPES.map((type) => {
               const Icon = type.icon;
@@ -281,7 +283,7 @@ export default function KnowledgeBasePage() {
                   )}
                 >
                   <Icon className="h-3 w-3" />
-                  {type.label}
+                  {t(`types.${type.value}.label`)}
                 </button>
               );
             })}
@@ -296,13 +298,13 @@ export default function KnowledgeBasePage() {
         ) : filteredItems.length === 0 ? (
           <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-8 text-center">
             <BookOpen className="h-8 w-8 text-gray-400 mx-auto mb-3" />
-            <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-1">No items found</h3>
+            <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-1">{t('emptyTitle')}</h3>
             <p className="text-gray-500 dark:text-gray-400 mb-4">
               {searchQuery || typeFilter !== 'all'
-                ? 'Try adjusting your filters'
+                ? t('emptyFiltered')
                 : canEdit
-                  ? 'Add your first knowledge base item to help AI provide better responses'
-                  : 'No knowledge base items have been added yet'}
+                  ? t('emptyCanEdit')
+                  : t('emptyReadOnly')}
             </p>
             {!searchQuery && typeFilter === 'all' && canEdit && (
               <button
@@ -310,7 +312,7 @@ export default function KnowledgeBasePage() {
                 className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors"
               >
                 <Plus className="h-5 w-5" />
-                Add First Item
+                {t('addFirst')}
               </button>
             )}
           </div>
@@ -370,7 +372,7 @@ export default function KnowledgeBasePage() {
                               ? 'text-green-600 hover:bg-green-100 dark:hover:bg-green-900/50'
                               : 'text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
                           )}
-                          title={item.is_active ? 'Deactivate' : 'Activate'}
+                          title={item.is_active ? t('deactivate') : t('activate')}
                         >
                           {item.is_active ? (
                             <ToggleRight className="h-5 w-5" />
@@ -381,14 +383,14 @@ export default function KnowledgeBasePage() {
                         <button
                           onClick={() => openEditModal(item)}
                           className="p-1 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded transition-colors"
-                          title="Edit"
+                          title={t('edit')}
                         >
                           <Edit2 className="h-4 w-4" />
                         </button>
                         <button
                           onClick={() => handleDelete(item)}
                           className="p-1 text-red-500 hover:text-red-700 hover:bg-red-100 dark:hover:bg-red-900/50 rounded transition-colors"
-                          title="Delete"
+                          title={t('delete')}
                         >
                           <Trash2 className="h-4 w-4" />
                         </button>
@@ -409,7 +411,7 @@ export default function KnowledgeBasePage() {
           <div className="relative bg-white dark:bg-gray-900 rounded-xl shadow-xl w-full max-w-2xl p-6 m-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-base font-medium text-gray-900 dark:text-white">
-                {editingItem ? 'Edit Item' : 'Add Item'}
+                {editingItem ? t('editItem') : t('addItem')}
               </h2>
               <button
                 onClick={() => setShowModal(false)}
@@ -423,7 +425,7 @@ export default function KnowledgeBasePage() {
               {/* Content Type */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Type
+                  {t('type')}
                 </label>
                 <div className="grid grid-cols-3 gap-3">
                   {CONTENT_TYPES.map((type) => {
@@ -456,10 +458,10 @@ export default function KnowledgeBasePage() {
                               : 'text-gray-700 dark:text-gray-300'
                           )}
                         >
-                          {type.label}
+                          {t(`types.${type.value}.label`)}
                         </span>
                         <span className="block text-xs text-gray-500 dark:text-gray-400">
-                          {type.description}
+                          {t(`types.${type.value}.description`)}
                         </span>
                       </button>
                     );
@@ -470,13 +472,13 @@ export default function KnowledgeBasePage() {
               {/* Title */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Title
+                  {t('fieldTitle')}
                 </label>
                 <input
                   type="text"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  placeholder={formData.content_type === 'faq' ? 'Question...' : 'Title...'}
+                  placeholder={formData.content_type === 'faq' ? t('questionPlaceholder') : t('titlePlaceholder')}
                   required
                   className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 />
@@ -485,12 +487,12 @@ export default function KnowledgeBasePage() {
               {/* Content */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Content
+                  {t('content')}
                 </label>
                 <textarea
                   value={formData.content}
                   onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                  placeholder={formData.content_type === 'faq' ? 'Answer...' : 'Content...'}
+                  placeholder={formData.content_type === 'faq' ? t('answerPlaceholder') : t('contentPlaceholder')}
                   required
                   rows={6}
                   className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
@@ -501,7 +503,7 @@ export default function KnowledgeBasePage() {
               {formData.content_type === 'url' && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Source URL
+                    {t('sourceUrl')}
                   </label>
                   <input
                     type="url"
@@ -523,7 +525,7 @@ export default function KnowledgeBasePage() {
                   className="w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
                 />
                 <label htmlFor="is_active" className="text-sm text-gray-700 dark:text-gray-300">
-                  Active (AI will use this item for responses)
+                  {t('activeLabel')}
                 </label>
               </div>
 
@@ -534,7 +536,7 @@ export default function KnowledgeBasePage() {
                   onClick={() => setShowModal(false)}
                   className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
                 >
-                  Cancel
+                  {t('cancel')}
                 </button>
                 <button
                   type="submit"
@@ -549,12 +551,12 @@ export default function KnowledgeBasePage() {
                   {isSaving ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      Saving...
+                      {t('saving')}
                     </>
                   ) : (
                     <>
                       <Check className="h-4 w-4" />
-                      {editingItem ? 'Update' : 'Create'}
+                      {editingItem ? t('update') : t('create')}
                     </>
                   )}
                 </button>

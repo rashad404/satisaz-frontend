@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { ChatProvider, useChat } from '@/contexts/ChatContext';
 import { AgentStatusSelector } from '@/components/chat';
+import { LanguageSwitcher } from '@/components/ui/language-switcher';
 import {
   MessageSquare,
   Inbox,
@@ -115,73 +116,73 @@ export default function WorkspaceLayout({ children }: WorkspaceLayoutProps) {
 
   const navItems = [
     {
-      label: 'Dashboard',
+      label: t('ws.nav.dashboard'),
       icon: LayoutDashboard,
       href: basePath,
       exact: true,
     },
     {
-      label: 'Inbox',
+      label: t('ws.nav.inbox'),
       icon: Inbox,
       href: `${basePath}/inbox`,
       badge: undefined, // Could show unread count
     },
     {
-      label: 'Aysel',
+      label: t('ws.nav.aysel'),
       icon: Sparkles,
       href: `${basePath}/aysel`,
     },
     {
-      label: 'Conversations',
+      label: t('ws.nav.conversations'),
       icon: MessageSquare,
       href: `${basePath}/conversations`,
     },
     {
-      label: 'Visitors',
+      label: t('ws.nav.visitors'),
       icon: Eye,
       href: `${basePath}/visitors`,
     },
     {
-      label: 'Contacts',
+      label: t('ws.nav.contacts'),
       icon: UserCheck,
       href: `${basePath}/contacts`,
     },
     {
-      label: 'Knowledge Base',
+      label: t('ws.nav.knowledgeBase'),
       icon: BookOpen,
       href: `${basePath}/knowledge-base`,
     },
     {
-      label: 'My Notifications',
+      label: t('ws.nav.myNotifications'),
       icon: Bell,
       href: `${basePath}/notifications`,
     },
     {
-      label: 'My Profile',
+      label: t('ws.nav.myProfile'),
       icon: User,
       href: `${basePath}/profile`,
     },
     // Admin-only items below
     {
-      label: 'Team',
+      label: t('ws.nav.team'),
       icon: Users,
       href: `${basePath}/team`,
       adminOnly: true,
     },
     {
-      label: 'AI Configuration',
+      label: t('ws.nav.aiConfig'),
       icon: Bot,
       href: `${basePath}/ai`,
       adminOnly: true,
     },
     {
-      label: 'Widget Settings',
+      label: t('ws.nav.widgetSettings'),
       icon: Code,
       href: `${basePath}/widget`,
       adminOnly: true,
     },
     {
-      label: 'Settings',
+      label: t('ws.nav.settings'),
       icon: Settings,
       href: `${basePath}/settings`,
       adminOnly: true,
@@ -243,6 +244,7 @@ function WorkspaceLayoutInner({
   isActive: (href: string, exact?: boolean) => boolean;
   children: React.ReactNode;
 }) {
+  const t = useTranslations();
   // Get online visitors count from ChatContext
   const { onlineVisitorsCount, pendingDraftsCount } = useChat();
 
@@ -362,8 +364,14 @@ function WorkspaceLayoutInner({
               )}
             >
               <ChevronLeft className="h-5 w-5" />
-              {!sidebarCollapsed && <span>All Workspaces</span>}
+              {!sidebarCollapsed && <span>{t('ws.nav.allWorkspaces')}</span>}
             </Link>
+            {!sidebarCollapsed && (
+              <div className="mt-2 px-3 flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
+                <span>{t('ws.nav.language')}</span>
+                <LanguageSwitcher locale={lang} />
+              </div>
+            )}
           </div>
         </aside>
 

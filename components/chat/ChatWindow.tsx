@@ -28,7 +28,7 @@ interface ChatWindowProps {
 }
 
 export function ChatWindow({ onBack }: ChatWindowProps) {
-  const t = useTranslations();
+  const t = useTranslations('ws.chat.window');
   const { activeConversation, messages, isLoadingMessages, typingUsers, markMessagesAsRead } = useChat();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -55,8 +55,8 @@ export function ChatWindow({ onBack }: ChatWindowProps) {
     return (
       <div className="flex flex-col items-center justify-center h-full bg-gray-50 dark:bg-gray-900 text-gray-500 dark:text-gray-400 p-6">
         <MessageSquare className="h-20 w-20 mb-4 opacity-30" />
-        <p className="text-lg font-medium text-center">Select a conversation</p>
-        <p className="text-sm mt-1 text-center">Choose a conversation from the list to start chatting</p>
+        <p className="text-lg font-medium text-center">{t('selectTitle')}</p>
+        <p className="text-sm mt-1 text-center">{t('selectHint')}</p>
       </div>
     );
   }
@@ -87,7 +87,7 @@ export function ChatWindow({ onBack }: ChatWindowProps) {
           ) : messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-gray-500 dark:text-gray-400">
               <MessageSquare className="h-12 w-12 mb-2 opacity-50" />
-              <p className="text-sm">No messages yet</p>
+              <p className="text-sm">{t('noMessages')}</p>
             </div>
           ) : (
             <>
@@ -95,7 +95,7 @@ export function ChatWindow({ onBack }: ChatWindowProps) {
               <div className="flex items-center justify-center gap-2 py-4">
                 <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
                 <span className="text-xs text-gray-500 dark:text-gray-400">
-                  Conversation started {new Date(activeConversation.created_at).toLocaleString()}
+                  {t('startedAt', { date: new Date(activeConversation.created_at).toLocaleString() })}
                 </span>
                 <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
               </div>
@@ -113,7 +113,7 @@ export function ChatWindow({ onBack }: ChatWindowProps) {
               {/* Typing indicator */}
               {isVisitorTyping && (
                 <div className="pb-2">
-                  <TypingIndicator name={activeConversation.visitor?.name || activeConversation.visitor?.email?.split('@')[0] || 'Visitor'} />
+                  <TypingIndicator name={activeConversation.visitor?.name || activeConversation.visitor?.email?.split('@')[0] || t('visitor')} />
                 </div>
               )}
             </>
@@ -127,9 +127,9 @@ export function ChatWindow({ onBack }: ChatWindowProps) {
         {/* Closed indicator */}
         {activeConversation.status === 'closed' && (
           <div className="p-4 bg-gray-100 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 text-center text-gray-500 dark:text-gray-400">
-            <p className="text-sm">This conversation has been closed</p>
+            <p className="text-sm">{t('closedTitle')}</p>
             <p className="text-xs mt-1">
-              Closed at {activeConversation.closed_at ? new Date(activeConversation.closed_at).toLocaleString() : 'Unknown'}
+              {t('closedAt', { date: activeConversation.closed_at ? new Date(activeConversation.closed_at).toLocaleString() : t('unknown') })}
             </p>
           </div>
         )}
@@ -152,6 +152,7 @@ interface MessageBubbleProps {
 }
 
 function MessageBubble({ message, visitor, showAvatar }: MessageBubbleProps) {
+  const t = useTranslations('ws.chat.window');
   const isAgent = message.sender_type === 'agent' || message.sender_type === 'ai';
   const isSystem = message.sender_type === 'system';
 
@@ -199,7 +200,7 @@ function MessageBubble({ message, visitor, showAvatar }: MessageBubbleProps) {
   const getVisitorName = () => {
     if (visitor?.name) return visitor.name;
     if (visitor?.email) return visitor.email.split('@')[0];
-    return 'Visitor';
+    return t('visitor');
   };
 
   // Get visitor avatar URL from metadata
@@ -229,8 +230,8 @@ function MessageBubble({ message, visitor, showAvatar }: MessageBubbleProps) {
         {/* Sender name */}
         {showAvatar && (
           <span className="text-xs text-gray-500 dark:text-gray-400 mb-1">
-            {message.sender_type === 'ai' && 'AI Assistant'}
-            {message.sender_type === 'agent' && (message.sender?.name || 'Agent')}
+            {message.sender_type === 'ai' && t('aiAssistant')}
+            {message.sender_type === 'agent' && (message.sender?.name || t('agent'))}
             {message.sender_type === 'visitor' && getVisitorName()}
           </span>
         )}
@@ -247,7 +248,7 @@ function MessageBubble({ message, visitor, showAvatar }: MessageBubbleProps) {
           {/* Text content */}
           <p className="whitespace-pre-wrap break-words" dangerouslySetInnerHTML={{ __html: renderMarkdown(message.content) }} />
           {!!(message as any).metadata?.emailed_at && (
-            <span className="block text-right text-[10px] opacity-70 mt-0.5" title="E-poçtla da göndərildi">✉</span>
+            <span className="block text-right text-[10px] opacity-70 mt-0.5" title={t('emailedToo')}>✉</span>
           )}
 
           {/* File attachments */}

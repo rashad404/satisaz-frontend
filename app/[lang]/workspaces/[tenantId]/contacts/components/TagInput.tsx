@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface TagInputProps {
   tags: string[];
@@ -10,7 +11,8 @@ interface TagInputProps {
   placeholder?: string;
 }
 
-export function TagInput({ tags, onChange, suggestions = [], placeholder = "Add tag..." }: TagInputProps) {
+export function TagInput({ tags, onChange, suggestions = [], placeholder }: TagInputProps) {
+  const t = useTranslations('ws.contacts.tags');
   const [input, setInput] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -83,7 +85,7 @@ export function TagInput({ tags, onChange, suggestions = [], placeholder = "Add 
           }}
           onFocus={() => setShowSuggestions(true)}
           onKeyDown={handleKeyDown}
-          placeholder={tags.length === 0 ? placeholder : ''}
+          placeholder={tags.length === 0 ? (placeholder ?? t('placeholder')) : ''}
           className="flex-1 min-w-[80px] text-sm bg-transparent text-gray-900 dark:text-white outline-none placeholder-gray-400"
         />
       </div>
