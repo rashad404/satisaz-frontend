@@ -530,8 +530,20 @@ export function ChatProvider({ children, tenantId }: ChatProviderProps) {
 
     setIsLoadingConversations(true);
     try {
-      const response = await chatApi.conversations.list(tenantId, { status: 'all', per_page: 50 });
-      setConversations(response.data.data);
+      // Recent conversations, plus every open one and every one assigned to me, so the
+      // Active and Mine tabs are not limited to the 50 most recently updated chats.
+      const [recent, active, mine] = await Promise.all([
+        chatApi.conversations.list(tenantId, { status: 'all', per_page: 50 }),
+        chatApi.conversations.list(tenantId, { status: 'active', per_page: 100 }),
+        chatApi.conversations.list(tenantId, { status: 'active', assigned_to_me: 1 as unknown as boolean, per_page: 100 }),
+      ]);
+      const byId = new Map<number, Conversation>();
+      for (const list of [recent, active, mine]) {
+        for (const c of list.data.data) byId.set(c.id, c);
+      }
+      setConversations(
+        Array.from(byId.values()).sort((a, b) => (b.updated_at || '').localeCompare(a.updated_at || ''))
+      );
     } catch (error) {
       console.error('Failed to load conversations:', error);
     } finally {
