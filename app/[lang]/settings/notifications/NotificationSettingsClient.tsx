@@ -5,15 +5,11 @@ import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import authService, { User } from '@/lib/api/auth';
 import { openWalletLogin } from '@/lib/utils/walletAuth';
-import EmailSettings from './components/EmailSettings';
-import PhoneSettings from './components/PhoneSettings';
 import TelegramSettings from './components/TelegramSettings';
 import WhatsAppSettings from './components/WhatsAppSettings';
 import SlackSettings from './components/SlackSettings';
 import PushSettings from './components/PushSettings';
 import {
-  Mail,
-  Smartphone,
   Send,
   MessageCircle,
   Hash,
@@ -31,7 +27,7 @@ const NotificationSettingsClient: React.FC<NotificationSettingsClientProps> = ({
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [needsAuth, setNeedsAuth] = useState(false);
-  const [activeTab, setActiveTab] = useState('email');
+  const [activeTab, setActiveTab] = useState('telegram');
   const [successMessage, setSuccessMessage] = useState('');
 
   useEffect(() => {
@@ -83,18 +79,6 @@ const NotificationSettingsClient: React.FC<NotificationSettingsClientProps> = ({
   };
 
   const channels = [
-    {
-      id: 'email',
-      name: t('settings.notificationSettings.channels.email'),
-      icon: Mail,
-      component: EmailSettings
-    },
-    {
-      id: 'sms',
-      name: t('settings.notificationSettings.channels.phone'),
-      icon: Smartphone,
-      component: PhoneSettings
-    },
     {
       id: 'telegram',
       name: t('settings.notificationSettings.channels.telegram'),
@@ -254,7 +238,6 @@ const NotificationSettingsClient: React.FC<NotificationSettingsClientProps> = ({
                 <ActiveComponent
                   user={user}
                   onUpdate={handleUpdateUser}
-                  onUserChange={setUser}
                   lang={lang}
                 />
               )}

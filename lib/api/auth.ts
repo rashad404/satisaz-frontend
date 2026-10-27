@@ -28,18 +28,6 @@ export interface RegisterData extends LoginCredentials {
   timezone?: string;
 }
 
-export interface OTPRequest {
-  phone: string;
-  purpose?: 'login' | 'verify';
-}
-
-export interface OTPVerify {
-  phone: string;
-  code: string;
-  name?: string;
-  return_url?: string;
-}
-
 export interface AuthResponse {
   status: string;
   message?: string;
@@ -65,38 +53,6 @@ class AuthService {
     if (response.data.data?.token) {
       this.setToken(response.data.data.token);
     }
-    return response.data;
-  }
-
-  // Phone OTP Authentication
-  async sendOTP(data: OTPRequest): Promise<any> {
-    const response = await apiClient.post('/auth/otp/send', data);
-    return response.data;
-  }
-
-  async verifyOTP(data: OTPVerify): Promise<AuthResponse> {
-    const response = await apiClient.post('/auth/otp/verify', data);
-    if (response.data.data?.token) {
-      this.setToken(response.data.data.token);
-    }
-    return response.data;
-  }
-
-  // Send phone verification SMS for authenticated user (settings page, with billing)
-  async sendPhoneVerificationForUser(phone: string): Promise<any> {
-    const response = await apiClient.post('/user/send-phone-verification', { phone });
-    return response.data;
-  }
-
-  // Verify phone for authenticated user (settings page)
-  async verifyPhoneForUser(data: { phone: string; code: string }): Promise<AuthResponse> {
-    const response = await apiClient.post('/user/verify-phone', data);
-    return response.data;
-  }
-
-  // Verify email for authenticated user (settings page)
-  async verifyEmailForUser(data: { email: string; code: string }): Promise<AuthResponse> {
-    const response = await apiClient.post('/user/verify-email', data);
     return response.data;
   }
 
