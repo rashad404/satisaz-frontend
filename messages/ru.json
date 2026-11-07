@@ -1697,6 +1697,11 @@
           "get_customer_domains": "Посмотрела домены клиента",
           "get_customer_hosting": "Посмотрела хостинг клиента",
           "get_customer_balance": "Посмотрела баланс клиента",
+          "check_domain": "Проверила, свободен ли домен",
+          "dns_lookup": "Проверила DNS",
+          "whois": "Посмотрела whois",
+          "check_website": "Проверила сайт",
+          "hosting_status": "Проверила статус хостинга",
           "other": "Использовала инструмент: {name}"
         },
         "errors": {

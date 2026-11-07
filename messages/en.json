@@ -1696,6 +1696,11 @@
           "get_customer_domains": "Checked customer domains",
           "get_customer_hosting": "Checked customer hosting",
           "get_customer_balance": "Checked customer balance",
+          "check_domain": "Checked domain availability",
+          "dns_lookup": "Checked DNS",
+          "whois": "Checked whois",
+          "check_website": "Checked the website",
+          "hosting_status": "Checked hosting status",
           "other": "Used a tool: {name}"
         },
         "errors": {

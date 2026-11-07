@@ -1694,6 +1694,11 @@
           "get_customer_domains": "Müştərinin domenlərinə baxdı",
           "get_customer_hosting": "Müştərinin hostinqinə baxdı",
           "get_customer_balance": "Müştərinin balansına baxdı",
+          "check_domain": "Domenin boş olub-olmadığını yoxladı",
+          "dns_lookup": "DNS-ə baxdı",
+          "whois": "Whois məlumatına baxdı",
+          "check_website": "Saytı yoxladı",
+          "hosting_status": "Hostinq vəziyyətinə baxdı",
           "other": "Alət işlətdi: {name}"
         },
         "errors": {
