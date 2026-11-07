@@ -1700,6 +1700,7 @@
           "check_website": "Saytı yoxladı",
           "hosting_status": "Hostinq vəziyyətinə baxdı",
           "screen_domains": "Domen adlarını süzdü",
+          "ask_helper": "Köməkçiyə ötürdü",
           "other": "Alət işlətdi: {name}"
         },
         "errors": {
