@@ -1,5 +1,7 @@
 "use client";
 
+import type Echo from 'laravel-echo';
+import type PusherClient from 'pusher-js';
 import { useEffect, useRef, useState, useCallback } from 'react';
 import type {
   NewConversationEvent,
@@ -68,7 +70,7 @@ export function useWebSocket(options: WebSocketHookOptions) {
 
   const [isConnected, setIsConnected] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const echoRef = useRef<any>(null);
+  const echoRef = useRef<Echo<'reverb'> | null>(null);
   const channelsRef = useRef<Set<string>>(new Set());
 
   // Initialize Echo connection
@@ -81,7 +83,7 @@ export function useWebSocket(options: WebSocketHookOptions) {
       const Pusher = (await import('pusher-js')).default;
 
       // Make Pusher available globally for Echo
-      (window as any).Pusher = Pusher;
+      (window as unknown as { Pusher: typeof PusherClient }).Pusher = Pusher;
 
       const config: WebSocketConfig = {
         host: process.env.NEXT_PUBLIC_REVERB_HOST || 'localhost',
@@ -209,6 +211,9 @@ export function useWebSocket(options: WebSocketHookOptions) {
     const channel = echoRef.current.private(channelName);
 
     channel
+      .listen('.conversation.event', (e: { event: import('@/lib/types/chat').ConversationEvent }) => {
+        window.dispatchEvent(new CustomEvent('chat:conversation-event', { detail: e.event }));
+      })
       .listen('.message.new', (e: NewMessageEvent) => {
         console.log('[WebSocket] Received message.new event:', e);
         onNewMessage?.(e);
@@ -254,6 +259,9 @@ export function useWebSocket(options: WebSocketHookOptions) {
     const channel = echoRef.current.private(channelName);
 
     channel
+      .listen('.conversation.event', (e: { event: import('@/lib/types/chat').ConversationEvent }) => {
+        window.dispatchEvent(new CustomEvent('chat:conversation-event', { detail: e.event }));
+      })
       .listen('.message.new', (e: NewMessageEvent) => {
         callbacks?.onNewMessage?.(e);
         onNewMessage?.(e);

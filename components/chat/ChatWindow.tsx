@@ -3,13 +3,17 @@
 import { useState, useEffect, useRef } from 'react';
 import { useChat } from '@/contexts/ChatContext';
 import { useTranslations, useLocale } from 'next-intl';
-import { Bot, User, MessageSquare, Clock, CheckCheck, Check } from 'lucide-react';
+import { useParams } from 'next/navigation';
+import { Bot, User, MessageSquare, CheckCheck, Check } from 'lucide-react';
 import { cn, formatShortDate, formatDate } from '@/lib/utils';
 import type { ChatMessage, SenderType, Visitor } from '@/lib/types/chat';
 import { MessageInput } from './MessageInput';
 import { ConversationHeader } from './ConversationHeader';
 import { TypingIndicator } from './TypingIndicator';
 import { NotesPanel } from './NotesPanel';
+import { ConversationEventRow } from './ConversationEventRow';
+import { useConversationEvents } from '@/hooks/useConversationEvents';
+import { conversationTimeline } from '@/lib/utils/conversationTimeline';
 
 // Simple markdown rendering for chat messages
 function renderMarkdown(text: string): string {
@@ -30,10 +34,18 @@ interface ChatWindowProps {
 export function ChatWindow({ onBack }: ChatWindowProps) {
   const t = useTranslations('ws.chat.window');
   const locale = useLocale();
+  const stepsT = useTranslations('ws.chat.steps');
   const { activeConversation, messages, isLoadingMessages, typingUsers, markMessagesAsRead } = useChat();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const [showNotes, setShowNotes] = useState(false);
+  const [showSteps, setShowSteps] = useState(true);
+  // The conversation payload has no tenant_id, so take the workspace id from the URL
+  // (/workspaces/[tenantId]/...) and fall back to the payload if it ever includes one.
+  const params = useParams<{ tenantId?: string }>();
+  const routeTenantId = Number(params?.tenantId) || undefined;
+  const { events, failed: eventsFailed } = useConversationEvents(routeTenantId ?? activeConversation?.tenant_id, activeConversation?.id);
+  const timeline = conversationTimeline(messages, showSteps ? events : []);
 
   // Check if visitor is typing
   const isVisitorTyping = activeConversation ? typingUsers.has(activeConversation.id) : false;
@@ -76,6 +88,14 @@ export function ChatWindow({ onBack }: ChatWindowProps) {
           onToggleNotes={() => setShowNotes(!showNotes)}
         />
 
+        <div className="flex items-center gap-3 border-b border-gray-200 px-4 py-2 text-xs dark:border-gray-800">
+          <label className="flex cursor-pointer items-center gap-2 text-gray-700 dark:text-gray-300">
+            <input type="checkbox" checked={showSteps} onChange={e => setShowSteps(e.target.checked)} className="accent-purple-600" />
+            {stepsT('toggle')}
+          </label>
+          {showSteps && eventsFailed && <span role="status" className="text-amber-700 dark:text-amber-400">{stepsT('loadError')}</span>}
+        </div>
+
         {/* Messages */}
         <div
           ref={messagesContainerRef}
@@ -85,7 +105,7 @@ export function ChatWindow({ onBack }: ChatWindowProps) {
             <div className="flex items-center justify-center h-full">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600" />
             </div>
-          ) : messages.length === 0 ? (
+          ) : timeline.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-gray-500 dark:text-gray-400">
               <MessageSquare className="h-12 w-12 mb-2 opacity-50" />
               <p className="text-sm">{t('noMessages')}</p>
@@ -102,12 +122,14 @@ export function ChatWindow({ onBack }: ChatWindowProps) {
               </div>
 
               {/* Messages */}
-              {messages.map((message, index) => (
+              {timeline.map((entry, index) => entry.kind === 'event' ? (
+                <ConversationEventRow key={`event-${entry.item.id}`} event={entry.item} depth={entry.depth} />
+              ) : (
                 <MessageBubble
-                  key={message.id}
-                  message={message}
+                  key={`message-${entry.item.id}`}
+                  message={entry.item}
                   visitor={activeConversation.visitor}
-                  showAvatar={index === 0 || messages[index - 1].sender_type !== message.sender_type}
+                  showAvatar={index === 0 || timeline[index - 1].kind === 'event' || (timeline[index - 1].item as ChatMessage).sender_type !== entry.item.sender_type}
                 />
               ))}
 
@@ -256,7 +278,7 @@ function MessageBubble({ message, visitor, showAvatar }: MessageBubbleProps) {
         >
           {/* Text content */}
           <p className="whitespace-pre-wrap break-words" dangerouslySetInnerHTML={{ __html: renderMarkdown(message.content) }} />
-          {!!(message as any).metadata?.emailed_at && (
+          {!!message.metadata?.emailed_at && (
             <span className="block text-right text-[10px] opacity-70 mt-0.5" title={t('emailedToo')}>✉</span>
           )}
 

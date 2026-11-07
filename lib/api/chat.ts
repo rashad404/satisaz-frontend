@@ -557,3 +557,13 @@ export const chatApi = {
 };
 
 export default chatApi;
+
+export const conversationEventsApi = {
+  list: async (tenantId: number, conversationId: number, afterId = 0) => {
+    const response = await apiClient.get<{ data: import('@/lib/types/chat').ConversationEvent[] }>(
+      `/tenants/${tenantId}/conversations/${conversationId}/events`,
+      { params: { after_id: afterId, limit: 500 } }
+    );
+    return response.data.data;
+  },
+};

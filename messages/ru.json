@@ -1643,6 +1643,66 @@
       "typing": {
         "someone": "Кто-то",
         "isTyping": "{name} печатает..."
+      },
+      "steps": {
+        "toggle": "Шаги",
+        "reply": "Ответ",
+        "duration": "{ms} мс",
+        "noPayload": "Нет дополнительных данных",
+        "loadError": "Не удалось загрузить шаги. Повторная попытка...",
+        "actors": {
+          "visitor": "Посетитель",
+          "aysel": "Айсель",
+          "helper": "Помощник",
+          "rashad": "Рашад",
+          "idrak": "Идрак",
+          "agent": "Сотрудник",
+          "system": "Система"
+        },
+        "types": {
+          "tool_call": "Инструмент",
+          "tool_result": "Инструмент",
+          "helper_request": "Запрос помощнику",
+          "helper_step": "Шаг помощника",
+          "helper_response": "Ответ помощника",
+          "approval_request": "Запрос одобрения",
+          "approval_decision": "Решение об одобрении",
+          "idrak_task": "Задача для Идрака",
+          "note": "Заметка",
+          "error": "Ошибка"
+        },
+        "statuses": {
+          "ok": "Успешно",
+          "error": "Ошибка",
+          "pending": "Ожидание"
+        },
+        "fields": {
+          "input": "Входные данные",
+          "output": "Результат",
+          "command": "Команда",
+          "stdout": "Вывод команды",
+          "tool_use_id": "ID вызова инструмента"
+        },
+        "tools": {
+          "get_ureb_templates": "Посмотрела шаблоны UREB",
+          "get_client_info": "Посмотрела данные клиента",
+          "create_client": "Создала клиента",
+          "create_project": "Создала проект",
+          "get_project_categories": "Посмотрела категории проектов",
+          "get_knowledge": "Посмотрела базу знаний",
+          "no_reply_needed": "Ответ не нужен",
+          "escalate_to_human": "Передала сотруднику",
+          "guide": "Показала путь на странице",
+          "get_previous_conversations": "Посмотрела прошлые диалоги",
+          "get_customer_domains": "Посмотрела домены клиента",
+          "get_customer_hosting": "Посмотрела хостинг клиента",
+          "get_customer_balance": "Посмотрела баланс клиента",
+          "other": "Использовала инструмент: {name}"
+        },
+        "errors": {
+          "refusal": "Модель отказалась отвечать",
+          "empty_reply": "Модель вернула пустой ответ"
+        }
       }
     },
     "aysel": {

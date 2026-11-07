@@ -1640,6 +1640,66 @@
       "typing": {
         "someone": "Kimsə",
         "isTyping": "{name} yazır..."
+      },
+      "steps": {
+        "toggle": "Addımlar",
+        "reply": "Cavab",
+        "duration": "{ms} ms",
+        "noPayload": "Əlavə məlumat yoxdur",
+        "loadError": "Addımlar yüklənmədi. Yenidən yoxlanılır...",
+        "actors": {
+          "visitor": "Ziyarətçi",
+          "aysel": "Aysel",
+          "helper": "Köməkçi",
+          "rashad": "Rəşad",
+          "idrak": "İdrak",
+          "agent": "Əməkdaş",
+          "system": "Sistem"
+        },
+        "types": {
+          "tool_call": "Alət",
+          "tool_result": "Alət",
+          "helper_request": "Köməkçiyə sorğu",
+          "helper_step": "Köməkçinin addımı",
+          "helper_response": "Köməkçinin cavabı",
+          "approval_request": "Təsdiq sorğusu",
+          "approval_decision": "Təsdiq qərarı",
+          "idrak_task": "İdrak üçün tapşırıq",
+          "note": "Qeyd",
+          "error": "Xəta"
+        },
+        "statuses": {
+          "ok": "Uğurlu",
+          "error": "Xəta",
+          "pending": "Gözləyir"
+        },
+        "fields": {
+          "input": "Giriş məlumatı",
+          "output": "Nəticə",
+          "command": "Əmr",
+          "stdout": "Əmrin nəticəsi",
+          "tool_use_id": "Alət çağırışının ID-si"
+        },
+        "tools": {
+          "get_ureb_templates": "UREB şablonlarına baxdı",
+          "get_client_info": "Müştəri məlumatına baxdı",
+          "create_client": "Müştəri yaratdı",
+          "create_project": "Layihə yaratdı",
+          "get_project_categories": "Layihə kateqoriyalarına baxdı",
+          "get_knowledge": "Bilik bazasına baxdı",
+          "no_reply_needed": "Cavab lazım deyil",
+          "escalate_to_human": "Əməkdaşa ötürdü",
+          "guide": "Səhifədə yol göstərdi",
+          "get_previous_conversations": "Əvvəlki söhbətlərə baxdı",
+          "get_customer_domains": "Müştərinin domenlərinə baxdı",
+          "get_customer_hosting": "Müştərinin hostinqinə baxdı",
+          "get_customer_balance": "Müştərinin balansına baxdı",
+          "other": "Alət işlətdi: {name}"
+        },
+        "errors": {
+          "refusal": "Model cavab yazmaqdan imtina etdi",
+          "empty_reply": "Model boş cavab qaytardı"
+        }
       }
     },
     "aysel": {

@@ -517,3 +517,19 @@ export interface AiLesson {
 
 export interface AiDraftUpdatedEvent { draft: AiDraft; }
 export interface AiLessonUpdatedEvent { lesson: AiLesson; }
+
+export interface ConversationEvent {
+  id: number;
+  tenant_id: number;
+  conversation_id: number;
+  chat_message_id: number | null;
+  parent_id: number | null;
+  actor: 'visitor' | 'aysel' | 'helper' | 'rashad' | 'idrak' | 'agent' | 'system';
+  type: 'tool_call' | 'tool_result' | 'helper_request' | 'helper_step' | 'helper_response' | 'approval_request' | 'approval_decision' | 'idrak_task' | 'note' | 'error';
+  name: string | null;
+  summary: string;
+  payload: Record<string, unknown>;
+  status: 'ok' | 'error' | 'pending';
+  duration_ms: number | null;
+  created_at: string;
+}

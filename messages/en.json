@@ -1642,6 +1642,66 @@
       "typing": {
         "someone": "Someone",
         "isTyping": "{name} is typing..."
+      },
+      "steps": {
+        "toggle": "Steps",
+        "reply": "Reply",
+        "duration": "{ms} ms",
+        "noPayload": "No additional details",
+        "loadError": "Steps could not be loaded. Retrying...",
+        "actors": {
+          "visitor": "Visitor",
+          "aysel": "Aysel",
+          "helper": "Helper",
+          "rashad": "Rashad",
+          "idrak": "Idrak",
+          "agent": "Agent",
+          "system": "System"
+        },
+        "types": {
+          "tool_call": "Tool",
+          "tool_result": "Tool",
+          "helper_request": "Helper request",
+          "helper_step": "Helper step",
+          "helper_response": "Helper response",
+          "approval_request": "Approval request",
+          "approval_decision": "Approval decision",
+          "idrak_task": "Task for Idrak",
+          "note": "Note",
+          "error": "Error"
+        },
+        "statuses": {
+          "ok": "OK",
+          "error": "Error",
+          "pending": "Pending"
+        },
+        "fields": {
+          "input": "Input",
+          "output": "Output",
+          "command": "Command",
+          "stdout": "Standard output",
+          "tool_use_id": "Tool call ID"
+        },
+        "tools": {
+          "get_ureb_templates": "Checked UREB templates",
+          "get_client_info": "Checked client info",
+          "create_client": "Created a client",
+          "create_project": "Created a project",
+          "get_project_categories": "Checked project categories",
+          "get_knowledge": "Checked the knowledge base",
+          "no_reply_needed": "No reply needed",
+          "escalate_to_human": "Handed over to a team member",
+          "guide": "Guided on the page",
+          "get_previous_conversations": "Checked previous conversations",
+          "get_customer_domains": "Checked customer domains",
+          "get_customer_hosting": "Checked customer hosting",
+          "get_customer_balance": "Checked customer balance",
+          "other": "Used a tool: {name}"
+        },
+        "errors": {
+          "refusal": "The model refused to reply",
+          "empty_reply": "The model returned an empty reply"
+        }
       }
     },
     "aysel": {
