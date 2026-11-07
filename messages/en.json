@@ -1701,6 +1701,7 @@
           "whois": "Checked whois",
           "check_website": "Checked the website",
           "hosting_status": "Checked hosting status",
+          "screen_domains": "Screened domain ideas",
           "other": "Used a tool: {name}"
         },
         "errors": {

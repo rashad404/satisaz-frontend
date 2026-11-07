@@ -1699,6 +1699,7 @@
           "whois": "Whois məlumatına baxdı",
           "check_website": "Saytı yoxladı",
           "hosting_status": "Hostinq vəziyyətinə baxdı",
+          "screen_domains": "Domen adlarını süzdü",
           "other": "Alət işlətdi: {name}"
         },
         "errors": {
